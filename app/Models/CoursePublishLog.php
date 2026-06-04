@@ -13,7 +13,18 @@ class CoursePublishLog extends Model
 
     protected $fillable = ['tenant_id', 'course_id', 'version_id', 'action', 'actor_id', 'note'];
 
-    protected $casts = [
-        
-    ];
+    public function course()
+    {
+        return $this->belongsTo(Course::class);
+    }
+
+    public function version()
+    {
+        return $this->belongsTo(CourseVersion::class, 'version_id');
+    }
+
+    public function actor()
+    {
+        return $this->belongsTo(LmsUser::class, 'actor_id');
+    }
 }

@@ -11,9 +11,20 @@ class ContentApproval extends Model
 
     protected $table = 'content_approvals';
 
-    protected $fillable = ['tenant_id', 'entity_type', 'entity_id', 'from_status', 'to_status', 'requested_by', 'reviewed_by', 'decision', 'note', 'decided_at'];
+    protected $fillable = ['tenant_id', 'entity_type', 'entity_id', 'from_status', 'to_status', 'requested_by', 'reviewed_by', 'decision', 'note', 'created_at', 'decided_at'];
 
     protected $casts = [
-        'decided_at' => 'datetime'
+        'created_at' => 'datetime',
+        'decided_at' => 'datetime',
     ];
+
+    public function requester()
+    {
+        return $this->belongsTo(LmsUser::class, 'requested_by');
+    }
+
+    public function reviewer()
+    {
+        return $this->belongsTo(LmsUser::class, 'reviewed_by');
+    }
 }

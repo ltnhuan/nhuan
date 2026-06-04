@@ -17,6 +17,6 @@ class ActivityType extends Model
         'enabled' => 'boolean',
         'config_schema' => 'array',
         'grading_supported' => 'boolean',
-        'completion_supported' => 'boolean'
+        'completion_supported' => 'boolean',
     ];
 }

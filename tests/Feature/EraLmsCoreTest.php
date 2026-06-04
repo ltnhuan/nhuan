@@ -6,6 +6,7 @@ use App\Http\Middleware\TenantResolver;
 use App\Services\Core\CorePermissionService;
 use App\Services\LearningEventService;
 use App\Services\LearningPathRuleService;
+use App\Services\RepositoryService;
 use App\Services\TenantContext;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -45,5 +46,17 @@ class EraLmsCoreTest extends TestCase
 
         $campusPermission = ['tenant_id' => 1, 'campus_id' => 3, 'academic_unit_id' => null, 'course_id' => null, 'class_id' => null];
         $this->assertFalse($method->invoke($service, $campusPermission, ['tenant_id' => 1, 'campus_id' => 2]));
+    }
+
+    public function test_repository_service_guesses_enterprise_item_types(): void
+    {
+        $service = new RepositoryService();
+        $method = (new ReflectionClass($service))->getMethod('guessItemType');
+        $method->setAccessible(true);
+
+        $this->assertSame('video', $method->invoke($service, 'mp4', 'video/mp4'));
+        $this->assertSame('pdf', $method->invoke($service, 'pdf', 'application/pdf'));
+        $this->assertSame('scorm', $method->invoke($service, 'zip', 'application/zip'));
+        $this->assertSame('docx', $method->invoke($service, 'docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'));
     }
 }

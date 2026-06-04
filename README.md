@@ -23,6 +23,11 @@ Prompt 01 is implemented with tenant resolution, tenant-scoped RBAC, cached menu
 - System settings and permissions are designed for Redis caching.
 - Audit logs capture actor, module, entity, before/after JSON, IP address, and user agent.
 
+
+## Prompt 02 implementation details
+
+Prompt 02 is implemented with a Course Studio outline service, course version snapshots, publish validation, repository tree/versioning/share/download-url APIs, activity registry validation, approval workflow transitions and enterprise Course Studio/Repository pages. See `docs/course-studio/prompt-02-course-studio.md` for detailed endpoints and authoring workflow.
+
 ## Course Studio and Repository
 
 - Course hierarchy follows `course -> section/subsection/unit -> component`.

@@ -32,12 +32,15 @@ Route::prefix('v1')->middleware(['api', 'tenant.resolve'])->group(function () {
         Route::put('white-label', [WhiteLabelController::class, 'update'])->middleware('permission:core.tenant.manage,tenant');
     });
 
+    Route::get('course-categories', [CourseController::class, 'categories']);
+    Route::get('activity-types', [CourseController::class, 'activityTypes']);
     Route::apiResource('courses', CourseController::class)->only(['index', 'store', 'show', 'update']);
     Route::post('courses/{course}/clone', [CourseController::class, 'clone']);
     Route::post('courses/{course}/submit-review', [CourseController::class, 'submitReview']);
     Route::post('courses/{course}/approve', [CourseController::class, 'approve']);
     Route::post('courses/{course}/publish', [CourseController::class, 'publish']);
     Route::post('courses/{course}/archive', [CourseController::class, 'archive']);
+    Route::get('courses/{course}/validate-publish', [CourseController::class, 'validateForPublish']);
     Route::get('courses/{course}/studio', [CourseController::class, 'studio']);
     Route::post('courses/{course}/sections', [CourseController::class, 'storeSection']);
     Route::put('course-sections/{section}', [CourseController::class, 'updateSection']);
@@ -50,14 +53,21 @@ Route::prefix('v1')->middleware(['api', 'tenant.resolve'])->group(function () {
 
     Route::prefix('repository')->group(function () {
         Route::get('items', [RepositoryController::class, 'index']);
+        Route::get('tree', [RepositoryController::class, 'tree']);
+        Route::get('items/{item}', [RepositoryController::class, 'show']);
         Route::post('folders', [RepositoryController::class, 'storeFolder']);
         Route::post('upload', [RepositoryController::class, 'upload']);
         Route::put('items/{item}', [RepositoryController::class, 'update']);
         Route::post('items/{item}/new-version', [RepositoryController::class, 'newVersion']);
         Route::post('items/{item}/move', [RepositoryController::class, 'move']);
         Route::post('items/{item}/copy', [RepositoryController::class, 'copy']);
+        Route::post('items/{item}/share', [RepositoryController::class, 'share']);
+        Route::get('items/{item}/versions', [RepositoryController::class, 'versions']);
+        Route::get('items/{item}/download-url', [RepositoryController::class, 'downloadUrl']);
         Route::post('items/{item}/submit-review', [RepositoryController::class, 'submitReview']);
         Route::post('items/{item}/approve', [RepositoryController::class, 'approve']);
+        Route::post('items/{item}/reject', [RepositoryController::class, 'reject']);
+        Route::post('items/{item}/return', [RepositoryController::class, 'returnForEdit']);
     });
 
     Route::get('courses/{course}/learning-path/rules', [LearningPathController::class, 'rules']);

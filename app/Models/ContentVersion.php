@@ -11,9 +11,15 @@ class ContentVersion extends Model
 
     protected $table = 'content_versions';
 
-    protected $fillable = ['tenant_id', 'content_item_id', 'version', 'storage_path', 'checksum', 'file_size', 'change_note', 'created_by'];
+    protected $fillable = ['tenant_id', 'content_item_id', 'version', 'storage_path', 'checksum', 'file_size', 'change_note', 'created_by', 'created_at'];
 
-    protected $casts = [
-        
-    ];
+    public function contentItem()
+    {
+        return $this->belongsTo(ContentRepositoryItem::class, 'content_item_id');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(LmsUser::class, 'created_by');
+    }
 }
