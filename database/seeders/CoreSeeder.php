@@ -49,6 +49,44 @@ class CoreSeeder extends Seeder
         for ($i = 1; $i <= 5000; $i++) {
             LmsUser::query()->updateOrCreate(['tenant_id' => $tenant->id, 'code' => 'SV'.str_pad((string) $i, 5, '0', STR_PAD_LEFT)], ['full_name' => 'Học viên '.$i, 'email' => 'sv'.$i.'@vabis.edu.vn', 'user_type' => 'student', 'status' => 'active', 'metadata' => ['cohort' => 'Demo']]);
         }
+
+        $demoRoleMap = [
+            'admin.lms@vabis.edu.vn' => 'tenant_admin',
+            'daotao.lms@vabis.edu.vn' => 'training_officer',
+            'khoa.lms@vabis.edu.vn' => 'faculty_manager',
+            'gv.lms@vabis.edu.vn' => 'teacher',
+            'sv.lms@vabis.edu.vn' => 'student',
+        ];
+        foreach ($demoRoleMap as $email => $roleName) {
+            $user = LmsUser::query()->where('tenant_id', $tenant->id)->where('email', $email)->first();
+            $role = Role::query()->where('tenant_id', $tenant->id)->where('name', $roleName)->first();
+            if ($user && $role) {
+                DB::table('user_role_scope')->updateOrInsert([
+                    'user_id' => $user->id,
+                    'role_id' => $role->id,
+                    'tenant_id' => $tenant->id,
+                    'campus_id' => null,
+                    'academic_unit_id' => null,
+                    'course_id' => null,
+                    'class_id' => null,
+                ]);
+            }
+        }
+
+        $teacherRole = Role::query()->where('tenant_id', $tenant->id)->where('name', 'teacher')->first();
+        $studentRole = Role::query()->where('tenant_id', $tenant->id)->where('name', 'student')->first();
+        LmsUser::query()->where('tenant_id', $tenant->id)->where('user_type', 'teacher')->limit(90)->get()->each(function (LmsUser $user) use ($teacherRole, $tenant) {
+            if ($teacherRole) {
+                DB::table('user_role_scope')->updateOrInsert(['user_id' => $user->id, 'role_id' => $teacherRole->id, 'tenant_id' => $tenant->id, 'campus_id' => null, 'academic_unit_id' => null, 'course_id' => null, 'class_id' => null]);
+            }
+        });
+        LmsUser::query()->where('tenant_id', $tenant->id)->where('user_type', 'student')->limit(5000)->get()->each(function (LmsUser $user) use ($studentRole, $tenant) {
+            if ($studentRole) {
+                DB::table('user_role_scope')->updateOrInsert(['user_id' => $user->id, 'role_id' => $studentRole->id, 'tenant_id' => $tenant->id, 'campus_id' => null, 'academic_unit_id' => null, 'course_id' => null, 'class_id' => null]);
+            }
+        });
+
         SystemSetting::query()->updateOrCreate(['tenant_id' => $tenant->id, 'group' => 'ui', 'key' => 'shell'], ['value' => ['density' => 'compact', 'language' => 'vi']]);
+        SystemSetting::query()->updateOrCreate(['tenant_id' => $tenant->id, 'group' => 'ui', 'key' => 'menu'], ['value' => config('eralms.menu')]);
     }
 }

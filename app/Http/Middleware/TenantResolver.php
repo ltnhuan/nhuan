@@ -15,22 +15,40 @@ class TenantResolver
 
     public function handle(Request $request, Closure $next)
     {
-        $code = $request->header('X-Tenant-Code');
+        $header = config('eralms.tenant_header', 'X-Tenant-Code');
+        $code = $request->header($header);
         $host = $request->getHost();
+        $subdomain = $this->subdomainCode($host);
 
         $tenant = Tenant::query()
-            ->when($code, fn ($query) => $query->where('code', $code))
-            ->when(! $code && $host, fn ($query) => $query->where('domain', $host))
             ->where('status', 'active')
+            ->when($code, fn ($query) => $query->where('code', strtoupper($code)))
+            ->when(! $code && $host, function ($query) use ($host, $subdomain) {
+                $query->where('domain', $host)
+                    ->orWhere('code', strtoupper((string) $subdomain));
+            })
             ->first();
 
         if (! $tenant) {
-            $tenant = Tenant::query()->where('code', config('eralms.default_tenant_code', 'VABIS'))->first();
+            $tenant = Tenant::query()
+                ->where('code', config('eralms.default_tenant_code', 'VABIS'))
+                ->where('status', 'active')
+                ->first();
         }
 
         $this->context->set($tenant);
         $request->attributes->set('tenant', $tenant);
+        app()->instance('eralms.tenant', $tenant);
 
         return $next($request);
+    }
+
+    private function subdomainCode(?string $host): ?string
+    {
+        if (! $host || substr_count($host, '.') < 2) {
+            return null;
+        }
+
+        return explode('.', $host)[0] ?: null;
     }
 }

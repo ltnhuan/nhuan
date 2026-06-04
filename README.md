@@ -11,6 +11,11 @@ EraLMS is a Laravel 12 + PostgreSQL + Redis architecture scaffold for an enterpr
 5. Start queue/Horizon if installed: `php artisan queue:work` or `php artisan horizon`.
 6. Build the Vue/Inertia frontend in the host Laravel application with `npm install && npm run dev`.
 
+
+## Prompt 01 implementation details
+
+Prompt 01 is implemented with tenant resolution, tenant-scoped RBAC, cached menu/settings, audit logging, demo VABIS seed data, and compact Vue admin screens. See `docs/core/prompt-01-core.md` for route-by-route details and the Prompt 01 operating model.
+
 ## Core architecture
 
 - Tenant is resolved from `X-Tenant-Code`, exact domain, or the default `VABIS` tenant.

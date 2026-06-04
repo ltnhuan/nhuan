@@ -2,18 +2,18 @@
 
 namespace App\Services;
 
+use App\Jobs\WriteAuditLog;
 use App\Models\AuditLog;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
 class AuditLogService
 {
-    public function record(string $action, string $module, Model|string $entity, array $before = [], array $after = [], ?Authenticatable $actor = null, ?Request $request = null): AuditLog
+    public function record(string $action, string $module, Model|string $entity, array $before = [], array $after = [], ?object $actor = null, ?Request $request = null): ?AuditLog
     {
-        return AuditLog::query()->create([
+        $payload = [
             'tenant_id' => app(TenantContext::class)->id(),
-            'actor_id' => $actor?->getAuthIdentifier(),
+            'actor_id' => method_exists($actor, 'getAuthIdentifier') ? $actor->getAuthIdentifier() : ($actor->id ?? null),
             'action' => $action,
             'module' => $module,
             'entity_type' => is_string($entity) ? $entity : $entity::class,
@@ -22,6 +22,13 @@ class AuditLogService
             'after' => $after,
             'ip_address' => $request?->ip(),
             'user_agent' => $request?->userAgent(),
-        ]);
+        ];
+
+        if (config('eralms.audit.queue', false)) {
+            WriteAuditLog::dispatch($payload)->afterResponse();
+            return null;
+        }
+
+        return AuditLog::query()->create($payload);
     }
 }

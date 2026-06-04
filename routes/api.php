@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\V1\CoreController;
+use App\Http\Controllers\Api\V1\Core\RbacController;
+use App\Http\Controllers\Api\V1\Core\UserController;
+use App\Http\Controllers\Api\V1\Core\WhiteLabelController;
 use App\Http\Controllers\Api\V1\CourseController;
 use App\Http\Controllers\Api\V1\LearningPathController;
 use App\Http\Controllers\Api\V1\RepositoryController;
@@ -9,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->middleware(['api', 'tenant.resolve'])->group(function () {
     Route::prefix('core')->group(function () {
         Route::get('me', [CoreController::class, 'me']);
+        Route::get('dashboard', [CoreController::class, 'dashboard']);
         Route::get('tenants', [CoreController::class, 'tenants'])->middleware('permission:core.tenant.view,tenant');
         Route::get('organizations', [CoreController::class, 'organizations']);
         Route::get('campuses', [CoreController::class, 'campuses']);
@@ -16,6 +20,16 @@ Route::prefix('v1')->middleware(['api', 'tenant.resolve'])->group(function () {
         Route::get('settings', [CoreController::class, 'settings']);
         Route::put('settings', [CoreController::class, 'updateSettings'])->middleware('permission:core.tenant.manage,tenant');
         Route::get('audit-logs', [CoreController::class, 'auditLogs'])->middleware('permission:core.role.manage,tenant');
+        Route::get('users', [UserController::class, 'index'])->middleware('permission:core.user.view,tenant');
+        Route::post('users', [UserController::class, 'store'])->middleware('permission:core.user.create,tenant');
+        Route::put('users/{user}', [UserController::class, 'update'])->middleware('permission:core.user.update,tenant');
+        Route::post('users/{user}/lock', [UserController::class, 'lock'])->middleware('permission:core.user.lock,tenant');
+        Route::post('users/{user}/unlock', [UserController::class, 'unlock'])->middleware('permission:core.user.lock,tenant');
+        Route::get('roles', [RbacController::class, 'roles'])->middleware('permission:core.role.manage,tenant');
+        Route::get('permissions', [RbacController::class, 'permissions'])->middleware('permission:core.role.manage,tenant');
+        Route::post('users/{user}/roles', [RbacController::class, 'assignRole'])->middleware('permission:core.role.manage,tenant');
+        Route::put('roles/{role}/permissions', [RbacController::class, 'syncRolePermissions'])->middleware('permission:core.role.manage,tenant');
+        Route::put('white-label', [WhiteLabelController::class, 'update'])->middleware('permission:core.tenant.manage,tenant');
     });
 
     Route::apiResource('courses', CourseController::class)->only(['index', 'store', 'show', 'update']);
