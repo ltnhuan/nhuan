@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Course;
+use App\Models\CourseComponent;
 use App\Models\CoursePublishLog;
 use App\Models\CourseSection;
 use App\Models\CourseVersion;
@@ -30,6 +31,75 @@ class CourseStudioService
         ], $data['settings'] ?? []);
 
         return Course::query()->create($data);
+    }
+
+    public function getStudioPayload(Course $course): array
+    {
+        return [
+            'course' => $course->load(['category', 'academicUnit', 'owner']),
+            'outline' => $this->structure->outline($course),
+            'versions' => $course->versions()->limit(10)->get(),
+            'publish_logs' => $course->publishLogs()->limit(20)->get(),
+            'checklist' => $this->validatePublishChecklist($course),
+        ];
+    }
+
+    public function createSection(Course $course, array $data): CourseSection
+    {
+        return $this->structure->createSection($course, $data + ['type' => 'section']);
+    }
+
+    public function createUnit(Course $course, array $data): CourseSection
+    {
+        return $this->structure->createSection($course, $data + ['type' => 'unit']);
+    }
+
+    public function reorderSections(array $items): void
+    {
+        $this->structure->reorderSections($items);
+    }
+
+    public function createComponent(array $data): CourseComponent
+    {
+        $unit = CourseSection::query()->findOrFail($data['section_id']);
+        $factory = app(ComponentFactoryService::class);
+
+        return match ($data['component_type']) {
+            'text' => $factory->createTextComponent($unit, $data),
+            'video' => $factory->createVideoComponent($unit, $data),
+            'pdf', 'file' => $factory->createPdfComponent($unit, $data),
+            'quiz' => $factory->createQuizComponent($unit, $data),
+            'assignment' => $factory->createAssignmentComponent($unit, $data),
+            'forum' => $factory->createForumComponent($unit, $data),
+            'scorm' => $factory->createScormComponent($unit, $data),
+            default => $this->structure->createComponent($data),
+        };
+    }
+
+    public function updateComponent(CourseComponent $component, array $data): CourseComponent
+    {
+        return $this->structure->updateComponent($component, $data);
+    }
+
+    public function deleteComponent(CourseComponent $component): void
+    {
+        $component->delete();
+    }
+
+    public function duplicateComponent(CourseComponent $component): CourseComponent
+    {
+        $copy = $component->replicate(['sort_order', 'status']);
+        $copy->title = $component->title.' (bản sao)';
+        $copy->sort_order = (int) CourseComponent::query()->where('section_id', $component->section_id)->max('sort_order') + 1;
+        $copy->status = 'draft';
+        $copy->save();
+
+        return $copy->fresh(['contentItem', 'activityType']);
+    }
+
+    public function validatePublishChecklist(Course $course): array
+    {
+        return app(PublishChecklistService::class)->validatePublishChecklist($course);
     }
 
     public function cloneCourse(Course $course, int $actorId): Course
@@ -70,6 +140,7 @@ class CourseStudioService
 
             $this->createVersionSnapshot($copy, $actorId, 'Clone từ '.$course->code);
             CoursePublishLog::query()->create(['tenant_id' => $course->tenant_id, 'course_id' => $copy->id, 'action' => 'clone', 'actor_id' => $actorId, 'note' => 'Clone từ '.$course->code]);
+            app(AuditLogService::class)->record('clone', 'course', $copy, [], $copy->toArray(), (object) ['id' => $actorId]);
 
             return $copy->fresh(['sections.components']);
         });
@@ -126,42 +197,66 @@ class CourseStudioService
 
     public function submitReview(Course $course, int $actorId, ?string $note = null): Course
     {
+        if ($course->status !== 'draft') {
+            throw new \InvalidArgumentException('Chỉ khóa học draft mới được gửi review.');
+        }
+
+        $before = $course->toArray();
         $course->forceFill(['status' => 'review'])->save();
         CoursePublishLog::query()->create(['tenant_id' => $course->tenant_id, 'course_id' => $course->id, 'action' => 'submit_review', 'actor_id' => $actorId, 'note' => $note]);
+        app(AuditLogService::class)->record('submit_review', 'course', $course, $before, $course->fresh()->toArray(), (object) ['id' => $actorId]);
 
         return $course;
     }
 
     public function approveCourse(Course $course, int $actorId, ?string $note = null): Course
     {
+        if ($course->status !== 'review') {
+            throw new \InvalidArgumentException('Chỉ khóa học đang review mới được approve.');
+        }
+
+        $before = $course->toArray();
         $course->forceFill(['status' => 'approved', 'approved_by' => $actorId, 'approved_at' => now()])->save();
         CoursePublishLog::query()->create(['tenant_id' => $course->tenant_id, 'course_id' => $course->id, 'action' => 'approve', 'actor_id' => $actorId, 'note' => $note]);
+        app(AuditLogService::class)->record('approve', 'course', $course, $before, $course->fresh()->toArray(), (object) ['id' => $actorId]);
 
         return $course;
     }
 
     public function publishCourse(Course $course, int $actorId, ?string $note = null): CourseVersion
     {
+        if ($course->status !== 'approved') {
+            throw new \InvalidArgumentException('Chỉ khóa học đã approved mới được publish.');
+        }
+
         $errors = $this->validateCourseStructure($course);
         if ($errors !== []) {
             throw new \InvalidArgumentException(implode(' ', $errors));
         }
 
+        $before = $course->toArray();
         $version = $this->createVersionSnapshot($course, $actorId, $note);
         $course->forceFill(['status' => 'published', 'published_at' => now()])->save();
         CourseSection::query()->where('course_id', $course->id)->where('status', 'draft')->update(['status' => 'published']);
         $course->components()->where('status', 'draft')->update(['status' => 'published']);
         CoursePublishLog::query()->create(['tenant_id' => $course->tenant_id, 'course_id' => $course->id, 'version_id' => $version->id, 'action' => 'publish', 'actor_id' => $actorId, 'note' => $note]);
         Cache::put($this->publishedOutlineCacheKey($course), $version->structure_snapshot, 3600);
+        app(AuditLogService::class)->record('publish', 'course', $course, $before, $course->fresh()->toArray(), (object) ['id' => $actorId]);
 
         return $version;
     }
 
     public function archiveCourse(Course $course, int $actorId, ?string $note = null): Course
     {
+        if (! in_array($course->status, ['published', 'approved'], true)) {
+            throw new \InvalidArgumentException('Chỉ khóa học approved hoặc published mới được archive.');
+        }
+
+        $before = $course->toArray();
         $course->forceFill(['status' => 'archived'])->save();
         CoursePublishLog::query()->create(['tenant_id' => $course->tenant_id, 'course_id' => $course->id, 'action' => 'archive', 'actor_id' => $actorId, 'note' => $note]);
         Cache::forget($this->publishedOutlineCacheKey($course));
+        app(AuditLogService::class)->record('archive', 'course', $course, $before, $course->fresh()->toArray(), (object) ['id' => $actorId]);
 
         return $course;
     }

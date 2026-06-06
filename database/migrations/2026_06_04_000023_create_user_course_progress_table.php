@@ -14,19 +14,20 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('course_id');
             $table->string('status');
-            $table->decimal('progress_percent', 8, 2)->nullable();
-            $table->string('completed_components_count')->nullable();
-            $table->string('total_components_count')->nullable();
-            $table->string('completed_required_count')->nullable();
-            $table->string('total_required_count')->nullable();
+            $table->decimal('progress_percent', 8, 2)->default(0);
+            $table->unsignedInteger('completed_components_count')->default(0);
+            $table->unsignedInteger('total_components_count')->default(0);
+            $table->unsignedInteger('completed_required_count')->default(0);
+            $table->unsignedInteger('total_required_count')->default(0);
             $table->unsignedBigInteger('last_component_id')->nullable();
             $table->timestamp('last_accessed_at')->nullable();
             $table->timestamp('completed_at')->nullable();
             $table->string('risk_level')->nullable();
             $table->jsonb('metadata')->nullable();
-            $table->index('tenant_id');
+            $table->index(['tenant_id', 'user_id', 'course_id']);
             $table->index('status');
             $table->index('course_id');
+            $table->unique(['tenant_id', 'user_id', 'course_id']);
             $table->timestamps();
         });
     }

@@ -15,18 +15,19 @@ return new class extends Migration
             $table->unsignedBigInteger('course_id');
             $table->unsignedBigInteger('section_id')->nullable();
             $table->unsignedBigInteger('component_id')->nullable();
-            $table->string('completion_type')->nullable();
+            $table->string('completion_type');
             $table->string('status');
-            $table->decimal('progress_percent', 8, 2)->nullable();
+            $table->decimal('progress_percent', 8, 2)->default(0);
             $table->decimal('score', 8, 2)->nullable();
             $table->timestamp('completed_at')->nullable();
             $table->unsignedBigInteger('verified_by')->nullable();
-            $table->string('source')->nullable();
+            $table->string('source')->default('system');
             $table->jsonb('metadata')->nullable();
-            $table->index('tenant_id');
+            $table->index(['tenant_id', 'user_id', 'course_id']);
             $table->index('status');
             $table->index('course_id');
             $table->index('component_id');
+            $table->unique(['tenant_id', 'user_id', 'course_id', 'completion_type', 'component_id'], 'learning_completion_unique_component');
             $table->timestamps();
         });
     }

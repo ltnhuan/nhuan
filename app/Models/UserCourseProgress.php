@@ -18,4 +18,9 @@ class UserCourseProgress extends Model
         'completed_at' => 'datetime',
         'metadata' => 'array'
     ];
+
+    public function course()
+    {
+        return $this->belongsTo(Course::class);
+    }
 }

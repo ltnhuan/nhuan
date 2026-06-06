@@ -105,16 +105,23 @@ class CourseStructureService
                 'release_at' => $section->release_at,
                 'due_at' => $section->due_at,
                 'settings' => $section->settings ?? [],
-                'components' => $section->components->map(fn (CourseComponent $component) => [
-                    'id' => $component->id,
-                    'component_type' => $component->component_type,
-                    'title' => $component->title,
-                    'required' => $component->required,
-                    'status' => $component->status,
-                    'sort_order' => $component->sort_order,
-                    'content' => $component->contentItem?->only(['id', 'title', 'item_type', 'status', 'mime_type']),
-                    'config' => $component->config ?? [],
-                ])->values()->all(),
+                'components' => $section->components->map(function (CourseComponent $component) {
+                    $content = $component->contentItem;
+
+                    return [
+                        'id' => $component->id,
+                        'component_type' => $component->component_type,
+                        'title' => $component->title,
+                        'required' => $component->required,
+                        'status' => $component->status,
+                        'sort_order' => $component->sort_order,
+                        'content' => $content ? [
+                            ...$content->only(['id', 'title', 'item_type', 'status', 'mime_type']),
+                            'download_url' => app(RepositoryService::class)->signedDownloadUrl($content),
+                        ] : null,
+                        'config' => $component->config ?? [],
+                    ];
+                })->values()->all(),
                 'children' => $this->buildTree($all->where('parent_id', $section->id), $all),
             ];
         })->all();

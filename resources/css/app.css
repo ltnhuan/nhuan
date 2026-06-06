@@ -1,0 +1,84 @@
+@import "tailwindcss";
+@source "../js/**/*.vue";
+@source "../views/**/*.blade.php";
+
+@layer base {
+  body {
+    background: #eef2f7;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  input,
+  select,
+  textarea {
+    outline: none;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgb(59 130 246 / 0.14);
+  }
+}
+
+@layer components {
+  main > section.border,
+  main > div.border,
+  section > main.border,
+  section > aside.border,
+  aside > div.border,
+  .space-y-4 > .border.bg-white,
+  .space-y-5 > .border.bg-white,
+  .overflow-hidden.border.bg-white {
+    border-color: #e2e8f0;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.06), 0 10px 24px rgb(15 23 42 / 0.04);
+  }
+
+  table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  thead {
+    background: #f8fafc;
+  }
+
+  th {
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  tbody tr {
+    transition: background-color 140ms ease, box-shadow 140ms ease;
+  }
+
+  tbody tr:hover {
+    background: #f8fafc;
+  }
+
+  button {
+    transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+  }
+
+  button:hover {
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+  }
+
+  button:active {
+    transform: translateY(1px);
+  }
+
+  input,
+  select,
+  textarea {
+    border-color: #cbd5e1;
+  }
+}

@@ -1,0 +1,5 @@
+<script setup>
+import EraLmsLayout from '@/Layouts/EraLmsLayout.vue'
+const competencies=['Năng lực chuyên môn','Năng lực số','Ngoại ngữ nghề nghiệp','An toàn lao động','Tác phong công nghiệp']
+</script>
+<template><EraLmsLayout><template #breadcrumb>OBE / Competency Framework</template><section class="mx-auto grid max-w-7xl gap-4 px-6 py-5 lg:grid-cols-[360px_1fr]"><aside class="border bg-white p-4"><h1 class="text-lg font-semibold">Framework</h1><input class="mt-4 w-full rounded-md border px-3 py-2 text-sm" value="AUNQA-TVET-OBE"/><select class="mt-3 w-full rounded-md border px-3 py-2 text-sm"><option>AUN-QA</option><option>TVET</option><option>GDNN</option></select><button class="mt-3 w-full rounded-md bg-slate-950 px-3 py-2 text-sm text-white">Lưu framework</button></aside><section class="border bg-white p-4"><h2 class="text-sm font-semibold">Competency Items</h2><div class="mt-4 grid gap-3 md:grid-cols-2"><div v-for="item in competencies" :key="item" class="border p-4 text-sm"><strong>{{item}}</strong><p class="mt-2 text-slate-600">Rubric threshold 70%, evidence required.</p></div></div></section></section></EraLmsLayout></template>

@@ -1,0 +1,19 @@
+<script setup>
+import EraLmsLayout from '@/Layouts/EraLmsLayout.vue'
+const radar = [['Nghề',82,140,28],['Mềm',74,238,88],['AI',68,212,202],['Digital',79,68,202],['Ngoại ngữ',63,42,88]]
+const polygon = radar.map(([, score, x, y]) => `${140 + (x - 140) * score / 100},${130 + (y - 130) * score / 100}`).join(' ')
+const timeline = ['Tuyển sinh', 'Hoàn thành học phần', 'Đồ án', 'Thực tập', 'Việc làm', 'Cựu sinh viên']
+const artifacts = ['Bài tập', 'Đồ án', 'Chứng chỉ', 'Dự án', 'Cuộc thi', 'Hoạt động đoàn hội', 'Thực tập']
+</script>
+<template>
+  <EraLmsLayout><template #breadcrumb>Career Portfolio / Dashboard</template>
+    <section class="mx-auto max-w-7xl px-6 py-5">
+      <div class="flex items-center justify-between"><div><h1 class="text-lg font-semibold">Digital Learning & Career Profile</h1><p class="mt-1 text-sm text-slate-600">Hồ sơ học tập số từ tuyển sinh đến cựu sinh viên, phục vụ thực tập, tuyển dụng và việc làm.</p></div><div class="flex gap-2"><button class="rounded-md border px-3 py-2 text-sm">Resume Builder</button><button class="rounded-md bg-slate-950 px-3 py-2 text-sm text-white">Publish Portfolio</button></div></div>
+      <div class="mt-5 grid gap-4 lg:grid-cols-[360px_1fr_320px]">
+        <div class="border bg-white p-4"><h2 class="text-sm font-semibold">Radar Skill Chart</h2><svg viewBox="0 0 280 260" class="mt-3 h-72 w-full"><polygon points="140,28 238,88 212,202 68,202 42,88" fill="none" stroke="#cbd5e1"/><polygon points="140,62 204,101 187,176 93,176 76,101" fill="none" stroke="#e2e8f0"/><polygon :points="polygon" fill="#0f4c8122" stroke="#0f4c81" stroke-width="2"/><g v-for="[label,score,x,y] in radar" :key="label"><circle :cx="140 + (x - 140) * score / 100" :cy="130 + (y - 130) * score / 100" r="4" fill="#0f4c81"/><text :x="x" :y="y" text-anchor="middle" class="fill-slate-700 text-[11px]">{{ label }}</text></g></svg></div>
+        <div class="space-y-4"><div class="grid gap-3 md:grid-cols-4"><div class="border bg-white p-4"><div class="text-sm text-slate-500">Điểm TB</div><div class="mt-2 text-2xl font-semibold">78.4%</div></div><div class="border bg-white p-4"><div class="text-sm text-slate-500">Kỹ năng</div><div class="mt-2 text-2xl font-semibold">74/100</div></div><div class="border bg-white p-4"><div class="text-sm text-slate-500">Chứng chỉ</div><div class="mt-2 text-2xl font-semibold">6</div></div><div class="border bg-white p-4"><div class="text-sm text-slate-500">Portfolio Score</div><div class="mt-2 text-2xl font-semibold">86</div></div></div><div class="border bg-white p-4"><h2 class="text-sm font-semibold">Career Growth Timeline</h2><div class="mt-5 grid grid-cols-6 gap-2"><div v-for="(item,index) in timeline" :key="item" class="text-center text-xs"><div class="mx-auto grid h-8 w-8 place-items-center rounded-full border bg-blue-900 text-white">{{ index + 1 }}</div><div class="mt-2 text-slate-700">{{ item }}</div></div></div></div><div class="border bg-white p-4"><h2 class="text-sm font-semibold">Digital Portfolio</h2><div class="mt-3 grid gap-2 md:grid-cols-3"><button v-for="item in artifacts" :key="item" class="rounded-md border px-3 py-3 text-left text-sm hover:bg-blue-50">{{ item }}</button></div></div></div>
+        <aside class="space-y-4"><div class="border bg-white p-4"><h2 class="text-sm font-semibold">Career Profile</h2><div class="mt-3 rounded-md bg-slate-50 p-3 text-sm">/portfolio/sv00001</div><div class="mt-3 grid aspect-square place-items-center border bg-white text-sm font-semibold">QR Profile</div></div><div class="border bg-white p-4 text-sm"><h2 class="font-semibold">Competency Tracking</h2><div class="mt-3 space-y-2"><div class="flex justify-between"><span>CLO đạt</span><strong>12/14</strong></div><div class="flex justify-between"><span>PLO đạt</span><strong>7/9</strong></div><div class="flex justify-between"><span>Competency</span><strong>82%</strong></div></div></div></aside>
+      </div>
+    </section>
+  </EraLmsLayout>
+</template>

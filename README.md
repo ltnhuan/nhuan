@@ -4,12 +4,20 @@ EraLMS is a Laravel 12 + PostgreSQL + Redis architecture scaffold for an enterpr
 
 ## Run locally
 
-1. Install PHP dependencies when Packagist access is available: `composer install`.
-2. Configure PostgreSQL and Redis in `.env`.
-3. Run migrations: `php artisan migrate`.
-4. Seed demo data: `php artisan db:seed`.
-5. Start queue/Horizon if installed: `php artisan queue:work` or `php artisan horizon`.
-6. Build the Vue/Inertia frontend in the host Laravel application with `npm install && npm run dev`.
+1. Install PHP dependencies: `composer install`.
+2. Use the checked local `.env` template values or copy `.env.example` to `.env`.
+3. For local development the default connection is SQLite: `DB_CONNECTION=sqlite` and `DB_DATABASE=database/database.sqlite`.
+4. Run migrations and demo seed data: `php artisan migrate --seed`.
+5. Start the API server: `php artisan serve --host=127.0.0.1 --port=8001`.
+6. Build or run the Vue frontend assets: `npm install && npm run build` or `npm run dev`.
+
+To switch to PostgreSQL, set `DB_CONNECTION=pgsql` and fill `PGSQL_HOST`, `PGSQL_PORT`, `PGSQL_DATABASE`, `PGSQL_USERNAME`, and `PGSQL_PASSWORD` in `.env`.
+
+## Checks
+
+- PHP syntax: `composer run test:syntax`
+- Prompt 01-02 feature tests: `composer run test:feature`
+- Frontend production build: `npm run build`
 
 
 ## Prompt 01 implementation details
@@ -41,6 +49,30 @@ Prompt 02 is implemented with a Course Studio outline service, course version sn
 - Completion is server-verified by component type and evidence.
 - Progress events are append-only and summarized into `user_course_progress` for fast dashboards.
 - Video fake-progress detection flags suspicious jumps and duplicate activity.
+
+## Video Learning Platform
+
+- Video upload stores files in storage and prepares HLS/CDN delivery without streaming through Laravel.
+- Playback URLs are signed and expire through `VIDEO_SIGNED_URL_TTL`.
+- Watch sessions send heartbeat/event data to server-side anti-fake checks.
+- Progress dashboards read `video_progress_summaries`; raw video events stay append-only.
+- See `docs/video-platform.md` for storage, HLS, CDN and tracking configuration.
+
+## Question Bank Enterprise
+
+- Shared question banks support tenant, faculty, course, chapter, CLO/PLO, Bloom and difficulty classification.
+- Question types include single choice, multiple choice, true/false, essay, fill blank, matching, ordering and media questions.
+- Every create/update stores a version snapshot for approval and exam audit trails.
+- Exam blueprints generate random preview structures and warn when the bank does not have enough matching questions.
+- See `docs/question-bank.md` for import formats and blueprint rules.
+
+## Online Exam
+
+- Exams can be built from question blueprints or manually attached questions.
+- Attempts store immutable question snapshots and autosaved answers.
+- Auto grading handles objective questions; essay/case-study answers go to manual grading.
+- Proctoring events are append-only and can flag suspicious attempts.
+- See `docs/online-exam.md` for the exam authoring and attempt workflow.
 
 ## Demo accounts
 

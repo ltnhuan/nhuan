@@ -6,11 +6,16 @@ use App\Models\Course;
 use App\Models\CourseCategory;
 use App\Models\CourseComponent;
 use App\Models\CourseSection;
+use App\Models\ContentRepositoryItem;
+use App\Models\Exam;
+use App\Models\Assignment;
+use App\Models\LearningOutcome;
 use App\Services\ActivityRegistryService;
 use App\Services\ApprovalWorkflowService;
 use App\Services\CourseStructureService;
 use App\Services\CourseStudioService;
 use App\Services\TenantContext;
+use App\Support\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
@@ -78,27 +83,27 @@ class CourseController extends Controller
 
     public function clone(Course $course, CourseStudioService $studio, Request $request)
     {
-        return $studio->cloneCourse($course, $request->user()?->id ?? 1);
+        return ApiResponse::success($studio->cloneCourse($course, $request->user()?->id ?? 1), 'Đã clone khóa học.');
     }
 
     public function submitReview(Course $course, CourseStudioService $studio, Request $request)
     {
-        return $studio->submitReview($course, $request->user()?->id ?? 1, $request->input('note'));
+        return ApiResponse::success($studio->submitReview($course, $request->user()?->id ?? 1, $request->input('note')), 'Đã gửi khóa học sang review.');
     }
 
     public function approve(Course $course, CourseStudioService $studio, Request $request)
     {
-        return $studio->approveCourse($course, $request->user()?->id ?? 1, $request->input('note'));
+        return ApiResponse::success($studio->approveCourse($course, $request->user()?->id ?? 1, $request->input('note')), 'Đã duyệt khóa học.');
     }
 
     public function publish(Course $course, CourseStudioService $studio, Request $request)
     {
-        return $studio->publishCourse($course, $request->user()?->id ?? 1, $request->input('note'));
+        return ApiResponse::success($studio->publishCourse($course, $request->user()?->id ?? 1, $request->input('note')), 'Đã publish khóa học.');
     }
 
     public function archive(Course $course, CourseStudioService $studio, Request $request)
     {
-        return $studio->archiveCourse($course, $request->user()?->id ?? 1, $request->input('note'));
+        return ApiResponse::success($studio->archiveCourse($course, $request->user()?->id ?? 1, $request->input('note')), 'Đã archive khóa học.');
     }
 
     public function validateForPublish(Course $course, CourseStudioService $studio)
@@ -110,12 +115,12 @@ class CourseController extends Controller
 
     public function studio(Course $course, CourseStructureService $structure)
     {
-        return [
-            'course' => $course->load(['category', 'academicUnit', 'owner']),
-            'outline' => $structure->outline($course),
-            'versions' => $course->versions()->limit(10)->get(),
-            'publish_logs' => $course->publishLogs()->limit(20)->get(),
-        ];
+        return app(CourseStudioService::class)->getStudioPayload($course);
+    }
+
+    public function publishChecklist(Course $course, CourseStudioService $studio)
+    {
+        return ApiResponse::success($studio->validatePublishChecklist($course), 'Publish checklist completed.');
     }
 
     public function storeSection(Request $request, Course $course, CourseStructureService $structure)
@@ -154,7 +159,7 @@ class CourseController extends Controller
 
     public function storeComponent(Request $request, CourseStructureService $structure)
     {
-        return response()->json($structure->createComponent($request->validate([
+        return response()->json(app(CourseStudioService::class)->createComponent($request->validate([
             'section_id' => ['required', 'integer'],
             'component_type' => ['required', 'string'],
             'title' => ['required', 'string', 'max:255'],
@@ -168,14 +173,19 @@ class CourseController extends Controller
 
     public function updateComponent(Request $request, CourseComponent $component, CourseStructureService $structure)
     {
-        return $structure->updateComponent($component, $request->all());
+        return app(CourseStudioService::class)->updateComponent($component, $request->all());
     }
 
     public function deleteComponent(CourseComponent $component)
     {
-        $component->delete();
+        app(CourseStudioService::class)->deleteComponent($component);
 
         return response()->noContent();
+    }
+
+    public function duplicateComponent(CourseComponent $component)
+    {
+        return ApiResponse::success(app(CourseStudioService::class)->duplicateComponent($component), 'Đã nhân bản component.');
     }
 
     public function reorderComponents(Request $request, CourseStructureService $structure)
@@ -183,5 +193,43 @@ class CourseController extends Controller
         $structure->reorderComponents($request->validate(['items' => ['required', 'array'], 'items.*.id' => ['required', 'integer'], 'items.*.section_id' => ['nullable', 'integer'], 'items.*.sort_order' => ['required', 'integer']])['items']);
 
         return ['status' => 'ok'];
+    }
+
+    public function repositorySelectOptions(Request $request, TenantContext $tenantContext)
+    {
+        return ContentRepositoryItem::query()
+            ->where('tenant_id', $tenantContext->id())
+            ->where('item_type', '!=', 'folder')
+            ->when($request->filled('types'), fn ($query) => $query->whereIn('item_type', explode(',', (string) $request->query('types'))))
+            ->orderBy('title')
+            ->limit(50)
+            ->get(['id', 'title', 'item_type', 'mime_type', 'status']);
+    }
+
+    public function examSelectOptions(Request $request, TenantContext $tenantContext)
+    {
+        return Exam::query()
+            ->where('tenant_id', $tenantContext->id())
+            ->orderByDesc('updated_at')
+            ->limit(50)
+            ->get(['id', 'title', 'exam_type', 'status', 'duration_minutes', 'pass_score', 'total_score']);
+    }
+
+    public function assignmentSelectOptions(Request $request, TenantContext $tenantContext)
+    {
+        return Assignment::query()
+            ->where('tenant_id', $tenantContext->id())
+            ->orderByDesc('updated_at')
+            ->limit(50)
+            ->get(['id', 'title', 'status', 'due_at', 'max_score', 'pass_score']);
+    }
+
+    public function learningOutcomeSelectOptions(Request $request, TenantContext $tenantContext)
+    {
+        return LearningOutcome::query()
+            ->where('tenant_id', $tenantContext->id())
+            ->orderBy('code')
+            ->limit(100)
+            ->get(['id', 'code', 'title', 'outcome_type', 'status']);
     }
 }

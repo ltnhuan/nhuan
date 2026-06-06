@@ -14,12 +14,21 @@
       "Database\\Factories\\": "database/factories/"
     }
   },
+  "require-dev": {
+    "mockery/mockery": "^1.6",
+    "phpunit/phpunit": "^11.0",
+    "fakerphp/faker": "^1.24"
+  },
   "autoload-dev": {
     "psr-4": {
       "Tests\\": "tests/"
     }
   },
   "scripts": {
-    "test:syntax": "find app database routes tests -name '*.php' -print0 | xargs -0 -n1 php -l"
+    "test:syntax": "php scripts/lint-php.php",
+    "test:feature": [
+      "Composer\\Config::disableProcessTimeout",
+      "vendor/bin/phpunit --testsuite=Feature"
+    ]
   }
 }

@@ -13,15 +13,16 @@ return new class extends Migration
             $table->unsignedBigInteger('tenant_id');
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('course_id');
-            $table->string('target_type')->nullable();
-            $table->unsignedBigInteger('target_id')->nullable();
+            $table->string('target_type');
+            $table->unsignedBigInteger('target_id');
             $table->boolean('is_unlocked')->default(false);
             $table->string('reason')->nullable();
             $table->timestamp('unlocked_at')->nullable();
             $table->text('locked_message')->nullable();
             $table->jsonb('metadata')->nullable();
-            $table->index('tenant_id');
+            $table->index(['tenant_id', 'user_id', 'course_id']);
             $table->index('course_id');
+            $table->unique(['tenant_id', 'user_id', 'target_type', 'target_id']);
             $table->timestamps();
         });
     }

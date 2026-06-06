@@ -12,16 +12,17 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('tenant_id');
             $table->unsignedBigInteger('course_id');
-            $table->string('target_type')->nullable();
+            $table->string('target_type');
             $table->unsignedBigInteger('target_id')->nullable();
-            $table->string('rule_type')->nullable();
+            $table->string('rule_type');
             $table->string('title');
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
             $table->jsonb('config')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
-            $table->index('tenant_id');
-            $table->index('course_id');
+            $table->index(['tenant_id', 'course_id']);
+            $table->index(['course_id', 'target_type', 'target_id']);
+            $table->index(['rule_type', 'is_active']);
             $table->timestamps();
         });
     }

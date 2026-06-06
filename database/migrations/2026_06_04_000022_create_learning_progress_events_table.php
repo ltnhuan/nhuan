@@ -15,13 +15,13 @@ return new class extends Migration
             $table->unsignedBigInteger('course_id');
             $table->unsignedBigInteger('section_id')->nullable();
             $table->unsignedBigInteger('component_id')->nullable();
-            $table->string('event_type')->nullable();
+            $table->string('event_type');
             $table->decimal('event_value', 8, 2)->nullable();
             $table->jsonb('metadata')->nullable();
             $table->string('ip_address')->nullable();
             $table->text('user_agent')->nullable();
             $table->unsignedBigInteger('device_id')->nullable();
-            $table->index('tenant_id');
+            $table->index(['tenant_id', 'user_id', 'course_id']);
             $table->index('course_id');
             $table->index('component_id');
             $table->index('event_type');

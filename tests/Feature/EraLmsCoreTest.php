@@ -19,10 +19,46 @@ class EraLmsCoreTest extends TestCase
         (new LearningPathRuleService())->validateRuleConfig(['requires' => [[]]]);
     }
 
+    public function test_learning_rule_validates_required_score_threshold(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        (new LearningPathRuleService())->validateRuleConfig(['requires' => [['type' => 'quiz_score_min', 'component_id' => 10]]]);
+    }
+
+    public function test_learning_rule_preview_explains_requirements(): void
+    {
+        $preview = (new LearningPathRuleService())->previewRule([
+            'requires' => [
+                ['type' => 'component_completed', 'component_id' => 10],
+                ['type' => 'quiz_score_min', 'component_id' => 11, 'min_score' => 70],
+            ],
+            'unlock_behavior' => 'all_required',
+        ]);
+
+        $this->assertSame('all_required', $preview['behavior']);
+        $this->assertSame('Hoàn thành component #10', $preview['requirements'][0]);
+        $this->assertSame('Quiz #11 đạt tối thiểu 70 điểm', $preview['requirements'][1]);
+    }
+
+    public function test_learning_rule_rejects_self_cycle(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        (new LearningPathRuleService())->validateRuleConfig([
+            'target' => ['type' => 'course_component', 'id' => 10],
+            'requires' => [['type' => 'component_completed', 'component_id' => 10]],
+        ]);
+    }
+
     public function test_fake_video_progress_is_detected(): void
     {
         $service = new LearningEventService();
         $this->assertTrue($service->detectFakeProgress(['event_type' => 'video_progress', 'event_value' => 95, 'metadata' => ['previous_percent' => 5, 'elapsed_seconds' => 4]]));
+    }
+
+    public function test_normal_video_progress_is_not_flagged(): void
+    {
+        $service = new LearningEventService();
+        $this->assertFalse($service->detectFakeProgress(['event_type' => 'video_progress', 'event_value' => 62, 'metadata' => ['previous_percent' => 55, 'elapsed_seconds' => 60]]));
     }
 
     public function test_tenant_resolver_can_extract_subdomain_code(): void
