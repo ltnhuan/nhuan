@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { BookOpenText, Clock3, FileText, Flag, MessageCircle, PenLine, Play, ScrollText, X } from '@lucide/vue'
+import { BookOpenText, Clock3, FileText, Flag, MessageCircle, PenLine, Play, ScrollText, Video, X } from '@lucide/vue'
 
 defineEmits(['close'])
 
@@ -30,11 +30,11 @@ function collectUnits(nodes) {
 }
 
 function iconFor(type) {
-  return type === 'video' ? Play : type === 'forum' ? MessageCircle : type === 'assignment' ? PenLine : type === 'quiz' ? ScrollText : type === 'pdf' || type === 'file' ? FileText : BookOpenText
+  return type === 'video' ? Play : type === 'live_session' ? Video : type === 'forum' ? MessageCircle : type === 'assignment' ? PenLine : type === 'quiz' ? ScrollText : type === 'pdf' || type === 'file' ? FileText : BookOpenText
 }
 
 function labelFor(type) {
-  const labels = { text: 'Đọc', video: 'Xem video', pdf: 'Tài liệu', file: 'Tài liệu', quiz: 'Quiz', assignment: 'Bài tập', forum: 'Thảo luận', scorm: 'SCORM' }
+  const labels = { text: 'Đọc', video: 'Xem video', pdf: 'Tài liệu', file: 'Tài liệu', quiz: 'Quiz', assignment: 'Bài tập', forum: 'Thảo luận', live_session: 'Buổi học trực tuyến', scorm: 'SCORM' }
   return labels[type] || type
 }
 

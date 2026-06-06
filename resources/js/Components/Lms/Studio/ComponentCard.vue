@@ -52,4 +52,7 @@ function accentFor(type) {
       <button class="grid h-7 w-7 place-items-center rounded-md border border-slate-200 bg-white text-slate-600 hover:bg-slate-50" title="Xem thử" @click.stop="$emit('preview', component)"><Play class="h-3.5 w-3.5" /></button>
       <button class="grid h-7 w-7 place-items-center rounded-md border border-slate-200 bg-white text-slate-600 hover:bg-slate-50" title="Thay thế" @click.stop="$emit('replace', component)"><Replace class="h-3.5 w-3.5" /></button>
       <button class="grid h-7 w-7 place-items-center rounded-md border border-slate-200 bg-white text-slate-600 hover:bg-slate-50" title="Sửa" @click.stop="$emit('edit', component)"><PenLine class="h-3.5 w-3.5" /></button>
-      <button class="grid h-7 w-7 place-items-center rounded-md border border-red-100 bg-white text-red-600 hover:bg-red-50" title="Xóa" @click.stop="$emit('delete'
+      <button class="grid h-7 w-7 place-items-center rounded-md border border-red-100 bg-white text-red-600 hover:bg-red-50" title="Xóa" @click.stop="$emit('delete', component)"><Trash2 class="h-3.5 w-3.5" /></button>
+    </div>
+  </article>
+</template>

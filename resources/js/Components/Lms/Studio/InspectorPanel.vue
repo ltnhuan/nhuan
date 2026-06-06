@@ -244,4 +244,49 @@ function saveCurrent() {
           <div class="space-y-2 pt-1">
             <div class="flex items-center justify-between">
               <span class="font-semibold text-slate-700">Bắt buộc hoàn thành</span>
-              <button class="text-blue-600" @click="draft.required = !draf
+              <button class="text-blue-600" @click="draft.required = !draft.required"><ToggleRight class="h-6 w-6" /></button>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="font-semibold text-slate-700">Hiển thị cho người học</span>
+              <ToggleRight class="h-6 w-6 text-blue-600" />
+            </div>
+          </div>
+          <button class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-blue-600 px-3 text-sm font-semibold text-white hover:bg-blue-700" @click="saveCurrent">
+            <Save class="h-4 w-4" />
+            Lưu thay đổi
+          </button>
+        </div>
+      </section>
+      <section class="rounded-md border border-slate-200 bg-white p-4">
+        <div class="text-sm font-bold uppercase text-slate-950">Trạng thái khóa học</div>
+        <div class="mt-3 space-y-2">
+          <div v-for="[name, desc, tone] in statusItems" :key="name" class="grid grid-cols-[1fr_1.2fr] items-center gap-3 text-xs">
+            <div class="flex items-center gap-2 font-semibold text-slate-700">
+              <span class="h-2.5 w-2.5 rounded-full" :class="tone"></span>
+              {{ name }}
+            </div>
+            <div class="text-slate-600">{{ desc }}</div>
+          </div>
+        </div>
+      </section>
+      <section class="rounded-md border border-slate-200 bg-white p-4">
+        <div class="mb-3 flex items-center justify-between">
+          <div class="text-sm font-bold uppercase text-slate-950">Checklist publish</div>
+          <div class="text-xs font-bold text-blue-700">{{ checklistPassed }}/{{ checklistItems.length }}</div>
+        </div>
+        <PublishChecklist :checklist="checklist" />
+      </section>
+      <section class="rounded-md border border-slate-200 bg-white p-4">
+        <div class="text-sm font-bold uppercase text-slate-950">Trạng chính</div>
+        <div class="mt-3 space-y-2">
+          <div v-for="item in actionItems" :key="item" class="flex items-start gap-2 text-xs text-slate-700">
+            <CheckCircle2 class="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />
+            <span>{{ item }}</span>
+          </div>
+        </div>
+      </section>
+      <CompletionRuleEditor v-if="component" :model-value="component?.config?.completion_rule || { type: 'view' }" />
+      <CloPloMapper v-if="component" :model-value="component?.config?.clo_mapping || []" />
+    </div>
+  </aside>
+</template>

@@ -221,4 +221,17 @@ onMounted(load)
                 </button>
                 <button class="inline-flex h-10 items-center gap-2 rounded-md bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700" @click="markComplete">
                   <CheckCircle2 class="h-4 w-4" />
-                  {{ nextComponent ? 'Hoàn thành và họ
+                  {{ nextComponent ? 'Hoàn thành và học tiếp' : 'Hoàn thành bài cuối' }}
+                </button>
+                <button class="inline-flex h-10 items-center gap-2 rounded-md border border-slate-300 px-4 text-sm font-semibold text-slate-700 disabled:opacity-50" :disabled="!nextComponent" @click="selectComponent(nextComponent)">
+                  Bài tiếp theo
+                </button>
+              </div>
+            </div>
+          </section>
+          <div v-else class="p-8 text-center text-sm text-slate-500">Khóa học này chưa có hoạt động để học.</div>
+        </main>
+      </div>
+    </div>
+  </EraLmsLayout>
+</template>

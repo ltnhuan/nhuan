@@ -206,11 +206,16 @@ async function addComponent(type) {
 
   const body = {
     section_id: selectedUnit.value.id,
-    component_type: type === 'live_session' ? 'forum' : type,
+    component_type: type,
     title,
     required: true,
     status: 'draft',
-    config: { estimated_minutes: 10, completion_rule: { type: 'view' }, clo_mapping: [] },
+    config: {
+      estimated_minutes: 10,
+      completion_rule: { type: type === 'live_session' ? 'attendance' : 'view' },
+      clo_mapping: [],
+      ...(type === 'live_session' ? { provider: 'zoom', meeting_url: '', min_attended_minutes: 1 } : {}),
+    },
   }
 
   if (['video', 'pdf', 'file', 'scorm'].includes(body.component_type)) {
@@ -222,7 +227,7 @@ async function addComponent(type) {
   await createComponent(body)
   selectedUnit.value = findUnitById(outline.value, currentUnitId) || firstUnit(outline.value)
   const created = selectedUnit.value?.components?.[selectedUnit.value.components.length - 1]
-  if (created && ['quiz', 'pdf', 'file', 'video', 'scorm', 'assignment'].includes(created.component_type)) {
+  if (created && ['quiz', 'pdf', 'file', 'video', 'scorm', 'assignment', 'live_session'].includes(created.component_type)) {
     selectedComponent.value = created
     await openSourcePicker(created)
   }
