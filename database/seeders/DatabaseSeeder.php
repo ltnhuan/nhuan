@@ -88,5 +88,7 @@ class DatabaseSeeder extends Seeder
         if (filter_var(env('ERALMS_SEED_PERFORMANCE_LOAD', false), FILTER_VALIDATE_BOOLEAN)) {
             $this->call(PerformanceLoadSeeder::class);
         }
+
+        $this->call(LearnerDemoSeeder::class);
     }
 }

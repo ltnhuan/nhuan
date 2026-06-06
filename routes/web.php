@@ -126,6 +126,10 @@ if (! function_exists('appPayload')) {
                 'demoCredentials' => [
                     'email' => 'admin.lms@vabis.edu.vn',
                     'password' => 'admin123456',
+                    'accounts' => [
+                        ['label' => 'Admin', 'email' => 'admin.lms@vabis.edu.vn', 'password' => 'admin123456'],
+                        ['label' => 'Learner test', 'email' => 'learner.test@vabis.edu.vn', 'password' => 'learner123456'],
+                    ],
                 ],
             ],
         ];

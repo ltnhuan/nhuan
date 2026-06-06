@@ -14,6 +14,9 @@ const loading = ref(false)
 const error = ref('')
 
 const tenantName = computed(() => props.tenant?.name || 'EraLMS Enterprise')
+const demoAccounts = computed(() => props.demoCredentials.accounts || [
+  { label: 'Admin', email: props.demoCredentials.email, password: props.demoCredentials.password },
+])
 
 async function submit() {
   loading.value = true
@@ -32,9 +35,9 @@ async function submit() {
   }
 }
 
-function fillDemo() {
-  email.value = props.demoCredentials.email
-  password.value = props.demoCredentials.password
+function fillDemo(account = props.demoCredentials) {
+  email.value = account.email
+  password.value = account.password
 }
 </script>
 
@@ -102,7 +105,7 @@ function fillDemo() {
                   <input v-model="remember" class="h-4 w-4 rounded border-slate-300 text-blue-700" type="checkbox" />
                   Ghi nhớ phiên demo
                 </label>
-                <button class="font-medium text-blue-700 hover:text-blue-900" type="button" @click="fillDemo">Điền demo</button>
+                <button class="font-medium text-blue-700 hover:text-blue-900" type="button" @click="fillDemo()">Điền demo</button>
               </div>
 
               <p v-if="error" class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{{ error }}</p>
@@ -112,9 +115,12 @@ function fillDemo() {
               </button>
             </form>
 
-            <div class="mt-5 rounded-md bg-slate-50 p-3 text-sm text-slate-600">
-              <div class="font-medium text-slate-800">Demo admin</div>
-              <div class="mt-1 font-mono text-xs">{{ demoCredentials.email }} / {{ demoCredentials.password }}</div>
+            <div class="mt-5 space-y-2 rounded-md bg-slate-50 p-3 text-sm text-slate-600">
+              <div class="font-medium text-slate-800">Tài khoản demo</div>
+              <button v-for="account in demoAccounts" :key="account.email" class="block w-full rounded border border-slate-200 bg-white px-3 py-2 text-left hover:border-blue-300" type="button" @click="fillDemo(account)">
+                <span class="font-semibold text-slate-800">{{ account.label }}</span>
+                <span class="mt-1 block font-mono text-xs">{{ account.email }} / {{ account.password }}</span>
+              </button>
             </div>
           </div>
         </div>
