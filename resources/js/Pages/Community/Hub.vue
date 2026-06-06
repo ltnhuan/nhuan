@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, h, onMounted, ref } from 'vue'
 import { Bell, BookOpen, CheckCircle2, Flag, MessageCircle, RefreshCw, ShieldCheck, Trophy, Users } from '@lucide/vue'
 import EraLmsLayout from '@/Layouts/EraLmsLayout.vue'
 
@@ -102,26 +102,28 @@ const DataBlock = {
     items: { type: Array, default: () => [] },
   },
   emits: ['select'],
-  methods: {
-    rowTitle(item) {
-      return item.title || item.name || item.reason || item.subject || item.code || `#${item.id}`
-    },
+  setup(componentProps, { emit }) {
+    const rowTitle = (item) => item.title || item.name || item.reason || item.subject || item.code || `#${item.id}`
+    const rowMeta = (item) => item.status || item.forum_type || item.group_type || item.wiki_type || item.blog_type || item.reportable_type || 'active'
+
+    return () => h('section', { class: 'rounded-lg border border-slate-200 bg-white shadow-sm' }, [
+      h('div', { class: 'border-b border-slate-200 p-4' }, [
+        h('h2', { class: 'text-sm font-semibold text-slate-950' }, componentProps.title),
+      ]),
+      h('div', { class: 'divide-y divide-slate-100' }, componentProps.items.length
+        ? componentProps.items.slice(0, 8).map((item) => h('button', {
+          key: item.id,
+          class: 'block w-full p-4 text-left hover:bg-slate-50 focus:bg-slate-50 focus:outline-none',
+          type: 'button',
+          onClick: () => emit('select', componentProps.type, item),
+        }, [
+          h('div', { class: 'font-semibold text-slate-950' }, rowTitle(item)),
+          h('div', { class: 'mt-1 text-xs text-slate-500' }, rowMeta(item)),
+          h('div', { class: 'mt-2 text-xs font-semibold text-cyan-700' }, 'Mở chi tiết'),
+        ]))
+        : [h('div', { class: 'p-8 text-center text-sm text-slate-500' }, 'Chưa có dữ liệu.')]),
+    ])
   },
-  template: `
-    <section class="rounded-lg border border-slate-200 bg-white shadow-sm">
-      <div class="border-b border-slate-200 p-4">
-        <h2 class="text-sm font-semibold text-slate-950">{{ title }}</h2>
-      </div>
-      <div class="divide-y divide-slate-100">
-        <button v-for="item in items.slice(0, 8)" :key="item.id" class="block w-full p-4 text-left hover:bg-slate-50 focus:bg-slate-50 focus:outline-none" type="button" @click="$emit('select', type, item)">
-          <div class="font-semibold text-slate-950">{{ rowTitle(item) }}</div>
-          <div class="mt-1 text-xs text-slate-500">{{ item.status || item.forum_type || item.group_type || item.wiki_type || item.blog_type || item.reportable_type || 'active' }}</div>
-          <div class="mt-2 text-xs font-semibold text-cyan-700">Mở chi tiết</div>
-        </button>
-        <div v-if="!items.length" class="p-8 text-center text-sm text-slate-500">Chưa có dữ liệu.</div>
-      </div>
-    </section>
-  `,
 }
 
 onMounted(loadHub)
