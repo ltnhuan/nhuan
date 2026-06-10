@@ -7,6 +7,7 @@ use App\Models\LearningMetric;
 use App\Models\RiskAlert;
 use App\Services\LearningAnalyticsService;
 use App\Services\TenantContext;
+use App\Support\ApiPagination;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Carbon;
@@ -24,8 +25,11 @@ class LearningAnalyticsController extends Controller
             ->where('tenant_id', $tenant->id())
             ->when($request->integer('user_id'), fn ($q, $userId) => $q->where('user_id', $userId))
             ->when($request->integer('course_id'), fn ($q, $courseId) => $q->where('course_id', $courseId))
+            ->when($request->date('from'), fn ($q, $from) => $q->whereDate('metric_date', '>=', $from->toDateString()))
+            ->when($request->date('to'), fn ($q, $to) => $q->whereDate('metric_date', '<=', $to->toDateString()))
+            ->select(['id', 'user_id', 'course_id', 'metric_date', 'login_frequency', 'study_time_minutes', 'video_completion', 'assignment_completion', 'quiz_score', 'attendance', 'forum_activity'])
             ->latest('metric_date')
-            ->paginate($request->integer('per_page', 50));
+            ->paginate(ApiPagination::perPage($request, 50));
     }
 
     public function calculateRisk(Request $request, TenantContext $tenant, LearningAnalyticsService $service)
@@ -45,9 +49,11 @@ class LearningAnalyticsController extends Controller
             ->where('tenant_id', $tenant->id())
             ->when($request->query('level'), fn ($q, $level) => $q->where('risk_level', $level))
             ->when($request->integer('course_id'), fn ($q, $courseId) => $q->where('course_id', $courseId))
+            ->when($request->date('from'), fn ($q, $from) => $q->whereDate('last_calculated_at', '>=', $from->toDateString()))
+            ->when($request->date('to'), fn ($q, $to) => $q->whereDate('last_calculated_at', '<=', $to->toDateString()))
             ->with(['learner:id,full_name,code,email', 'course:id,title,code'])
             ->orderByDesc('risk_score')
-            ->paginate($request->integer('per_page', 50));
+            ->paginate(ApiPagination::perPage($request, 50));
     }
 
     public function alerts(Request $request, TenantContext $tenant)
@@ -56,9 +62,11 @@ class LearningAnalyticsController extends Controller
             ->where('tenant_id', $tenant->id())
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
             ->when($request->query('severity'), fn ($q, $severity) => $q->where('severity', $severity))
+            ->when($request->date('from'), fn ($q, $from) => $q->whereDate('triggered_at', '>=', $from->toDateString()))
+            ->when($request->date('to'), fn ($q, $to) => $q->whereDate('triggered_at', '<=', $to->toDateString()))
             ->with(['learner:id,full_name,code,email', 'course:id,title,code'])
             ->latest('triggered_at')
-            ->paginate($request->integer('per_page', 50));
+            ->paginate(ApiPagination::perPage($request, 50));
     }
 
     public function acknowledge(RiskAlert $alert)

@@ -26,18 +26,27 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        if (! (bool) config('eralms.performance.slow_query_enabled', false)) {
+            return;
+        }
+
         DB::listen(function (QueryExecuted $query): void {
-            $threshold = (int) env('ERALMS_SLOW_QUERY_MS', 200);
+            $threshold = (int) config('eralms.performance.slow_query_ms', 200);
 
             if ($query->time < $threshold) {
                 return;
             }
 
-            Log::warning('slow_query', [
+            $payload = [
                 'time_ms' => $query->time,
                 'connection' => $query->connectionName,
-                'sql' => $query->sql,
-            ]);
+            ];
+
+            if ((bool) config('eralms.performance.slow_query_log_sql', false)) {
+                $payload['sql'] = $query->sql;
+            }
+
+            Log::warning('slow_query', $payload);
         });
     }
 }

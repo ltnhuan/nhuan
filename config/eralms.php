@@ -12,9 +12,14 @@ return [
     'performance' => [
         'api_latency_warn_ms' => (int) env('ERALMS_API_LATENCY_WARN_MS', 500),
         'slow_query_ms' => (int) env('ERALMS_SLOW_QUERY_MS', 200),
+        'slow_query_enabled' => (bool) env('ERALMS_SLOW_QUERY_ENABLED', false),
+        'slow_query_log_sql' => (bool) env('ERALMS_SLOW_QUERY_LOG_SQL', false),
+        'api_latency_db_log' => (bool) env('ERALMS_API_LATENCY_DB_LOG', false),
         'memory_warn_mb' => (int) env('ERALMS_MEMORY_WARN_MB', 512),
         'queue_wait_warn_seconds' => (int) env('ERALMS_QUEUE_WAIT_WARN_SECONDS', 30),
         'cursor_page_size' => (int) env('ERALMS_CURSOR_PAGE_SIZE', 50),
+        'default_per_page' => (int) env('ERALMS_DEFAULT_PER_PAGE', 25),
+        'max_per_page' => (int) env('ERALMS_MAX_PER_PAGE', 100),
     ],
     'queues' => [
         'default' => 'default',

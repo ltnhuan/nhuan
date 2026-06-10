@@ -13,6 +13,7 @@ use App\Services\Core\CoreDashboardService;
 use App\Services\Core\CoreMenuService;
 use App\Services\SettingService;
 use App\Services\TenantContext;
+use App\Support\ApiPagination;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
@@ -62,7 +63,7 @@ class CoreController extends Controller
             ->where('tenant_id', $tenantContext->id())
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->input('status')))
             ->orderBy('name')
-            ->paginate($request->integer('per_page', 50));
+            ->paginate(ApiPagination::perPage($request, 50));
     }
 
     public function campuses(Request $request, TenantContext $tenantContext)
@@ -71,7 +72,7 @@ class CoreController extends Controller
             ->where('tenant_id', $tenantContext->id())
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->input('status')))
             ->orderBy('name')
-            ->paginate($request->integer('per_page', 50));
+            ->paginate(ApiPagination::perPage($request, 50));
     }
 
     public function academicUnits(Request $request, TenantContext $tenantContext)
@@ -81,7 +82,7 @@ class CoreController extends Controller
             ->when($request->filled('type'), fn ($query) => $query->where('type', $request->input('type')))
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->input('status')))
             ->orderBy('name')
-            ->paginate($request->integer('per_page', 50));
+            ->paginate(ApiPagination::perPage($request, 50));
     }
 
     public function settings(Request $request, TenantContext $tenantContext)
@@ -91,7 +92,7 @@ class CoreController extends Controller
             ->when($request->filled('group'), fn ($query) => $query->where('group', $request->input('group')))
             ->orderBy('group')
             ->orderBy('key')
-            ->paginate($request->integer('per_page', 50));
+            ->paginate(ApiPagination::perPage($request, 50));
     }
 
     public function updateSettings(Request $request, SettingService $settings, TenantContext $tenantContext)
@@ -112,6 +113,6 @@ class CoreController extends Controller
             ->when($request->filled('module'), fn ($query) => $query->where('module', $request->input('module')))
             ->when($request->filled('action'), fn ($query) => $query->where('action', $request->input('action')))
             ->latest('created_at')
-            ->paginate($request->integer('per_page', 50));
+            ->paginate(ApiPagination::perPage($request, 50));
     }
 }

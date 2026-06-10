@@ -16,6 +16,7 @@ use App\Services\CourseStructureService;
 use App\Services\CourseStudioService;
 use App\Services\TenantContext;
 use App\Support\ApiResponse;
+use App\Support\ApiPagination;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
@@ -35,7 +36,7 @@ class CourseController extends Controller
             ->when($request->filled('level'), fn ($query) => $query->where('level', $request->input('level')))
             ->when($request->filled('academic_unit_id'), fn ($query) => $query->where('academic_unit_id', $request->input('academic_unit_id')))
             ->latest('updated_at')
-            ->paginate($request->integer('per_page', 25));
+            ->paginate(ApiPagination::perPage($request, 25));
     }
 
     public function categories(TenantContext $tenantContext)

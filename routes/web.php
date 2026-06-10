@@ -109,11 +109,16 @@ if (! function_exists('appPayload')) {
         $tenant = Tenant::query()
             ->where('code', config('eralms.default_tenant_code', 'VABIS'))
             ->where('status', 'active')
+            ->select(['id', 'code', 'name', 'status', 'settings'])
             ->first();
 
         $email = Session::get('demo_user_email') ?: request()->cookie('eralms_demo_user');
         $user = $email
-            ? LmsUser::query()->where('tenant_id', $tenant?->id)->where('email', $email)->first()
+            ? LmsUser::query()
+                ->where('tenant_id', $tenant?->id)
+                ->where('email', $email)
+                ->select(['id', 'tenant_id', 'code', 'full_name', 'email', 'user_type', 'status', 'metadata'])
+                ->first()
             : null;
 
         return [

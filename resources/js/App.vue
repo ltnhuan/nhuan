@@ -1,81 +1,83 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, defineAsyncComponent, ref } from 'vue'
 import Login from './Pages/Auth/Login.vue'
-import AdminSystemCheck from './Pages/Admin/SystemCheck.vue'
-import AdminActionCheck from './Pages/Admin/ActionCheck.vue'
-import AdminOperationsPlaceholder from './Pages/Admin/OperationsPlaceholder.vue'
-import AdminMoodleParity from './Pages/Admin/MoodleParity.vue'
-import Dashboard from './Pages/Core/Dashboard.vue'
-import AiLearningPlatform from './Pages/AI/LearningPlatform.vue'
-import AnalyticsDashboard from './Pages/Analytics/Dashboard.vue'
-import AssignmentsManagement from './Pages/Assignments/Management.vue'
-import AssignmentsStudentSubmission from './Pages/Assignments/StudentSubmission.vue'
-import AssignmentsTeacherGrading from './Pages/Assignments/TeacherGrading.vue'
-import AttendanceEligibility from './Pages/Attendance/Eligibility.vue'
-import AttendanceLiveSessions from './Pages/Attendance/LiveSessions.vue'
-import AttendanceSessions from './Pages/Attendance/Sessions.vue'
-import AttendanceStudentCheckin from './Pages/Attendance/StudentCheckin.vue'
-import AttendanceTeacherBoard from './Pages/Attendance/TeacherBoard.vue'
-import CareerEmployerPortal from './Pages/Career/EmployerPortal.vue'
-import CareerPortfolioDashboard from './Pages/Career/PortfolioDashboard.vue'
-import CareerPublicPortfolio from './Pages/Career/PublicPortfolio.vue'
-import CommunityHub from './Pages/Community/Hub.vue'
-import CoreAcademicUnits from './Pages/Core/AcademicUnits.vue'
-import CoreAuditLogs from './Pages/Core/AuditLogs.vue'
-import CoreCampuses from './Pages/Core/Campuses.vue'
-import CoreRolesPermissions from './Pages/Core/RolesPermissions.vue'
-import CoreTenants from './Pages/Core/Tenants.vue'
-import CoreUsers from './Pages/Core/Users.vue'
-import CoreWhiteLabel from './Pages/Core/WhiteLabel.vue'
-import CoursesIndex from './Pages/Courses/Index.vue'
-import CoursesRepository from './Pages/Courses/Repository.vue'
-import CoursesStudio from './Pages/Courses/Studio.vue'
-import CoursesLearn from './Pages/Courses/Learn.vue'
-import CredentialsBadgeBuilder from './Pages/Credentials/BadgeBuilder.vue'
-import CredentialsCertificateBuilder from './Pages/Credentials/CertificateBuilder.vue'
-import CredentialsVerifyPortal from './Pages/Credentials/VerifyPortal.vue'
-import CredentialsWallet from './Pages/Credentials/Wallet.vue'
-import EnrollmentManagement from './Pages/Enrollment/Management.vue'
-import ExamAssign from './Pages/Exam/Assign.vue'
-import ExamBuilder from './Pages/Exam/Builder.vue'
-import ExamManagement from './Pages/Exam/Management.vue'
-import ExamManualGrading from './Pages/Exam/ManualGrading.vue'
-import ExamResults from './Pages/Exam/Results.vue'
-import ExamTake from './Pages/Exam/Take.vue'
-import GradebookApproval from './Pages/Gradebook/Approval.vue'
-import GradebookBuilder from './Pages/Gradebook/Builder.vue'
-import GradebookMatrix from './Pages/Gradebook/Matrix.vue'
-import GradebookStudentView from './Pages/Gradebook/StudentView.vue'
-import IntegrationsDashboard from './Pages/Integrations/Dashboard.vue'
-import IntegrationsEventLogs from './Pages/Integrations/EventLogs.vue'
-import IntegrationsMappingCenter from './Pages/Integrations/MappingCenter.vue'
-import IntegrationsSyncJobs from './Pages/Integrations/SyncJobs.vue'
-import IntegrationsSystemConfig from './Pages/Integrations/SystemConfig.vue'
-import LearningPathBuilder from './Pages/LearningPath/Builder.vue'
-import LearningPathClassProgress from './Pages/LearningPath/ClassProgress.vue'
-import LearningPathLearnerProgress from './Pages/LearningPath/LearnerProgress.vue'
-import MobileLearning from './Pages/Mobile/MobileLearning.vue'
-import ObeAccreditationReports from './Pages/OBE/AccreditationReports.vue'
-import ObeAchievementDashboard from './Pages/OBE/AchievementDashboard.vue'
-import ObeCompetencyFramework from './Pages/OBE/CompetencyFramework.vue'
-import ObeCoverageAnalysis from './Pages/OBE/CoverageAnalysis.vue'
-import ObeOutcomeManagement from './Pages/OBE/OutcomeManagement.vue'
-import ObeOutcomeMatrix from './Pages/OBE/OutcomeMatrix.vue'
-import QuestionBankBlueprint from './Pages/QuestionBank/Blueprint.vue'
-import QuestionBankCategoryTree from './Pages/QuestionBank/CategoryTree.vue'
-import QuestionBankEditor from './Pages/QuestionBank/Editor.vue'
-import QuestionBankImport from './Pages/QuestionBank/Import.vue'
-import QuestionBankIndex from './Pages/QuestionBank/Index.vue'
-import QuestionBankOutcomeMatrix from './Pages/QuestionBank/OutcomeMatrix.vue'
-import ScormManager from './Pages/Standards/ScormManager.vue'
-import SurveyBuilder from './Pages/Survey/Builder.vue'
-import SurveyDashboard from './Pages/Survey/Dashboard.vue'
-import VideoAnalytics from './Pages/Video/Analytics.vue'
-import VideoLessonVideo from './Pages/Video/LessonVideo.vue'
-import VideoManager from './Pages/Video/Manager.vue'
-import XapiExplorer from './Pages/Standards/XapiExplorer.vue'
-import LtiRegistry from './Pages/Standards/LtiRegistry.vue'
-import ExternalToolCenter from './Pages/Standards/ExternalToolCenter.vue'
+
+const page = (loader) => defineAsyncComponent(loader)
+const AdminSystemCheck = page(() => import('./Pages/Admin/SystemCheck.vue'))
+const AdminActionCheck = page(() => import('./Pages/Admin/ActionCheck.vue'))
+const AdminOperationsPlaceholder = page(() => import('./Pages/Admin/OperationsPlaceholder.vue'))
+const AdminMoodleParity = page(() => import('./Pages/Admin/MoodleParity.vue'))
+const Dashboard = page(() => import('./Pages/Core/Dashboard.vue'))
+const AiLearningPlatform = page(() => import('./Pages/AI/LearningPlatform.vue'))
+const AnalyticsDashboard = page(() => import('./Pages/Analytics/Dashboard.vue'))
+const AssignmentsManagement = page(() => import('./Pages/Assignments/Management.vue'))
+const AssignmentsStudentSubmission = page(() => import('./Pages/Assignments/StudentSubmission.vue'))
+const AssignmentsTeacherGrading = page(() => import('./Pages/Assignments/TeacherGrading.vue'))
+const AttendanceEligibility = page(() => import('./Pages/Attendance/Eligibility.vue'))
+const AttendanceLiveSessions = page(() => import('./Pages/Attendance/LiveSessions.vue'))
+const AttendanceSessions = page(() => import('./Pages/Attendance/Sessions.vue'))
+const AttendanceStudentCheckin = page(() => import('./Pages/Attendance/StudentCheckin.vue'))
+const AttendanceTeacherBoard = page(() => import('./Pages/Attendance/TeacherBoard.vue'))
+const CareerEmployerPortal = page(() => import('./Pages/Career/EmployerPortal.vue'))
+const CareerPortfolioDashboard = page(() => import('./Pages/Career/PortfolioDashboard.vue'))
+const CareerPublicPortfolio = page(() => import('./Pages/Career/PublicPortfolio.vue'))
+const CommunityHub = page(() => import('./Pages/Community/Hub.vue'))
+const CoreAcademicUnits = page(() => import('./Pages/Core/AcademicUnits.vue'))
+const CoreAuditLogs = page(() => import('./Pages/Core/AuditLogs.vue'))
+const CoreCampuses = page(() => import('./Pages/Core/Campuses.vue'))
+const CoreRolesPermissions = page(() => import('./Pages/Core/RolesPermissions.vue'))
+const CoreTenants = page(() => import('./Pages/Core/Tenants.vue'))
+const CoreUsers = page(() => import('./Pages/Core/Users.vue'))
+const CoreWhiteLabel = page(() => import('./Pages/Core/WhiteLabel.vue'))
+const CoursesIndex = page(() => import('./Pages/Courses/Index.vue'))
+const CoursesRepository = page(() => import('./Pages/Courses/Repository.vue'))
+const CoursesStudio = page(() => import('./Pages/Courses/Studio.vue'))
+const CoursesLearn = page(() => import('./Pages/Courses/Learn.vue'))
+const CredentialsBadgeBuilder = page(() => import('./Pages/Credentials/BadgeBuilder.vue'))
+const CredentialsCertificateBuilder = page(() => import('./Pages/Credentials/CertificateBuilder.vue'))
+const CredentialsVerifyPortal = page(() => import('./Pages/Credentials/VerifyPortal.vue'))
+const CredentialsWallet = page(() => import('./Pages/Credentials/Wallet.vue'))
+const EnrollmentManagement = page(() => import('./Pages/Enrollment/Management.vue'))
+const ExamAssign = page(() => import('./Pages/Exam/Assign.vue'))
+const ExamBuilder = page(() => import('./Pages/Exam/Builder.vue'))
+const ExamManagement = page(() => import('./Pages/Exam/Management.vue'))
+const ExamManualGrading = page(() => import('./Pages/Exam/ManualGrading.vue'))
+const ExamResults = page(() => import('./Pages/Exam/Results.vue'))
+const ExamTake = page(() => import('./Pages/Exam/Take.vue'))
+const GradebookApproval = page(() => import('./Pages/Gradebook/Approval.vue'))
+const GradebookBuilder = page(() => import('./Pages/Gradebook/Builder.vue'))
+const GradebookMatrix = page(() => import('./Pages/Gradebook/Matrix.vue'))
+const GradebookStudentView = page(() => import('./Pages/Gradebook/StudentView.vue'))
+const IntegrationsDashboard = page(() => import('./Pages/Integrations/Dashboard.vue'))
+const IntegrationsEventLogs = page(() => import('./Pages/Integrations/EventLogs.vue'))
+const IntegrationsMappingCenter = page(() => import('./Pages/Integrations/MappingCenter.vue'))
+const IntegrationsSyncJobs = page(() => import('./Pages/Integrations/SyncJobs.vue'))
+const IntegrationsSystemConfig = page(() => import('./Pages/Integrations/SystemConfig.vue'))
+const LearningPathBuilder = page(() => import('./Pages/LearningPath/Builder.vue'))
+const LearningPathClassProgress = page(() => import('./Pages/LearningPath/ClassProgress.vue'))
+const LearningPathLearnerProgress = page(() => import('./Pages/LearningPath/LearnerProgress.vue'))
+const MobileLearning = page(() => import('./Pages/Mobile/MobileLearning.vue'))
+const ObeAccreditationReports = page(() => import('./Pages/OBE/AccreditationReports.vue'))
+const ObeAchievementDashboard = page(() => import('./Pages/OBE/AchievementDashboard.vue'))
+const ObeCompetencyFramework = page(() => import('./Pages/OBE/CompetencyFramework.vue'))
+const ObeCoverageAnalysis = page(() => import('./Pages/OBE/CoverageAnalysis.vue'))
+const ObeOutcomeManagement = page(() => import('./Pages/OBE/OutcomeManagement.vue'))
+const ObeOutcomeMatrix = page(() => import('./Pages/OBE/OutcomeMatrix.vue'))
+const QuestionBankBlueprint = page(() => import('./Pages/QuestionBank/Blueprint.vue'))
+const QuestionBankCategoryTree = page(() => import('./Pages/QuestionBank/CategoryTree.vue'))
+const QuestionBankEditor = page(() => import('./Pages/QuestionBank/Editor.vue'))
+const QuestionBankImport = page(() => import('./Pages/QuestionBank/Import.vue'))
+const QuestionBankIndex = page(() => import('./Pages/QuestionBank/Index.vue'))
+const QuestionBankOutcomeMatrix = page(() => import('./Pages/QuestionBank/OutcomeMatrix.vue'))
+const ScormManager = page(() => import('./Pages/Standards/ScormManager.vue'))
+const SurveyBuilder = page(() => import('./Pages/Survey/Builder.vue'))
+const SurveyDashboard = page(() => import('./Pages/Survey/Dashboard.vue'))
+const VideoAnalytics = page(() => import('./Pages/Video/Analytics.vue'))
+const VideoLessonVideo = page(() => import('./Pages/Video/LessonVideo.vue'))
+const VideoManager = page(() => import('./Pages/Video/Manager.vue'))
+const XapiExplorer = page(() => import('./Pages/Standards/XapiExplorer.vue'))
+const LtiRegistry = page(() => import('./Pages/Standards/LtiRegistry.vue'))
+const ExternalToolCenter = page(() => import('./Pages/Standards/ExternalToolCenter.vue'))
 
 const props = defineProps({
   csrfToken: { type: String, required: true },

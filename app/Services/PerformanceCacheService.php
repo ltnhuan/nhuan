@@ -74,10 +74,21 @@ class PerformanceCacheService
         $cacheKey = "eralms:{$segment}:{$key}";
 
         if ($this->supportsTags()) {
-            return $this->cache->tags(['eralms', $segment])->remember($cacheKey, $ttl, $resolver);
+            return $this->cache->tags($this->tags($segment, $key))->remember($cacheKey, $ttl, $resolver);
         }
 
         return $this->cache->remember($cacheKey, $ttl, $resolver);
+    }
+
+    private function tags(string $segment, string $key): array
+    {
+        preg_match('/(?:^|:)tenant:(\d+)(?::|$)/', $key, $matches);
+
+        return array_values(array_filter([
+            'eralms',
+            $segment,
+            isset($matches[1]) ? "tenant:{$matches[1]}" : null,
+        ]));
     }
 
     private function supportsTags(): bool

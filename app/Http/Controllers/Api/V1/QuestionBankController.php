@@ -14,6 +14,7 @@ use App\Services\QuestionImportService;
 use App\Services\QuestionService;
 use App\Services\RandomExamEngine;
 use App\Services\TenantContext;
+use App\Support\ApiPagination;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
@@ -26,7 +27,7 @@ class QuestionBankController extends Controller
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->input('status')))
             ->when($request->filled('visibility'), fn ($q) => $q->where('visibility', $request->input('visibility')))
             ->when($request->filled('course_id'), fn ($q) => $q->where('course_id', $request->integer('course_id')))
-            ->latest('updated_at')->paginate($request->integer('per_page', 25));
+            ->latest('updated_at')->paginate(ApiPagination::perPage($request, 25));
     }
 
     public function storeBank(Request $request, TenantContext $tenant, QuestionBankService $service)
@@ -100,7 +101,7 @@ class QuestionBankController extends Controller
             ->when($request->filled('difficulty'), fn ($q) => $q->where('difficulty', $request->input('difficulty')))
             ->when($request->filled('bloom_level'), fn ($q) => $q->where('bloom_level', $request->input('bloom_level')))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->input('status')))
-            ->latest('updated_at')->paginate($request->integer('per_page', 30));
+            ->latest('updated_at')->paginate(ApiPagination::perPage($request, 30));
     }
 
     public function storeQuestion(Request $request, TenantContext $tenant, QuestionService $service)
@@ -140,7 +141,7 @@ class QuestionBankController extends Controller
 
     public function outcomes(Request $request, TenantContext $tenant)
     {
-        return LearningOutcome::query()->where('tenant_id', $tenant->id())->orderBy('code')->paginate($request->integer('per_page', 50));
+        return LearningOutcome::query()->where('tenant_id', $tenant->id())->orderBy('code')->paginate(ApiPagination::perPage($request, 50));
     }
 
     public function storeOutcome(Request $request, TenantContext $tenant)
@@ -172,7 +173,7 @@ class QuestionBankController extends Controller
 
     public function blueprints(Request $request, TenantContext $tenant)
     {
-        return ExamBlueprint::query()->where('tenant_id', $tenant->id())->latest('updated_at')->paginate($request->integer('per_page', 25));
+        return ExamBlueprint::query()->where('tenant_id', $tenant->id())->latest('updated_at')->paginate(ApiPagination::perPage($request, 25));
     }
 
     public function storeBlueprint(Request $request, TenantContext $tenant)

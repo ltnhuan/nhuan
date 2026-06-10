@@ -52,6 +52,10 @@ class ApiPerformanceLogger
     private function insertLatencyLog(array $payload): void
     {
         try {
+            if (! (bool) config('eralms.performance.api_latency_db_log', false)) {
+                return;
+            }
+
             if (! Schema::hasTable('api_latency_logs')) {
                 return;
             }

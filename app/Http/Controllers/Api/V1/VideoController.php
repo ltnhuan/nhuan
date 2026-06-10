@@ -11,6 +11,7 @@ use App\Services\TenantContext;
 use App\Services\VideoAssetService;
 use App\Services\VideoProcessingService;
 use App\Services\VideoTrackingService;
+use App\Support\ApiPagination;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
@@ -25,7 +26,7 @@ class VideoController extends Controller
             ->when($request->filled('processing_status'), fn ($query) => $query->where('processing_status', $request->input('processing_status')))
             ->when($request->filled('uploaded_by'), fn ($query) => $query->where('uploaded_by', $request->integer('uploaded_by')))
             ->latest('updated_at')
-            ->paginate($request->integer('per_page', 30));
+            ->paginate(ApiPagination::perPage($request, 30));
     }
 
     public function upload(Request $request, VideoAssetService $videos, TenantContext $tenantContext)
@@ -114,7 +115,7 @@ class VideoController extends Controller
             ->with('asset:id,title,duration_seconds')
             ->when($request->filled('completed'), fn ($query) => $query->where('is_completed', $request->boolean('completed')))
             ->orderByDesc('last_watched_at')
-            ->paginate($request->integer('per_page', 50));
+            ->paginate(ApiPagination::perPage($request, 50));
     }
 
     public function myComponentProgress(Request $request, CourseComponent $component)

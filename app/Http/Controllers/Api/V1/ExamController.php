@@ -1,9 +1,9 @@
 <?php
 namespace App\Http\Controllers\Api\V1;
-use App\Models\ClassSection;use App\Models\Exam;use App\Models\ExamAnswer;use App\Models\ExamAttempt;use App\Models\ExamEnrollment;use App\Models\ExamResult;use App\Models\LmsUser;use App\Services\AttemptService;use App\Services\ExamEnrollmentService;use App\Services\ExamService;use App\Services\ManualGradingService;use App\Services\ProctoringEventService;use App\Services\TenantContext;use Illuminate\Http\Request;use Illuminate\Routing\Controller;
+use App\Models\ClassSection;use App\Models\Exam;use App\Models\ExamAnswer;use App\Models\ExamAttempt;use App\Models\ExamEnrollment;use App\Models\ExamResult;use App\Models\LmsUser;use App\Services\AttemptService;use App\Services\ExamEnrollmentService;use App\Services\ExamService;use App\Services\ManualGradingService;use App\Services\ProctoringEventService;use App\Services\TenantContext;use App\Support\ApiPagination;use Illuminate\Http\Request;use Illuminate\Routing\Controller;
 class ExamController extends Controller
 {
-    public function index(Request $r,TenantContext $t){return Exam::query()->where('tenant_id',$t->id())->with(['course:id,code,title','questionBank:id,code,name','blueprint:id,code,name','creator:id,full_name,email'])->withCount(['sections','questions','attempts'])->when($r->filled('status'),fn($q)=>$q->where('status',$r->input('status')))->when($r->filled('exam_type'),fn($q)=>$q->where('exam_type',$r->input('exam_type')))->latest('updated_at')->paginate($r->integer('per_page',25));}
+    public function index(Request $r,TenantContext $t){return Exam::query()->where('tenant_id',$t->id())->with(['course:id,code,title','questionBank:id,code,name','blueprint:id,code,name','creator:id,full_name,email'])->withCount(['sections','questions','attempts'])->when($r->filled('status'),fn($q)=>$q->where('status',$r->input('status')))->when($r->filled('exam_type'),fn($q)=>$q->where('exam_type',$r->input('exam_type')))->latest('updated_at')->paginate(ApiPagination::perPage($r,25));}
     public function store(Request $r,TenantContext $t,ExamService $s){return response()->json($s->createExam($r->all()+['tenant_id'=>$t->id(),'created_by'=>$r->user()?->id??1]),201);}
     public function show(Exam $exam){return $exam->load(['course:id,code,title','questionBank:id,code,name','blueprint:id,code,name,total_questions,total_score,duration_minutes','creator:id,full_name,email','approver:id,full_name,email','sections','questions.question']);}
     public function update(Request $r,Exam $exam,ExamService $s){return $s->updateExam($exam,$r->all());}
@@ -20,8 +20,8 @@ class ExamController extends Controller
     public function markReview(Request $r,ExamAttempt $attempt,AttemptService $s){return $s->markReview($attempt,$r->integer('attempt_question_id'),$r->boolean('marked',true));}
     public function event(Request $r,ExamAttempt $attempt,ProctoringEventService $s){return $s->recordEvent($attempt,$r->input('event_type'),$r->input('event_value'),$r->input('metadata',[]));}
     public function submit(ExamAttempt $attempt,AttemptService $s){return $s->submitAttempt($attempt);}
-    public function attempts(Exam $exam){return $exam->attempts()->with('user:id,code,full_name,email,user_type')->latest()->paginate(50);}
-    public function results(Exam $exam){return ExamResult::query()->where('exam_id',$exam->id)->with(['user:id,code,full_name,email,user_type','attempt:id,attempt_no,status,submitted_at','approver:id,full_name,email'])->latest()->paginate(50);}
+    public function attempts(Request $r, Exam $exam){return $exam->attempts()->with('user:id,code,full_name,email,user_type')->latest()->paginate(ApiPagination::perPage($r,50));}
+    public function results(Request $r, Exam $exam){return ExamResult::query()->where('exam_id',$exam->id)->with(['user:id,code,full_name,email,user_type','attempt:id,attempt_no,status,submitted_at','approver:id,full_name,email'])->latest()->paginate(ApiPagination::perPage($r,50));}
     public function resultClasses(Request $r,TenantContext $t)
     {
         $assignments=ExamEnrollment::query()->where('tenant_id',$t->id())->when($r->filled('exam_id'),fn($q)=>$q->where('exam_id',$r->integer('exam_id')))->when($r->filled('class_id'),fn($q)=>$q->where('class_id',$r->integer('class_id')))->whereNotNull('class_id')->get();

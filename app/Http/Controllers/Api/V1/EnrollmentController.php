@@ -13,6 +13,7 @@ use App\Services\EnrollmentAnalyticsService;
 use App\Services\EnrollmentImportService;
 use App\Services\EnrollmentService;
 use App\Services\TenantContext;
+use App\Support\ApiPagination;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
@@ -21,7 +22,7 @@ class EnrollmentController extends Controller
 {
     public function cohorts(Request $request, TenantContext $tenant)
     {
-        return Cohort::query()->where('tenant_id', $tenant->id())->withCount(['groups', 'enrollments'])->latest('updated_at')->paginate($request->integer('per_page', 25));
+        return Cohort::query()->where('tenant_id', $tenant->id())->withCount(['groups', 'enrollments'])->latest('updated_at')->paginate(ApiPagination::perPage($request, 25));
     }
 
     public function storeCohort(Request $request, TenantContext $tenant)
@@ -48,7 +49,7 @@ class EnrollmentController extends Controller
             ->when($request->filled('course_id'), fn ($q) => $q->where('course_id', $request->integer('course_id')))
             ->when($request->filled('section_type'), fn ($q) => $q->where('section_type', $request->input('section_type')))
             ->latest('updated_at')
-            ->paginate($request->integer('per_page', 50));
+            ->paginate(ApiPagination::perPage($request, 50));
     }
 
     public function storeSection(Request $request, TenantContext $tenant, EnrollmentService $service)
@@ -58,7 +59,7 @@ class EnrollmentController extends Controller
 
     public function enrollments(Request $request, TenantContext $tenant)
     {
-        $perPage = min($request->integer('per_page', 100), 500);
+        $perPage = ApiPagination::perPage($request, 100);
         $query = Enrollment::query()
             ->where('tenant_id', $tenant->id())
             ->with(['learner:id,code,full_name,email,user_type,status', 'classSection:id,code,name,section_type', 'course:id,code,title'])

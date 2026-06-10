@@ -7,6 +7,7 @@ use App\Services\ApprovalWorkflowService;
 use App\Services\RepositoryService;
 use App\Services\TenantContext;
 use App\Support\ApiResponse;
+use App\Support\ApiPagination;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
@@ -32,7 +33,7 @@ class RepositoryController extends Controller
             ->when($request->filled('visibility'), fn ($query) => $query->where('visibility', $request->input('visibility')))
             ->orderByRaw("case when item_type = 'folder' then 0 else 1 end")
             ->orderBy('title')
-            ->paginate($request->integer('per_page', 50));
+            ->paginate(ApiPagination::perPage($request, 50));
     }
 
     public function tree(TenantContext $tenantContext)
