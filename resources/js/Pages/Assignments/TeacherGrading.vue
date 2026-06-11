@@ -31,8 +31,8 @@ const criteria = [
       <div class="mx-auto max-w-7xl px-6 py-5">
         <div class="flex items-center justify-between gap-4">
           <div>
-            <h1 class="text-lg font-semibold">Teacher Grading</h1>
-            <p class="mt-1 text-sm text-slate-600">Chấm bài bằng rubric, nhận xét, trả bài yêu cầu sửa và duyệt điểm cuối.</p>
+            <h1 class="text-lg font-semibold">Chấm bài giảng viên</h1>
+          <p class="mt-1 text-sm text-slate-600">Chấm bài bằng bảng chấm, nhận xét, trả bài yêu cầu sửa và duyệt điểm cuối.</p>
           </div>
           <button class="rounded-md border px-4 py-2 text-sm">Duyệt điểm hàng loạt</button>
         </div>
@@ -61,10 +61,10 @@ const criteria = [
           <div class="border bg-white p-5">
             <h2 class="text-sm font-semibold">Bài làm</h2>
             <p class="mt-3 text-sm text-slate-700">Học viên trình bày quy trình kiểm tra an toàn, đính kèm ảnh minh chứng và video thao tác.</p>
-            <div class="mt-4 rounded-md border bg-slate-50 p-3 text-sm">submission-report.pdf · safety-video.mp4 · link minh chứng</div>
+            <div class="mt-4 rounded-md border bg-slate-50 p-3 text-sm">báo-cáo-nộp.pdf · video-an-toàn.mp4 · liên kết minh chứng</div>
           </div>
           <div class="border bg-white p-5">
-            <h2 class="text-sm font-semibold">Rubric</h2>
+            <h2 class="text-sm font-semibold">Bảng chấm</h2>
             <div class="mt-3 divide-y">
               <div v-for="criterion in criteria" :key="criterion.title" class="grid grid-cols-[1fr_120px] gap-3 py-3 text-sm">
                 <div><div class="font-medium">{{ criterion.title }}</div><div class="text-xs text-slate-500">Tối đa {{ criterion.max }} điểm</div></div>
@@ -81,7 +81,7 @@ const criteria = [
               <RichTextEditor v-model="feedback" :api-headers="apiHeaders" min-height="180px" placeholder="Nhận xét, chèn ảnh/audio/video minh chứng..." />
             </div>
             <button class="mt-3 w-full rounded-md border px-3 py-2 text-sm">AI gợi ý nhận xét</button>
-            <div class="mt-3 rounded-md bg-slate-50 p-3 text-sm text-slate-700">AI suggested score: 8.1/10</div>
+            <div class="mt-3 rounded-md bg-slate-50 p-3 text-sm text-slate-700">Điểm gợi ý AI: 8.1/10</div>
           </div>
           <div class="border bg-white p-4">
             <h2 class="text-sm font-semibold">Điểm</h2>

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Course;
 use App\Models\CourseComponent;
 use App\Models\LmsUser;
+use App\Models\QuestionBank;
 use App\Models\Tenant;
 use App\Models\VideoAsset;
 use App\Models\VideoProgressSummary;
@@ -21,27 +22,68 @@ class VideoPlatformSeeder extends Seeder
         $teacherId = LmsUser::query()->where('tenant_id', $tenant->id)->where('user_type', 'teacher')->value('id') ?: 1;
         $courses = Course::query()->where('tenant_id', $tenant->id)->take(20)->get();
         $components = CourseComponent::query()->where('tenant_id', $tenant->id)->whereIn('course_id', $courses->pluck('id'))->take(20)->get();
+        $questionBanks = QuestionBank::query()->where('tenant_id', $tenant->id)->take(12)->get();
+        $sourceTypes = ['uploaded_file', 'hls', 'external_url', 'youtube'];
+        $encodingProfiles = ['adaptive-hls-720p', 'adaptive-hls-1080p', 'mp4-progressive-720p', 'secure-hls-low-latency'];
 
         for ($i = 1; $i <= 30; $i++) {
             $course = $courses[($i - 1) % max(1, $courses->count())] ?? null;
             $component = $components[($i - 1) % max(1, $components->count())] ?? null;
+            $bank = $questionBanks->isNotEmpty() ? $questionBanks[($i - 1) % $questionBanks->count()] : null;
+            $extraBank = $questionBanks->isNotEmpty() ? $questionBanks[$i % $questionBanks->count()] : null;
+            $sourceType = $sourceTypes[($i - 1) % count($sourceTypes)];
+            $encodingProfile = $encodingProfiles[($i - 1) % count($encodingProfiles)];
+            $completionPercent = [80, 85, 90, 95][$i % 4];
+            $sourceUrl = match ($sourceType) {
+                'external_url' => "https://cdn-demo.eralms.local/video-demo-{$i}/master.m3u8",
+                'youtube' => "https://www.youtube.com/watch?v=eralms-demo-{$i}",
+                'hls' => "videos/hls/{$tenant->id}/{$i}/master.m3u8",
+                default => null,
+            };
             $asset = VideoAsset::query()->updateOrCreate(
-                ['tenant_id' => $tenant->id, 'title' => "Video bài giảng {$i}"],
+                ['tenant_id' => $tenant->id, 'title' => "Video học liệu nâng cao {$i}"],
                 [
                     'course_id' => $course?->id,
                     'component_id' => $i <= 20 ? $component?->id : null,
-                    'description' => "Video đào tạo mẫu số {$i} dùng cho kiểm thử nền tảng video.",
-                    'original_filename' => "video-bai-giang-{$i}.mp4",
-                    'original_storage_path' => "videos/demo/video-bai-giang-{$i}.mp4",
-                    'hls_master_path' => $i % 3 === 0 ? "videos/hls/{$tenant->id}/{$i}/master.m3u8" : null,
+                    'description' => "Video mẫu {$i} có cấu hình nguồn {$sourceType}, profile {$encodingProfile}, tracking hoàn thành {$completionPercent}% và mapping ngân hàng đề.",
+                    'original_filename' => "video-hoc-lieu-nang-cao-{$i}.mp4",
+                    'original_storage_path' => "videos/demo/video-hoc-lieu-nang-cao-{$i}.mp4",
+                    'hls_master_path' => in_array($sourceType, ['hls', 'uploaded_file'], true) || str_contains($encodingProfile, 'hls') ? "videos/hls/{$tenant->id}/{$i}/master.m3u8" : null,
                     'duration_seconds' => 480 + ($i * 20),
                     'file_size' => 50_000_000 + ($i * 1_000_000),
                     'mime_type' => 'video/mp4',
-                    'processing_status' => 'ready',
-                    'visibility' => 'course',
+                    'processing_status' => $i % 11 === 0 ? 'processing' : ($i % 13 === 0 ? 'failed' : 'ready'),
+                    'visibility' => ['private', 'course', 'tenant', 'public'][$i % 4],
                     'checksum' => hash('sha256', "eralms-video-demo-{$i}"),
-                    'thumbnail_url' => 'https://placehold.co/1280x720/0f172a/ffffff?text='.rawurlencode("Video {$i}"),
-                    'settings' => ['seed' => true, 'hls_ready' => $i % 3 === 0],
+                    'thumbnail_url' => 'https://placehold.co/1280x720/0f172a/ffffff?text='.rawurlencode("Video LMS {$i}"),
+                    'subtitle_path' => "videos/subtitles/{$tenant->id}/video-{$i}.vi.vtt",
+                    'transcript_path' => "videos/transcripts/{$tenant->id}/video-{$i}.txt",
+                    'settings' => [
+                        'seed' => true,
+                        'source_type' => $sourceType,
+                        'source_url' => $sourceUrl,
+                        'source_profile' => match ($sourceType) {
+                            'youtube' => 'YouTube external embed',
+                            'external_url' => 'CDN external HLS',
+                            'hls' => 'Internal HLS master',
+                            default => 'MP4 upload converted to HLS',
+                        },
+                        'encoding_profile' => $encodingProfile,
+                        'drm_policy' => $i % 2 === 0 ? 'signed-url' : 'tenant-token',
+                        'cdn_region' => $i % 2 === 0 ? 'ap-southeast' : 'vn-edge',
+                        'min_watch_percent' => $completionPercent,
+                        'max_playback_rate_for_completion' => $i % 3 === 0 ? 1.25 : 1.5,
+                        'allow_seek' => $i % 5 !== 0,
+                        'allow_download' => $i % 7 === 0,
+                        'require_heartbeat' => true,
+                        'heartbeat_interval_seconds' => 12,
+                        'anti_fake_level' => $i % 4 === 0 ? 'strict' : 'standard',
+                        'captions_required' => true,
+                        'transcript_required' => $i % 2 === 0,
+                        'question_bank_ids' => collect([$bank?->id, $extraBank?->id])->filter()->unique()->values()->all(),
+                        'exam_blueprints' => ["MIDTERM-BP-".str_pad((string) (($i % 5) + 1), 2, '0', STR_PAD_LEFT)],
+                        'learning_outcomes' => ["CLO".(($i % 4) + 1), "PLO".(($i % 3) + 1)],
+                    ],
                     'uploaded_by' => $teacherId,
                     'processed_at' => now(),
                 ]
@@ -61,7 +103,9 @@ class VideoPlatformSeeder extends Seeder
                     'component_type' => 'video',
                     'config' => array_replace_recursive($component->config ?? [], [
                         'video_asset_id' => $asset->id,
-                        'completion' => ['required' => true, 'min_watch_percent' => 90, 'allow_fast_forward' => false, 'max_playback_rate_for_completion' => 1.5],
+                        'completion' => ['required' => true, 'min_watch_percent' => $completionPercent, 'allow_fast_forward' => false, 'max_playback_rate_for_completion' => $asset->settings['max_playback_rate_for_completion'] ?? 1.5],
+                        'question_bank_ids' => $asset->settings['question_bank_ids'] ?? [],
+                        'video_source_type' => $sourceType,
                     ]),
                 ])->save();
             }

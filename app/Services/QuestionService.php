@@ -20,7 +20,7 @@ class QuestionService
         $this->validator->validate($data['question_type'], $data);
 
         return DB::transaction(function () use ($data) {
-            $question = Question::query()->create(collect($data)->except(['options', 'matching_pairs', 'fill_blank_answers', 'outcome_ids'])->all() + ['status' => 'draft']);
+            $question = Question::query()->create(collect($data)->except(['options', 'matching_pairs', 'fill_blank_answers', 'outcome_ids'])->all() + ['status' => $data['status'] ?? 'draft']);
             $this->syncDetails($question, $data);
             $this->createQuestionVersion($question, $data['change_note'] ?? 'Tạo câu hỏi', $data['owner_id'] ?? null);
             return $question->fresh(['options', 'matchingPairs', 'fillBlankAnswers']);

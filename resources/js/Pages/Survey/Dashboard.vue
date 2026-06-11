@@ -2,11 +2,12 @@
 import EraLmsLayout from '@/Layouts/EraLmsLayout.vue'
 
 const metrics = [
-  ['Campaign đang chạy', '18', '+4 tuần này'],
-  ['Average Score', '4.18/5', '+0.22'],
+  ['Chiến dịch đang chạy', '18', '+4 tuần này'],
+  ['Điểm TB', '4.18/5', '+0.22'],
   ['NPS', '47', '+9'],
   ['Minh chứng', '126', 'AUN-QA, nội bộ'],
 ]
+
 const heatmap = [
   ['Chuyên môn', 4.6, 'bg-emerald-600'],
   ['Phương pháp', 3.8, 'bg-amber-500'],
@@ -15,7 +16,9 @@ const heatmap = [
   ['Hỗ trợ học viên', 3.5, 'bg-orange-500'],
   ['Khối lượng học tập', 3.2, 'bg-rose-500'],
 ]
+
 const trends = [3.7, 3.9, 4.0, 3.8, 4.2, 4.3, 4.18]
+
 const improvements = [
   ['Tăng hỗ trợ học viên', 'Đang xử lý', 'Giảng viên', '15/06'],
   ['Cân đối khối lượng bài tập', 'Mở', 'Đào tạo', '20/06'],
@@ -25,17 +28,17 @@ const improvements = [
 
 <template>
   <EraLmsLayout>
-    <template #breadcrumb>Khảo sát / Dashboard</template>
+    <template #breadcrumb>Khảo sát / Tổng quan</template>
     <section class="bg-white border-b">
       <div class="mx-auto max-w-7xl px-6 py-5">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-lg font-semibold">Survey & Quality Improvement Dashboard</h1>
+            <h1 class="text-lg font-semibold">Bảng điều khiển khảo sát và cải tiến chất lượng</h1>
             <p class="mt-1 text-sm text-slate-600">BGH, Khoa, Đào tạo và Giảng viên theo dõi khảo sát, NPS, hành động cải tiến và minh chứng kiểm định.</p>
           </div>
           <div class="flex gap-2">
-            <button class="rounded-md border px-3 py-2 text-sm">Export Excel</button>
-            <button class="rounded-md bg-slate-950 px-3 py-2 text-sm text-white">Export PDF</button>
+            <button class="rounded-md border px-3 py-2 text-sm">Xuất Excel</button>
+            <button class="rounded-md bg-slate-950 px-3 py-2 text-sm text-white">Xuất PDF</button>
           </div>
         </div>
         <div class="mt-5 flex gap-2 text-sm">
@@ -59,7 +62,7 @@ const improvements = [
       <div class="mt-4 grid gap-4 lg:grid-cols-[1fr_420px]">
         <section class="border bg-white p-4">
           <div class="flex items-center justify-between">
-            <h2 class="text-sm font-semibold">Heatmap tiêu chí</h2>
+            <h2 class="text-sm font-semibold">Biểu đồ đánh giá theo tiêu chí</h2>
             <select class="rounded-md border px-2 py-1 text-sm"><option>Theo khoa</option><option>Theo lớp</option><option>Theo khóa học</option></select>
           </div>
           <div class="mt-4 grid gap-3 md:grid-cols-2">
@@ -72,7 +75,7 @@ const improvements = [
         </section>
 
         <section class="border bg-white p-4">
-          <h2 class="text-sm font-semibold">Trend Average Score</h2>
+          <h2 class="text-sm font-semibold">Biến động điểm trung bình</h2>
           <div class="mt-5 flex h-52 items-end gap-3 border-b border-l px-4">
             <div v-for="(value, index) in trends" :key="index" class="flex flex-1 flex-col items-center gap-2">
               <div class="w-full rounded-t bg-cyan-700" :style="{ height: `${value * 38}px` }"></div>
@@ -93,7 +96,7 @@ const improvements = [
         </section>
 
         <section class="border bg-white p-4">
-          <h2 class="text-sm font-semibold">Accreditation Evidence</h2>
+          <h2 class="text-sm font-semibold">Minh chứng kiểm định</h2>
           <div class="mt-4 space-y-3 text-sm">
             <div class="flex justify-between"><span>Minh chứng khảo sát</span><strong>84</strong></div>
             <div class="flex justify-between"><span>Lịch sử cải tiến</span><strong>42</strong></div>

@@ -20,9 +20,9 @@ const loadingPage = ref(false)
 const { loading, toast, runAction } = useLmsAction(props.apiHeaders)
 
 const actions = [
-  { action_key: 'moodle.parity.report', label: 'Refresh report', route: '/api/v1/admin/lms/moodle-parity', method: 'GET' },
-  { action_key: 'moodle.parity.sync', label: 'Sync standard functions', route: '/api/v1/admin/lms/moodle-parity/sync', method: 'POST', confirm_required: true, confirm_message: 'Đồng bộ action, permission và menu theo chức năng LMS chuẩn?' },
-  { action_key: 'action.smoke', label: 'Run system smoke', route: '/api/v1/admin/lms/action-check/smoke-test', method: 'POST', confirm_required: true, confirm_message: 'Chạy smoke test action flow?' },
+  { action_key: 'moodle.parity.report', label: 'Cập nhật báo cáo', route: '/api/v1/admin/lms/moodle-parity', method: 'GET' },
+  { action_key: 'moodle.parity.sync', label: 'Đồng bộ hàm chuẩn', route: '/api/v1/admin/lms/moodle-parity/sync', method: 'POST', confirm_required: true, confirm_message: 'Đồng bộ action, quyền và menu theo chức năng LMS chuẩn?' },
+  { action_key: 'action.smoke', label: 'Chạy smoke test hệ thống', route: '/api/v1/admin/lms/action-check/smoke-test', method: 'POST', confirm_required: true, confirm_message: 'Chạy smoke test action flow?' },
 ]
 
 const groupedFeatures = computed(() => ({
@@ -33,9 +33,9 @@ const groupedFeatures = computed(() => ({
 
 function statusLabel(status) {
   return {
-    covered: 'OK',
-    partial: 'Partial',
-    planned: 'Planned',
+    covered: 'Đủ',
+    partial: 'Một phần',
+    planned: 'Dự kiến',
   }[status] || status
 }
 
@@ -86,7 +86,7 @@ onMounted(load)
 
 <template>
   <EraLmsLayout :session-user="sessionUser" @logout="$emit('logout')">
-    <template #breadcrumb>Admin / Moodle parity</template>
+    <template #breadcrumb>Admin / Tương thích Moodle</template>
 
     <section class="space-y-5">
       <div v-if="toast.show" class="rounded-md px-4 py-3 text-sm font-semibold" :class="toast.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'">
@@ -95,8 +95,8 @@ onMounted(load)
 
       <div class="rounded-lg border border-slate-200 bg-white shadow-sm">
         <div class="border-b border-slate-200 bg-slate-950 px-6 py-5 text-white">
-          <div class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">Standard LMS Capability Map</div>
-          <h1 class="mt-2 text-2xl font-bold">Moodle-level functions</h1>
+          <div class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">Bản đồ năng lực chuẩn LMS</div>
+          <h1 class="mt-2 text-2xl font-bold">Chức năng tương thích Moodle</h1>
           <p class="mt-2 text-sm text-slate-300">{{ source.strategy || 'Đối chiếu chức năng chuẩn LMS với module EraLMS đang có.' }}</p>
         </div>
         <div class="p-4">
@@ -112,41 +112,41 @@ onMounted(load)
       </div>
 
       <div v-if="syncPlan" class="rounded-lg border border-cyan-200 bg-cyan-50 p-4 text-sm text-cyan-950">
-        <div class="font-bold">Sync completed</div>
-        <div class="mt-2">Updated modules: {{ syncPlan.updated_existing.join(', ') }}</div>
-        <div class="mt-1">Planned modules: {{ syncPlan.planned_modules.join(', ') }}</div>
+        <div class="font-bold">Đồng bộ đã xong</div>
+        <div class="mt-2">Module đã cập nhật: {{ syncPlan.updated_existing.join(', ') }}</div>
+        <div class="mt-1">Module dự kiến: {{ syncPlan.planned_modules.join(', ') }}</div>
       </div>
 
       <section class="grid gap-4 lg:grid-cols-3">
         <div class="rounded-lg border border-emerald-200 bg-white p-4 shadow-sm">
-          <div class="text-sm font-bold text-emerald-700">Covered</div>
+          <div class="text-sm font-bold text-emerald-700">Đã đủ</div>
           <div class="mt-2 text-3xl font-bold text-slate-950">{{ groupedFeatures.covered.length }}</div>
         </div>
         <div class="rounded-lg border border-amber-200 bg-white p-4 shadow-sm">
-          <div class="text-sm font-bold text-amber-700">Partial</div>
+          <div class="text-sm font-bold text-amber-700">Một phần</div>
           <div class="mt-2 text-3xl font-bold text-slate-950">{{ groupedFeatures.partial.length }}</div>
         </div>
         <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-          <div class="text-sm font-bold text-slate-700">Planned</div>
+          <div class="text-sm font-bold text-slate-700">Dự kiến</div>
           <div class="mt-2 text-3xl font-bold text-slate-950">{{ groupedFeatures.planned.length }}</div>
         </div>
       </section>
 
       <section class="rounded-lg border border-slate-200 bg-white shadow-sm">
         <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-          <h2 class="text-sm font-bold text-slate-950">Function coverage</h2>
-          <span class="text-xs text-slate-500">{{ features.length }} function groups</span>
+          <h2 class="text-sm font-bold text-slate-950">Phạm vi chức năng</h2>
+          <span class="text-xs text-slate-500">{{ features.length }} nhóm chức năng</span>
         </div>
         <div class="overflow-auto">
           <table class="w-full text-left text-xs">
             <thead class="bg-slate-50 uppercase text-slate-500">
               <tr>
-                <th class="px-3 py-2">Standard function</th>
-                <th class="px-3 py-2">EraLMS module</th>
-                <th class="px-3 py-2">Coverage</th>
-                <th class="px-3 py-2">Status</th>
-                <th class="px-3 py-2">Existing routes</th>
-                <th class="px-3 py-2">Missing routes</th>
+                <th class="px-3 py-2">Chức năng chuẩn</th>
+                <th class="px-3 py-2">Module EraLMS</th>
+                <th class="px-3 py-2">Mức phủ</th>
+                <th class="px-3 py-2">Trạng thái</th>
+                <th class="px-3 py-2">Route đã có</th>
+                <th class="px-3 py-2">Route thiếu</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">

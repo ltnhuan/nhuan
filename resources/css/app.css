@@ -81,4 +81,29 @@
   textarea {
     border-color: #cbd5e1;
   }
+
+  .eralms-density-compact main > * {
+    --tw-space-y-reverse: 0;
+  }
+
+  .eralms-density-compact table th,
+  .eralms-density-compact table td {
+    padding-top: 0.55rem;
+    padding-bottom: 0.55rem;
+  }
+
+  .eralms-density-compact input,
+  .eralms-density-compact select,
+  .eralms-density-compact button {
+    min-height: 2.25rem;
+  }
+
+  @media (max-width: 768px) {
+    button,
+    a,
+    input,
+    select {
+      touch-action: manipulation;
+    }
+  }
 }

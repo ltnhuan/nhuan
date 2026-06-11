@@ -20,6 +20,15 @@ class CareerPortfolioController extends Controller
         return $service->dashboard((int) $tenant->id(), $this->userId($request, (int) $tenant->id()));
     }
 
+    public function digitalTwin(Request $request, TenantContext $tenant, CareerPortfolioService $service)
+    {
+        if ($request->query('scope') === 'overview') {
+            return $service->digitalTwinOverview((int) $tenant->id(), $request->all());
+        }
+
+        return $service->digitalTwinIdp((int) $tenant->id(), $this->userId($request, (int) $tenant->id()));
+    }
+
     public function profile(Request $request, TenantContext $tenant, CareerPortfolioService $service)
     {
         return $service->ensureProfile((int) $tenant->id(), $this->userId($request, (int) $tenant->id()), $request->all());

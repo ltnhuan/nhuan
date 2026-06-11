@@ -38,6 +38,43 @@ const stats = computed(() => {
   return { total, relative, lateOpen, closed }
 })
 
+const statusLabels = {
+  draft: 'Bản nháp',
+  published: 'Đã phát hành',
+  closed: 'Đã đóng',
+}
+
+const phaseLabels = {
+  not_open: 'Chưa mở',
+  open: 'Đang mở',
+  late_grace: 'Cho nộp trễ',
+  closed: 'Đã đóng',
+}
+
+const typeLabels = {
+  individual: 'Cá nhân',
+  group: 'Nhóm',
+  class: 'Lớp',
+  project: 'Dự án',
+}
+
+const submissionLabels = {
+  mixed: 'Kết hợp',
+  file: 'Tệp',
+  text: 'Văn bản',
+  url: 'Đường dẫn',
+  video: 'Video',
+}
+
+const deadlineModeLabels = {
+  absolute: 'Cố định',
+  relative: 'Tương đối',
+}
+
+function label(map, value) {
+  return map[value] || value || '-'
+}
+
 function formatDate(value) {
   if (!value) return '-'
 
@@ -165,7 +202,7 @@ onMounted(async () => {
       <div class="mx-auto max-w-7xl px-6 py-5">
         <div class="flex items-center justify-between gap-4">
           <div>
-            <h1 class="text-lg font-semibold">Assignment Management</h1>
+            <h1 class="text-lg font-semibold">Quản lý bài tập</h1>
             <p class="mt-1 text-sm text-slate-600">Giao bài theo khóa học, lớp, nhóm hoặc cá nhân; kiểm soát hạn nộp, rubric và dữ liệu sẵn sàng đẩy SIS.</p>
           </div>
           <button class="rounded-md bg-slate-950 px-4 py-2 text-sm text-white" @click="loadAssignments">Làm mới</button>
@@ -176,11 +213,11 @@ onMounted(async () => {
             <div class="mt-1 text-lg font-semibold">{{ stats.total }}</div>
           </div>
           <div class="rounded-md border bg-slate-50 p-3">
-            <div class="text-xs text-slate-500">Relative deadline</div>
+            <div class="text-xs text-slate-500">Hạn nộp tương đối</div>
             <div class="mt-1 text-lg font-semibold">{{ stats.relative }}</div>
           </div>
           <div class="rounded-md border bg-slate-50 p-3">
-            <div class="text-xs text-slate-500">Đang grace</div>
+            <div class="text-xs text-slate-500">Đang gia hạn</div>
             <div class="mt-1 text-lg font-semibold">{{ stats.lateOpen }}</div>
           </div>
           <div class="rounded-md border bg-slate-50 p-3">
@@ -190,9 +227,9 @@ onMounted(async () => {
         </div>
         <div class="mt-5 grid gap-3 md:grid-cols-4">
           <select class="rounded-md border px-3 py-2 text-sm"><option>Tất cả khóa học</option><option>An toàn lao động</option></select>
-          <select class="rounded-md border px-3 py-2 text-sm"><option>Tất cả trạng thái</option><option>Draft</option><option>Published</option><option>Closed</option></select>
-          <input class="rounded-md border px-3 py-2 text-sm" placeholder="Due date từ" />
-          <input class="rounded-md border px-3 py-2 text-sm" placeholder="Due date đến" />
+          <select class="rounded-md border px-3 py-2 text-sm"><option>Tất cả trạng thái</option><option>Bản nháp</option><option>Đã xuất bản</option><option>Đã đóng</option></select>
+          <input class="rounded-md border px-3 py-2 text-sm" placeholder="Hạn nộp từ" />
+          <input class="rounded-md border px-3 py-2 text-sm" placeholder="Hạn nộp đến" />
         </div>
       </div>
     </section>
@@ -209,16 +246,16 @@ onMounted(async () => {
             <option v-for="course in courses" :key="course.id" :value="course.id">{{ courseLabel(course) }}</option>
           </select>
           <select v-model="form.rubric_id" class="h-10 rounded-md border px-3 text-sm">
-            <option value="">Chọn rubric</option>
+            <option value="">Chọn bảng chấm</option>
             <option v-for="rubric in rubrics" :key="rubric.id" :value="rubric.id">{{ rubricLabel(rubric) }}</option>
           </select>
-          <select v-model="form.assignment_type" class="h-10 rounded-md border px-3 text-sm"><option value="individual">Cá nhân</option><option value="group">Nhóm</option><option value="class">Lớp</option><option value="project">Project</option></select>
-          <select v-model="form.submission_type" class="h-10 rounded-md border px-3 text-sm"><option value="mixed">Mixed</option><option value="file">File</option><option value="text">Text</option><option value="url">URL</option><option value="video">Video</option></select>
+          <select v-model="form.assignment_type" class="h-10 rounded-md border px-3 text-sm"><option value="individual">Cá nhân</option><option value="group">Nhóm</option><option value="class">Lớp</option><option value="project">Dự án</option></select>
+          <select v-model="form.submission_type" class="h-10 rounded-md border px-3 text-sm"><option value="mixed">Kết hợp</option><option value="file">Tệp</option><option value="text">Văn bản</option><option value="url">Đường dẫn</option><option value="video">Video</option></select>
           <input v-model="form.open_at" type="datetime-local" class="h-10 rounded-md border px-3 text-sm" />
           <input v-model="form.due_at" type="datetime-local" class="h-10 rounded-md border px-3 text-sm" />
-          <input v-model.number="form.max_score" type="number" class="h-10 rounded-md border px-3 text-sm" placeholder="Max score" />
-          <input v-model.number="form.pass_score" type="number" class="h-10 rounded-md border px-3 text-sm" placeholder="Pass score" />
-          <input v-model.number="form.max_submissions" type="number" class="h-10 rounded-md border px-3 text-sm" placeholder="Max submissions" />
+          <input v-model.number="form.max_score" type="number" class="h-10 rounded-md border px-3 text-sm" placeholder="Điểm tối đa" />
+          <input v-model.number="form.pass_score" type="number" class="h-10 rounded-md border px-3 text-sm" placeholder="Điểm đạt" />
+          <input v-model.number="form.max_submissions" type="number" class="h-10 rounded-md border px-3 text-sm" placeholder="Số lần nộp tối đa" />
           <label class="inline-flex items-center gap-2 text-sm"><input v-model="form.allow_late" type="checkbox" /> Cho phép nộp trễ</label>
           <textarea v-model="form.description" class="min-h-20 rounded-md border px-3 py-2 text-sm md:col-span-4" placeholder="Mô tả"></textarea>
         </div>
@@ -236,18 +273,18 @@ onMounted(async () => {
         <div v-if="loading" class="border-b border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">Đang tải dữ liệu bài tập...</div>
         <table class="w-full text-left text-sm">
           <thead class="bg-slate-50 text-xs uppercase text-slate-500">
-            <tr><th class="px-4 py-3">Mã</th><th class="px-4 py-3">Bài tập</th><th class="px-4 py-3">Loại</th><th class="px-4 py-3">Deadline</th><th class="px-4 py-3">Grace</th><th class="px-4 py-3">Rubric</th><th class="px-4 py-3">Nộp</th><th class="px-4 py-3">Trạng thái</th></tr>
+            <tr><th class="px-4 py-3">Mã</th><th class="px-4 py-3">Bài tập</th><th class="px-4 py-3">Loại</th><th class="px-4 py-3">Hạn nộp</th><th class="px-4 py-3">Gia hạn</th><th class="px-4 py-3">Bảng chấm</th><th class="px-4 py-3">Nộp</th><th class="px-4 py-3">Trạng thái</th></tr>
           </thead>
           <tbody class="divide-y">
             <tr v-for="item in assignments" :key="item.id">
               <td class="px-4 py-3 font-medium">{{ item.id }}</td>
-              <td class="px-4 py-3"><div class="font-medium">{{ item.title }}</div><div class="text-xs text-slate-500">{{ item.course }} · {{ item.submission }}</div></td>
-              <td class="px-4 py-3"><div>{{ item.type }}</div><div class="text-xs text-slate-500">{{ item.deadlineMode }}</div></td>
+              <td class="px-4 py-3"><div class="font-medium">{{ item.title }}</div><div class="text-xs text-slate-500">{{ item.course }} · {{ label(submissionLabels, item.submission) }}</div></td>
+              <td class="px-4 py-3"><div>{{ label(typeLabels, item.type) }}</div><div class="text-xs text-slate-500">{{ label(deadlineModeLabels, item.deadlineMode) }}</div></td>
               <td class="px-4 py-3"><div>{{ item.due }}</div><div class="text-xs text-slate-500">{{ item.individualCount }} gia hạn riêng</div></td>
               <td class="px-4 py-3">{{ item.grace }}</td>
               <td class="px-4 py-3">{{ item.rubric }}</td>
               <td class="px-4 py-3">{{ item.submitted }} <span class="text-xs text-rose-600">+{{ item.late }} trễ</span></td>
-              <td class="px-4 py-3"><span class="rounded bg-emerald-50 px-2 py-1 text-xs text-emerald-700">{{ item.status }} · {{ item.phase }}</span></td>
+              <td class="px-4 py-3"><span class="rounded bg-emerald-50 px-2 py-1 text-xs text-emerald-700">{{ label(statusLabels, item.status) }} · {{ label(phaseLabels, item.phase) }}</span></td>
             </tr>
             <tr v-if="!loading && !assignments.length">
               <td class="px-4 py-6 text-center text-slate-500" colspan="8">Chưa có dữ liệu bài tập mẫu.</td>
@@ -260,26 +297,26 @@ onMounted(async () => {
         <div class="border bg-white p-4">
           <h2 class="text-sm font-semibold">Tạo/Cấu hình nhanh</h2>
           <div class="mt-4 space-y-3 text-sm">
-            <div class="rounded-md border border-slate-200 bg-slate-50 p-3">Dùng form “Tạo bài tập” phía trên để lưu trực tiếp qua API và chọn khóa học/rubric bằng tên.</div>
+            <div class="rounded-md border border-slate-200 bg-slate-50 p-3">Dùng form “Tạo bài tập” phía trên để lưu trực tiếp qua API và chọn khóa học/bảng chấm bằng tên.</div>
             <div class="grid grid-cols-2 gap-3">
-              <select class="rounded-md border px-3 py-2"><option>Cá nhân</option><option>Nhóm</option><option>Lớp</option><option>Project</option></select>
-              <select class="rounded-md border px-3 py-2"><option>Mixed</option><option>File</option><option>Text</option><option>URL</option><option>Video</option></select>
+            <select class="rounded-md border px-3 py-2"><option>Cá nhân</option><option>Nhóm</option><option>Lớp</option><option>Dự án</option></select>
+            <select class="rounded-md border px-3 py-2"><option>Kết hợp</option><option>Tệp</option><option>Văn bản</option><option>Đường dẫn</option><option>Video</option></select>
             </div>
             <div class="grid grid-cols-2 gap-3">
-              <input class="rounded-md border px-3 py-2" placeholder="Open at" />
-              <input class="rounded-md border px-3 py-2" placeholder="Due at" />
+            <input class="rounded-md border px-3 py-2" placeholder="Mở lúc" />
+            <input class="rounded-md border px-3 py-2" placeholder="Hạn nộp lúc" />
             </div>
             <div class="grid grid-cols-2 gap-3">
-              <input class="rounded-md border px-3 py-2" placeholder="Max score" />
-              <input class="rounded-md border px-3 py-2" placeholder="Pass score" />
+            <input class="rounded-md border px-3 py-2" placeholder="Điểm tối đa" />
+            <input class="rounded-md border px-3 py-2" placeholder="Điểm đạt" />
             </div>
-            <input class="w-full rounded-md border px-3 py-2" placeholder="Max submissions" />
+            <input class="w-full rounded-md border px-3 py-2" placeholder="Số lần nộp tối đa" />
             <label class="flex items-center gap-2"><input type="checkbox" class="h-4 w-4" /> Cho phép nộp trễ</label>
             <select class="w-full rounded-md border px-3 py-2"><option>Gắn rubric</option><option v-for="rubric in rubrics" :key="rubric.id">{{ rubricLabel(rubric) }}</option></select>
           </div>
         </div>
         <div class="border bg-white p-4 text-sm">
-          <h2 class="font-semibold">SIS readiness</h2>
+          <h2 class="font-semibold">Sẵn sàng SIS</h2>
           <dl class="mt-3 grid grid-cols-2 gap-3">
             <div class="bg-slate-50 p-3"><dt>Đã chấm</dt><dd class="font-semibold">312</dd></div>
             <div class="bg-slate-50 p-3"><dt>Sẵn sàng sync</dt><dd class="font-semibold">286</dd></div>

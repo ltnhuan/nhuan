@@ -40,10 +40,10 @@ const resources = [
 ]
 
 const quickLinks = [
-  { label: 'Forum dashboard', href: '#community-forums', icon: MessageCircle, metric: 'forums' },
-  { label: 'Thread & post', href: '#community-threads', icon: CheckCircle2, metric: 'threads' },
-  { label: 'Wiki pages', href: '#community-wiki', icon: BookOpen, metric: 'wikis' },
-  { label: 'Blog cộng đồng', href: '#community-blog', icon: BookOpen, metric: 'blogs' },
+  { label: 'Diễn đàn tổng quát', href: '#community-forums', icon: MessageCircle, metric: 'forums' },
+  { label: 'Chủ đề & bài viết', href: '#community-threads', icon: CheckCircle2, metric: 'threads' },
+  { label: 'Wiki', href: '#community-wiki', icon: BookOpen, metric: 'wikis' },
+  { label: 'Bài viết cộng đồng', href: '#community-blog', icon: BookOpen, metric: 'blogs' },
   { label: 'Nhóm học tập', href: '#community-groups', icon: Users, metric: 'groups' },
   { label: 'Kiểm duyệt', href: '#community-moderation', icon: ShieldCheck, metric: 'reports' },
 ]
@@ -159,7 +159,7 @@ async function loadForumThreads(forum) {
     selectedThread.value = data.value.threads[0] || null
     await loadThreadPosts(selectedThread.value)
   } catch (error) {
-    errors.value.push({ key: 'threads', message: error.message || 'Không load được thread' })
+    errors.value.push({ key: 'threads', message: error.message || 'Không tải được chủ đề' })
   }
 }
 
@@ -173,7 +173,7 @@ async function loadThreadPosts(thread) {
     selectedThread.value = payload
     data.value.posts = payload.posts || []
   } catch (error) {
-    errors.value.push({ key: 'posts', message: error.message || 'Không load được post' })
+    errors.value.push({ key: 'posts', message: error.message || 'Không tải được bài viết' })
   }
 }
 
@@ -261,7 +261,7 @@ function detailRows(detail) {
         <div class="grid gap-0 lg:grid-cols-[1fr_380px]">
           <div class="p-5">
             <div class="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase text-slate-500">
-              <span>Learning Community</span>
+              <span>Cộng đồng học tập</span>
               <span class="rounded-full bg-emerald-50 px-2 py-1 text-emerald-700">Live API data</span>
             </div>
             <div class="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -275,7 +275,7 @@ function detailRows(detail) {
             </div>
           </div>
           <div class="border-t border-slate-200 bg-slate-950 p-5 text-white lg:border-l lg:border-t-0">
-            <div class="text-xs font-semibold uppercase text-slate-300">Community health</div>
+            <div class="text-xs font-semibold uppercase text-slate-300">Tình trạng cộng đồng</div>
             <div class="mt-4 grid grid-cols-4 gap-2">
               <div v-for="item in healthChecks" :key="item.label" class="rounded-md bg-white/10 p-2">
                 <CheckCircle2 class="h-4 w-4" :class="item.ok ? 'text-emerald-300' : 'text-slate-500'" />
@@ -288,10 +288,10 @@ function detailRows(detail) {
       </div>
 
       <div class="grid gap-3 md:grid-cols-4">
-        <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"><Users class="h-5 w-5 text-cyan-600" /><div class="mt-3 text-xs font-semibold uppercase text-slate-500">Active users</div><div class="mt-1 text-2xl font-semibold">{{ number(activeUsers) }}</div></article>
-        <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"><MessageCircle class="h-5 w-5 text-indigo-600" /><div class="mt-3 text-xs font-semibold uppercase text-slate-500">Active topics</div><div class="mt-1 text-2xl font-semibold">{{ number(activeTopics) }}</div></article>
-        <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"><Trophy class="h-5 w-5 text-amber-600" /><div class="mt-3 text-xs font-semibold uppercase text-slate-500">Engagement score</div><div class="mt-1 text-2xl font-semibold">{{ number(engagementScore) }}</div></article>
-        <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"><Bell class="h-5 w-5 text-rose-600" /><div class="mt-3 text-xs font-semibold uppercase text-slate-500">Unread notifications</div><div class="mt-1 text-2xl font-semibold">{{ number(unreadNotifications) }}</div></article>
+        <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"><Users class="h-5 w-5 text-cyan-600" /><div class="mt-3 text-xs font-semibold uppercase text-slate-500">Người dùng hoạt động</div><div class="mt-1 text-2xl font-semibold">{{ number(activeUsers) }}</div></article>
+        <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"><MessageCircle class="h-5 w-5 text-indigo-600" /><div class="mt-3 text-xs font-semibold uppercase text-slate-500">Chủ đề hoạt động</div><div class="mt-1 text-2xl font-semibold">{{ number(activeTopics) }}</div></article>
+        <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"><Trophy class="h-5 w-5 text-amber-600" /><div class="mt-3 text-xs font-semibold uppercase text-slate-500">Điểm tương tác</div><div class="mt-1 text-2xl font-semibold">{{ number(engagementScore) }}</div></article>
+        <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"><Bell class="h-5 w-5 text-rose-600" /><div class="mt-3 text-xs font-semibold uppercase text-slate-500">Thông báo chưa đọc</div><div class="mt-1 text-2xl font-semibold">{{ number(unreadNotifications) }}</div></article>
       </div>
 
       <div v-if="errors.length" class="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">

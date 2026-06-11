@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { BookOpenText, CheckCircle2, Database, FileText, FolderOpen, ListChecks, MessageCircle, PenLine, Play, Plus, ScrollText, SlidersHorizontal, Video, Workflow, X } from '@lucide/vue'
+import { BookOpenText, Brain, CheckCircle2, Database, FileText, FolderOpen, ListChecks, MessageCircle, MessageSquareText, PenLine, Play, Plus, ScrollText, SlidersHorizontal, Video, WandSparkles, Workflow, X } from '@lucide/vue'
 import EraLmsLayout from '@/Layouts/EraLmsLayout.vue'
 import StudioTopBar from '@/Components/Lms/Studio/StudioTopBar.vue'
 import CourseOutline from '@/Components/Lms/Studio/CourseOutline.vue'
@@ -9,6 +9,7 @@ import ComponentPicker from '@/Components/Lms/Studio/ComponentPicker.vue'
 import InspectorPanel from '@/Components/Lms/Studio/InspectorPanel.vue'
 import ActivityLogDrawer from '@/Components/Lms/Studio/ActivityLogDrawer.vue'
 import ContentReplaceModal from '@/Components/Lms/Studio/ContentReplaceModal.vue'
+import { AI_HUB_SECTIONS, AI_HUB_TEXT } from '@/config/aiHubConfig'
 import { useStudioActions } from '@/composables/useStudioActions'
 
 const props = defineProps({
@@ -17,6 +18,11 @@ const props = defineProps({
 })
 
 defineEmits(['logout'])
+
+const locale = (() => {
+  const requested = new URLSearchParams(window.location.search).get('lang')?.toLowerCase()
+  return requested === 'en' ? 'en' : 'vi'
+})()
 
 const {
   studio, course, loading, toast, loadFirstCourse, loadCourse, refreshStudio,
@@ -44,6 +50,14 @@ const sourceTarget = ref(null)
 const sourceTitle = ref('Chọn dữ liệu')
 const youtubeQuickUrl = ref('')
 
+const aiHubText = computed(() => AI_HUB_TEXT[locale] || AI_HUB_TEXT.vi)
+const aiHubSectionIcons = {
+  pipeline: FileText,
+  assistant: MessageSquareText,
+  generation: WandSparkles,
+  insight: Brain,
+}
+
 const outline = computed(() => studio.value?.outline || [])
 const checklist = computed(() => studio.value?.checklist || { groups: {} })
 const selectedComponents = computed(() => selectedUnit.value?.components || [])
@@ -65,14 +79,14 @@ const lessonProgress = computed(() => {
 const nextStep = computed(() => lessonProgress.value.find((item) => !item.done) || lessonProgress.value[lessonProgress.value.length - 1])
 const totalMinutes = computed(() => selectedComponents.value.reduce((total, item) => total + Number(item.config?.estimated_minutes || 0), 0))
 const activityPalette = [
-  ['text', 'Text', 'Bài học văn bản', BookOpenText, 'blue'],
+  ['text', 'Văn bản', 'Bài học văn bản', BookOpenText, 'blue'],
   ['video', 'Video', 'Video bài giảng', Play, 'violet'],
   ['pdf', 'File', 'Tài liệu PDF/Doc', FileText, 'red'],
-  ['quiz', 'Quiz', 'Bài kiểm tra', ScrollText, 'amber'],
-  ['assignment', 'Assignment', 'Bài tập', PenLine, 'orange'],
-  ['forum', 'Forum', 'Diễn đàn', MessageCircle, 'emerald'],
+  ['quiz', 'Kiểm tra', 'Bài kiểm tra', ScrollText, 'amber'],
+  ['assignment', 'Bài tập', 'Bài tập', PenLine, 'orange'],
+  ['forum', 'Diễn đàn', 'Diễn đàn', MessageCircle, 'emerald'],
   ['scorm', 'SCORM', 'SCORM/xAPI', Workflow, 'indigo'],
-  ['live_session', 'Live session', 'Buổi học trực tuyến', Video, 'cyan'],
+  ['live_session', 'Phiên trực tuyến', 'Buổi học trực tuyến', Video, 'cyan'],
 ]
 
 function toneClass(tone) {
@@ -179,7 +193,7 @@ async function addSection() {
 async function addUnit(section) {
   section = section || outline.value[0]
   if (!section) return
-  const title = window.prompt('Tên unit mới', `Unit ${Date.now().toString().slice(-4)}`)
+  const title = window.prompt('Tên bài mới', `Bài ${Date.now().toString().slice(-4)}`)
   if (!title) return
   await createUnit(section.id, { title, status: 'draft' })
   selectedUnit.value = firstUnit(outline.value)
@@ -197,23 +211,32 @@ async function moveSection({ section, direction }) {
   await reorderSection(swapped.map((item, idx) => ({ id: item.id, parent_id: item.parent_id || null, sort_order: idx + 1 })))
 }
 
-async function addComponent(type) {
+async function addComponent(selection) {
   pickerOpen.value = false
   if (!selectedUnit.value) return
+  const type = typeof selection === 'string' ? selection : selection?.type
+  if (!type) return
   const currentUnitId = selectedUnit.value.id
-  const title = window.prompt(`Tên ${type}`, `${type.toUpperCase()} component`)
+  const title = typeof selection === 'string'
+    ? window.prompt(`Tên ${type}`, `${type}`)
+    : selection.title
   if (!title) return
+  const advancedConfig = typeof selection === 'string' ? {} : (selection.config || {})
+  const completionRule = advancedConfig.completion_rule || { type: type === 'live_session' ? 'attendance' : 'view' }
 
   const body = {
     section_id: selectedUnit.value.id,
     component_type: type,
     title,
-    required: true,
+    required: typeof selection === 'string' ? true : (selection.required ?? true),
     status: 'draft',
     config: {
+      ...advancedConfig,
       estimated_minutes: 10,
-      completion_rule: { type: type === 'live_session' ? 'attendance' : 'view' },
+      completion_rule: completionRule,
       clo_mapping: [],
+      ...(advancedConfig.estimated_minutes !== undefined ? { estimated_minutes: advancedConfig.estimated_minutes } : {}),
+      ...(advancedConfig.clo_mapping ? { clo_mapping: advancedConfig.clo_mapping } : {}),
       ...(type === 'live_session' ? { provider: 'zoom', meeting_url: '', min_attended_minutes: 1 } : {}),
     },
   }
@@ -234,7 +257,7 @@ async function addComponent(type) {
 }
 
 async function editComponent(component) {
-  const title = window.prompt('Tên component', component.title)
+  const title = window.prompt('Tên hoạt động', component.title)
   if (!title) return
   await updateComponent(component.id, { title, config: component.config || {} })
 }
@@ -262,7 +285,9 @@ async function openSourcePicker(component) {
     let url = '/api/v1/repository/items?per_page=50'
     sourceTitle.value = 'Chọn học liệu từ kho'
     if (component.component_type === 'quiz') {
-      url = '/api/v1/exams/select-options'
+      const params = new URLSearchParams()
+      if (course.value?.id) params.set('course_id', String(course.value.id))
+      url = `/api/v1/exams/select-options?${params.toString()}`
       sourceTitle.value = 'Chọn đề trắc nghiệm đã cấu hình'
     } else if (component.component_type === 'assignment') {
       url = '/api/v1/assignments?per_page=50'
@@ -275,6 +300,33 @@ async function openSourcePicker(component) {
     sourceLoading.value = false
   }
 }
+
+function getAiUrl(tab) {
+  const params = new URLSearchParams()
+  params.set('v', Date.now().toString())
+  params.set('lang', locale)
+  if (course.value?.id) params.set('course_id', String(course.value.id))
+  if (selectedUnit.value?.id) params.set('unit_id', String(selectedUnit.value.id))
+  if (selectedComponent.value?.id) params.set('component_id', String(selectedComponent.value.id))
+  return `/ai?${params.toString()}#${tab}`
+}
+const aiHubSectionCards = computed(() => AI_HUB_SECTIONS.map((section, index) => {
+  const text = aiHubText.value.sections?.[section.id] || {}
+  return {
+    id: section.id,
+    href: getAiUrl(section.id),
+    order: index + 1,
+    icon: aiHubSectionIcons[section.id] || FileText,
+    title: text.title || section.id,
+    hint: text.hint || '',
+    tooltip: text.tooltip || text.hint || '',
+  }
+}))
+const aiContextLabel = computed(() => {
+  const courseName = course.value?.title || course.value?.code || 'Chưa chọn khóa'
+  const unitName = selectedUnit.value?.title || 'Chưa chọn bài học'
+  return `${courseName} · ${unitName}`
+})
 
 async function attachYoutube() {
   if (!sourceTarget.value || !youtubeQuickUrl.value.trim()) return
@@ -300,7 +352,10 @@ async function chooseSource(item) {
     ? {
         exam_id: item.id,
         exam_title: item.title,
+        exam_code: item.code,
+        exam_description: item.description,
         exam_type: item.exam_type,
+        questions_count: item.questions_count || 0,
         duration_minutes: item.duration_minutes || 45,
         pass_score: item.pass_score || 50,
         total_score: item.total_score || 100,
@@ -379,7 +434,7 @@ onMounted(boot)
         {{ toast.message }}
       </div>
 
-      <div v-if="loadingPage" class="p-6 text-sm text-slate-500">Đang tải Course Studio...</div>
+      <div v-if="loadingPage" class="p-6 text-sm text-slate-500">Đang tải Studio khóa học...</div>
       <div v-else-if="!course" class="p-6 text-sm text-slate-500">Chưa có khóa học. Vào /courses để tạo khóa học trước.</div>
 
       <div v-else class="overflow-hidden rounded-b-xl border-x border-b border-slate-200 bg-white">
@@ -432,8 +487,8 @@ onMounted(boot)
               <div>
                 <div class="mb-2 text-xs font-bold uppercase text-blue-700">Bước 2 · Soạn tiến trình một bài học</div>
                 <div class="flex items-center gap-2">
-                  <h2 class="text-lg font-bold text-slate-950">{{ selectedUnit?.title || 'Chọn unit để bắt đầu' }}</h2>
-                  <button v-if="selectedUnit" class="grid h-7 w-7 place-items-center rounded-md text-blue-600 hover:bg-blue-50 hover:text-blue-700" title="Sửa unit">
+                  <h2 class="text-lg font-bold text-slate-950">{{ selectedUnit?.title || 'Chọn bài học để bắt đầu' }}</h2>
+                  <button v-if="selectedUnit" class="grid h-7 w-7 place-items-center rounded-md text-blue-600 hover:bg-blue-50 hover:text-blue-700" title="Sửa bài học">
                     <PenLine class="h-4 w-4" />
                   </button>
                 </div>
@@ -462,7 +517,7 @@ onMounted(boot)
               <div v-if="!selectedUnit" class="bg-white p-8 text-center text-sm text-slate-500">Chọn một bài học ở cột trái hoặc tạo bài học mới để bắt đầu.</div>
               <div v-else-if="selectedComponents.length === 0" class="bg-white p-8 text-center">
                 <div class="text-sm font-semibold text-slate-800">Bài học này chưa có hoạt động.</div>
-                <div class="mt-1 text-sm text-slate-500">Thêm video, tài liệu, quiz hoặc bài tập theo đúng thứ tự người học sẽ thực hiện.</div>
+                <div class="mt-1 text-sm text-slate-500">Thêm video, tài liệu, bài kiểm tra hoặc bài tập theo đúng thứ tự người học sẽ thực hiện.</div>
                 <button class="mt-4 inline-flex h-10 items-center gap-2 rounded-md bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700" @click="pickerOpen = true">
                   <Plus class="h-4 w-4" />
                   Thêm hoạt động đầu tiên
@@ -481,13 +536,53 @@ onMounted(boot)
                 @click="selectedComponent = component"
               />
             </div>
+            <section class="mt-4 rounded-md border border-slate-200 bg-white">
+              <div class="border-b border-slate-200 bg-slate-50 px-4 py-3">
+                <div class="inline-flex items-center gap-2 text-sm font-bold text-slate-900">
+                  <Brain class="h-4 w-4 text-blue-700" />
+                  Trợ lý AI Studio
+                </div>
+                <p class="mt-1 text-xs text-slate-500">
+                  AI hỗ trợ quy trình thiết kế khóa học: soạn khung bài, sinh hoạt động học tập, tạo quiz và theo dõi tín hiệu học tập.
+                </p>
+              </div>
+              <div class="grid gap-2 p-4 sm:grid-cols-2 xl:grid-cols-4">
+                <a
+                  v-for="card in aiHubSectionCards"
+                  :key="card.id"
+                  :href="card.href"
+                  class="rounded-md border border-slate-200 bg-slate-50 p-3 hover:border-blue-300 hover:bg-blue-50"
+                  :title="card.tooltip"
+                >
+                  <div class="flex items-start gap-2">
+                    <span class="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-md bg-blue-100 text-blue-700">
+                      <component :is="card.icon" class="h-4 w-4" />
+                    </span>
+                    <div class="min-w-0">
+                      <div class="text-sm font-semibold text-slate-900">{{ card.order }}. {{ card.title }}</div>
+                      <div class="text-xs text-slate-600">{{ card.hint }}</div>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              <div class="border-t border-slate-200 px-4 py-3 text-xs text-slate-600">
+                <div class="font-semibold text-slate-700">Ngữ cảnh AI hiện tại</div>
+                <div class="mt-1 text-slate-600">{{ aiContextLabel }}</div>
+                <div class="mt-2 flex flex-wrap gap-2">
+                  <a href="/question-banks" class="rounded border border-slate-200 px-2 py-1 hover:bg-slate-50" title="Dùng AI để sinh câu hỏi từ nội dung khóa học">Ngân hàng câu hỏi</a>
+                  <a href="/question-banks/import" class="rounded border border-slate-200 px-2 py-1 hover:bg-slate-50" title="Chuẩn hóa bank, map CLO và import nhanh">Nhập câu hỏi</a>
+                  <a href="/analytics" class="rounded border border-slate-200 px-2 py-1 hover:bg-slate-50" title="Phân tích tiến độ học viên theo AI">Phân tích học tập</a>
+                  <a href="/exams/builder" class="rounded border border-slate-200 px-2 py-1 hover:bg-slate-50" title="Tạo đề nhanh từ hoạt động đã soạn">Tạo đề thi</a>
+                </div>
+              </div>
+            </section>
             <button
               v-if="selectedUnit"
               class="mt-4 flex h-16 w-full items-center justify-center gap-2 rounded-md border border-dashed border-blue-300 bg-blue-50/40 text-sm font-semibold text-blue-700 hover:bg-blue-50"
               @click="pickerOpen = true"
             >
               <Plus class="h-4 w-4" />
-              Thêm hoạt động vào unit
+              Thêm hoạt động vào bài học
             </button>
           </main>
 
@@ -546,7 +641,7 @@ onMounted(boot)
                 <button class="h-10 rounded-md bg-violet-600 px-4 text-sm font-semibold text-white hover:bg-violet-700" @click="attachYoutube">Chèn</button>
               </div>
             </div>
-            <div v-if="sourceLoading" class="p-6 text-center text-sm text-slate-500">Đang load dữ liệu...</div>
+              <div v-if="sourceLoading" class="p-6 text-center text-sm text-slate-500">Đang tải dữ liệu...</div>
             <div v-else class="space-y-2">
               <button
                 v-for="item in sourceItems"
@@ -561,7 +656,7 @@ onMounted(boot)
                   <span class="block truncate text-sm font-bold text-slate-950">{{ item.title || item.name }}</span>
                   <span class="mt-1 block truncate text-xs text-slate-500">
                     <template v-if="sourceTarget?.component_type === 'quiz'">
-                      {{ item.exam_type || 'quiz' }} · {{ item.duration_minutes || 0 }} phút · đạt {{ item.pass_score || 0 }}/{{ item.total_score || 0 }}
+                      {{ item.code || item.exam_type || 'quiz' }} · {{ item.questions_count || 0 }} câu · {{ item.duration_minutes || 0 }} phút · đạt {{ item.pass_score || 0 }}/{{ item.total_score || 0 }}
                     </template>
                     <template v-else>{{ item.code || item.status || item.item_type || 'Có thể gắn vào hoạt động' }}</template>
                   </span>

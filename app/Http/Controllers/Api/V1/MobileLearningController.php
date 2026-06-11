@@ -141,9 +141,9 @@ class MobileLearningController extends Controller
     {
         return [
             ['type' => 'assignment', 'title' => 'Bài tập mới', 'body' => Assignment::query()->where('tenant_id', $tenantId)->latest()->value('title') ?? 'Có bài tập cần nộp'],
-            ['type' => 'quiz', 'title' => 'Quiz sắp đến hạn', 'body' => 'Ôn tập và hoàn tất khi online hoặc offline.'],
-            ['type' => 'attendance', 'title' => 'Điểm danh hôm nay', 'body' => 'Hỗ trợ QR và OTP trên mobile.'],
-            ['type' => 'certificate', 'title' => 'Credential Wallet', 'body' => 'Chứng chỉ mới sẽ xuất hiện trong ví.'],
+            ['type' => 'quiz', 'title' => 'Bài kiểm tra sắp đến hạn', 'body' => 'Ôn tập và hoàn tất khi trực tuyến hoặc ngoại tuyến.'],
+            ['type' => 'attendance', 'title' => 'Điểm danh hôm nay', 'body' => 'Hỗ trợ QR và OTP trên thiết bị di động.'],
+            ['type' => 'certificate', 'title' => 'Ví chứng chỉ số', 'body' => 'Chứng chỉ mới sẽ xuất hiện trong ví.'],
         ];
     }
 

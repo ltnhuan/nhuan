@@ -34,7 +34,7 @@ function iconFor(type) {
 }
 
 function labelFor(type) {
-  const labels = { text: 'Đọc', video: 'Xem video', pdf: 'Tài liệu', file: 'Tài liệu', quiz: 'Quiz', assignment: 'Bài tập', forum: 'Thảo luận', live_session: 'Buổi học trực tuyến', scorm: 'SCORM' }
+  const labels = { text: 'Văn bản', video: 'Video', pdf: 'Tài liệu', file: 'Tài liệu', quiz: 'Kiểm tra', assignment: 'Bài tập', forum: 'Thảo luận', live_session: 'Phiên trực tuyến', scorm: 'SCORM' }
   return labels[type] || type
 }
 
@@ -74,7 +74,7 @@ function openInLearner(component = null) {
     <aside class="h-full w-full max-w-4xl overflow-auto bg-white p-5 shadow-2xl">
       <div class="mb-4 flex items-center justify-between">
         <div>
-          <div class="text-xs font-bold uppercase text-slate-500">{{ isCoursePreview ? 'Preview toàn bộ bài đang thiết kế' : 'Preview hoạt động' }}</div>
+          <div class="text-xs font-bold uppercase text-slate-500">{{ isCoursePreview ? 'Xem trước toàn bộ bài đang thiết kế' : 'Xem trước hoạt động' }}</div>
           <h2 class="mt-1 text-lg font-bold text-slate-950">{{ item?.title || item?.course?.title || 'Xem trước khóa học' }}</h2>
           <p v-if="isCoursePreview" class="mt-1 text-sm text-slate-500">{{ units.length }} bài học · {{ activityCount }} hoạt động · {{ totalMinutes }} phút</p>
         </div>
@@ -124,7 +124,7 @@ function openInLearner(component = null) {
               </button>
             </div>
             <div class="rounded-md border border-slate-200 bg-white p-4">
-              <p class="text-sm font-semibold leading-6 text-slate-900">Đây là câu hỏi trắc nghiệm mô phỏng từ đề đã gắn. Người học chọn một đáp án, hệ thống autosave và tính thời gian như bài thi thật.</p>
+              <p class="text-sm font-semibold leading-6 text-slate-900">Đây là câu hỏi trắc nghiệm mô phỏng từ đề đã gắn. Người học chọn một đáp án, hệ thống tự lưu tự động và tính thời gian như bài thi thật.</p>
               <div class="mt-4 space-y-3">
                 <label v-for="answer in ['Đáp án A', 'Đáp án B', 'Đáp án C', 'Đáp án D']" :key="answer" class="flex items-center gap-3 rounded-md border border-slate-200 p-3 text-sm hover:bg-blue-50">
                   <input type="radio" name="preview-answer" />
@@ -135,7 +135,7 @@ function openInLearner(component = null) {
             <div class="mt-5 flex justify-between">
               <button class="h-10 rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700">Câu trước</button>
               <div class="flex gap-2">
-                <button class="h-10 rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700">Lưu nháp</button>
+                <button class="h-10 rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700">Lưu bản nháp</button>
                 <button class="h-10 rounded-md bg-blue-600 px-4 text-sm font-semibold text-white">Câu tiếp</button>
                 <button class="h-10 rounded-md bg-emerald-600 px-4 text-sm font-semibold text-white">Nộp bài</button>
               </div>
@@ -152,7 +152,7 @@ function openInLearner(component = null) {
           v-if="youtubeEmbedUrl"
           class="aspect-video w-full"
           :src="youtubeEmbedUrl"
-          title="YouTube preview"
+          title="Xem trước YouTube"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowfullscreen
         ></iframe>
@@ -162,9 +162,9 @@ function openInLearner(component = null) {
           <audio class="w-full" :src="mediaUrl" controls></audio>
         </div>
         <img v-else-if="isImageMedia() && mediaUrl" :src="mediaUrl" :alt="item?.content?.title || item?.title" class="max-h-[70vh] w-full object-contain bg-white" />
-        <iframe v-else-if="isPdfMedia() && mediaUrl" class="h-[70vh] w-full bg-white" :src="mediaUrl" title="PDF preview"></iframe>
+        <iframe v-else-if="isPdfMedia() && mediaUrl" class="h-[70vh] w-full bg-white" :src="mediaUrl" title="Xem trước PDF"></iframe>
         <div v-else class="grid aspect-video place-items-center bg-slate-900 p-8 text-center text-sm text-white">
-          Chưa có media để phát. Hãy chèn YouTube URL hoặc load file video/audio/hình ảnh từ kho học liệu.
+          Chưa có media để phát. Hãy chèn URL YouTube hoặc tải file video/audio/hình ảnh từ kho học liệu.
         </div>
       </div>
 
@@ -189,7 +189,7 @@ function openInLearner(component = null) {
                   <h4 class="text-sm font-bold text-slate-900">{{ unit.title }}</h4>
                   <p class="mt-1 text-xs text-slate-500">{{ unit.components?.length || 0 }} hoạt động trong bài này</p>
                 </div>
-                <span class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700">{{ unit.status || 'draft' }}</span>
+                <span class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700">{{ unit.status || 'Nháp' }}</span>
               </div>
               <div v-if="unit.components?.length" class="mt-3 space-y-2">
                 <div
@@ -224,7 +224,7 @@ function openInLearner(component = null) {
       <dl v-if="!isCoursePreview && !isQuizPreview" class="mt-4 space-y-3 text-sm">
         <div>
           <dt class="text-xs font-bold uppercase text-slate-500">Loại</dt>
-          <dd class="mt-1 font-semibold text-slate-900">{{ item?.component_type || 'Course preview' }}</dd>
+          <dd class="mt-1 font-semibold text-slate-900">{{ item?.component_type || 'Xem trước khóa học' }}</dd>
         </div>
         <div>
           <dt class="text-xs font-bold uppercase text-slate-500">Mô tả</dt>

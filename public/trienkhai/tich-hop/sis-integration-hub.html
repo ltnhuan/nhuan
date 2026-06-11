@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SIS Integration Hub - T&#237;ch hợp &amp; vận h&#224;nh</title>
+  <link rel="stylesheet" href="/trienkhai/assets/site.css">
+</head>
+<body>
+  <header class="topbar">
+    <nav class="nav">
+      <a class="brand" href="/trienkhai"><span class="brand-mark">E</span><span>EraLMS triển khai</span></a>
+      <div class="nav-links">
+      <a href="/trienkhai">Home</a>
+      <a href="/trienkhai/dao-tao.html">Đào tạo</a>
+      <a href="/trienkhai/danh-gia.html">Đánh giá</a>
+      <a href="/trienkhai/nguoi-hoc.html">Người học</a>
+      <a href="/trienkhai/chuan-obe.html">Chuẩn & OBE</a>
+      <a class="active" href="/trienkhai/tich-hop.html">Tích hợp</a>
+      <a href="/trienkhai/ai-analytics.html">AI & Analytics</a>
+      <a href="/trienkhai/tat-ca-chuc-nang.html">Tất cả chức năng</a>
+      <a href="/trienkhai/lo-trinh.html">Lộ trình</a>
+      </div>
+    </nav>
+  </header>
+  <main>
+    <section class="page-title">
+      <div class="section">
+        <p class="eyebrow">T&#237;ch hợp &amp; vận h&#224;nh</p>
+        <h1>SIS Integration Hub</h1>
+        <p>Khai b&#225;o hệ thống, mapping dữ liệu, sync jobs, conflict handling, event log v&#224; adapter t&#237;ch hợp.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Mục tiêu nghiệp vụ</h2>
+      <p class="lead">Áp dụng chức năng <strong>SIS Integration Hub</strong> cho luồng nghiệp vụ của phân hệ <strong>T&#237;ch hợp &amp; vận h&#224;nh</strong>.</p>
+      <div class="grid two">
+        <article class="card">
+          <h3>Đầu vào và đầu ra</h3>
+          <p><strong>Input:</strong> Dữ liệu nghiệp vụ theo phân hệ, quyền thao tác của vai trò tạo luồng.</p>
+          <p><strong>Output:</strong> Nhật ký hoạt động, kết quả nghiệp vụ và trạng thái nghiệm thu.</p>
+        </article>
+        <article class="card">
+          <h3>Màn hình liên quan</h3>
+          <p>/admin, /sis, /security, /plugins, /backup, /admin/lms/system-check</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Luồng quy trình</p>
+      <h2>Minh hoạ flow triển khai</h2>
+      <figure class="flow-figure">
+        <img src="/trienkhai/assets/images/flows/tich-hop-sis-integration-hub.svg" alt="Flow SIS Integration Hub">
+        <figcaption>Luồng tham chiếu cho chức năng SIS Integration Hub</figcaption>
+      </figure>
+      <ol class="step-list">
+        <li><strong>Bắt đầu:</strong> Kích hoạt đúng vai trò.</li>
+                <li>Nhập dữ liệu nghiệp vụ</li>
+        <li>Thực hiện luồng xử lý chính</li>
+        <li>Kiểm tra trạng thái theo quy định</li>
+        <li>Xuất kết quả nghiệm thu</li>
+      </ol>
+    </section>
+
+    <section class="band">
+      <div class="section">
+        <p class="eyebrow">Kiểm thử</p>
+        <h2>Tiêu chí nghiệm thu gợi ý</h2>
+        <ol class="step-list">
+          <li>Luồng nghiệp vụ chạy được từ bước 1 tới bước cuối.</li>
+          <li>Lỗi nhập liệu trả về mã rõ ràng và có trace để điều tra.</li>
+          <li>Dữ liệu đầu ra đúng phạm vi quyền đã phân công.</li>
+          <li>Không có bước nào bị treo khi timeout hoặc mất dữ liệu giữa chừng.</li>
+        </ol>
+      </div>
+    </section>
+
+    <footer class="footer"><div class="section"><a href="/trienkhai/tich-hop.html">Quay về phân hệ T&#237;ch hợp &amp; vận h&#224;nh</a> · <a href="/trienkhai/tat-ca-chuc-nang.html">Xem ma trận đầy đủ</a></div></footer>
+  </main>
+</body>
+</html>

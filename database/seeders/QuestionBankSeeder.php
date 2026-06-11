@@ -20,11 +20,15 @@ class QuestionBankSeeder extends Seeder
         $tenant = Tenant::query()->where('code', 'VABIS')->firstOrFail();
         $teacherId = DB::table('lms_users')->where('tenant_id', $tenant->id)->where('user_type', 'teacher')->value('id') ?: 1;
         $banks = [
-            ['QB-MC', 'Môn chung'], ['QB-CNTT', 'Công nghệ thông tin'], ['QB-DL', 'Du lịch'], ['QB-NN', 'Ngoại ngữ'], ['QB-VH9', 'Văn hóa 9+'],
+            ['QB-MC', 'Bộ đề nền tảng chung theo chuẩn quốc tế'],
+            ['QB-CNTT', 'Bộ đề Công nghệ thông tin theo chuẩn ACM/IEEE'],
+            ['QB-DL', 'Bộ đề Du lịch theo chuẩn nghề ASEAN'],
+            ['QB-NN', 'Bộ đề Ngoại ngữ theo Khung năng lực 6 bậc'],
+            ['QB-VH9', 'Bộ đề Văn hóa 9+ theo chuẩn chương trình mới'],
         ];
 
         foreach ($banks as [$code, $name]) {
-            $bank = QuestionBank::query()->updateOrCreate(['tenant_id' => $tenant->id, 'code' => $code], ['name' => $name, 'description' => "Ngân hàng câu hỏi {$name}", 'visibility' => 'tenant', 'status' => 'published', 'owner_id' => $teacherId, 'settings' => ['seed' => true]]);
+            $bank = QuestionBank::query()->updateOrCreate(['tenant_id' => $tenant->id, 'code' => $code], ['name' => $name, 'description' => "Ngân hàng câu hỏi {$name}, phân loại theo Bloom, CLO/PLO, độ khó và phạm vi sử dụng.", 'visibility' => 'tenant', 'status' => 'published', 'owner_id' => $teacherId, 'settings' => ['seed' => true, 'standard_profile' => 'international']]);
             foreach (['C1' => 'Chương 1', 'C2' => 'Chương 2', 'C3' => 'Chương 3'] as $catCode => $catName) {
                 QuestionCategory::query()->updateOrCreate(['question_bank_id' => $bank->id, 'code' => $catCode], ['tenant_id' => $tenant->id, 'name' => $catName, 'sort_order' => (int) substr($catCode, 1), 'metadata' => ['seed' => true]]);
             }
@@ -60,7 +64,7 @@ class QuestionBankSeeder extends Seeder
 
         foreach ($allBanks->take(5) as $index => $bank) {
             ExamBlueprint::query()->updateOrCreate(['tenant_id' => $tenant->id, 'code' => 'BP-'.($index + 1)], [
-                'question_bank_id' => $bank->id, 'name' => 'Ma trận đề '.$bank->name, 'description' => 'Blueprint mẫu sinh đề ngẫu nhiên', 'total_questions' => 30, 'total_score' => 20, 'duration_minutes' => 45, 'status' => 'active', 'created_by' => $teacherId,
+                'question_bank_id' => $bank->id, 'name' => 'Ma trận đề '.$bank->name, 'description' => 'Ma trận mẫu để sinh đề ngẫu nhiên theo chuẩn đánh giá quốc tế', 'total_questions' => 30, 'total_score' => 20, 'duration_minutes' => 45, 'status' => 'active', 'created_by' => $teacherId,
                 'config' => ['sections' => [
                     ['name' => 'Nhận biết', 'question_count' => 20, 'difficulty' => ['easy'], 'bloom_level' => ['remember', 'understand'], 'outcomes' => ['CLO1'], 'score_each' => 0.5],
                     ['name' => 'Vận dụng', 'question_count' => 10, 'difficulty' => ['medium', 'hard'], 'bloom_level' => ['apply', 'analyze'], 'outcomes' => ['CLO2', 'CLO3'], 'score_each' => 1],
@@ -77,7 +81,7 @@ class QuestionBankSeeder extends Seeder
             'multiple_choice' => $base + ['options' => [['content' => 'Ý đúng 1', 'is_correct' => true], ['content' => 'Ý đúng 2', 'is_correct' => true], ['content' => 'Ý sai', 'is_correct' => false]]],
             'true_false' => $base + ['options' => [['content' => 'Đúng', 'is_correct' => true], ['content' => 'Sai', 'is_correct' => false]]],
             'fill_blank' => array_replace($base, ['stem' => 'Điền thuật ngữ phù hợp vào {{blank_1}}.']) + ['fill_blank_answers' => [['blank_key' => 'blank_1', 'accepted_answer' => 'EraLMS', 'score_weight' => 1]]],
-            'matching' => $base + ['matching_pairs' => [['left_content' => 'CLO', 'right_content' => 'Course Learning Outcome'], ['left_content' => 'PLO', 'right_content' => 'Program Learning Outcome']]],
+            'matching' => $base + ['matching_pairs' => [['left_content' => 'CLO', 'right_content' => 'Chuẩn đầu ra học phần'], ['left_content' => 'PLO', 'right_content' => 'Chuẩn đầu ra chương trình']]],
             'ordering' => $base + ['options' => [['content' => 'Bước 1'], ['content' => 'Bước 2'], ['content' => 'Bước 3']]],
             'audio', 'image', 'video' => array_replace($base, ['metadata' => ['media_url' => 'https://example.edu/media/question-'.$i, 'seed' => true]]),
             default => $base,

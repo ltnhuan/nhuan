@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Người học &amp; cộng đồng - EraLMS</title>
+  <link rel="stylesheet" href="/trienkhai/assets/site.css">
+</head>
+<body>
+  <header class="topbar">
+    <nav class="nav">
+      <a class="brand" href="/trienkhai"><span class="brand-mark">E</span><span>EraLMS triển khai</span></a>
+      <div class="nav-links">
+      <a href="/trienkhai">Home</a>
+      <a href="/trienkhai/dao-tao.html">Đào tạo</a>
+      <a href="/trienkhai/danh-gia.html">Đánh giá</a>
+      <a class="active" href="/trienkhai/nguoi-hoc.html">Người học</a>
+      <a href="/trienkhai/chuan-obe.html">Chuẩn & OBE</a>
+      <a href="/trienkhai/tich-hop.html">Tích hợp</a>
+      <a href="/trienkhai/ai-analytics.html">AI & Analytics</a>
+      <a href="/trienkhai/tat-ca-chuc-nang.html">Tất cả chức năng</a>
+      <a href="/trienkhai/lo-trinh.html">Lộ trình</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-title">
+      <div class="section">
+        <p class="eyebrow">Phân hệ Người học &amp; cộng đồng</p>
+        <h1>Chi tiết triển khai theo chức năng</h1>
+        <p>Trang này mô tả hành trình người học từ ghi danh, tham gia lớp, tương tác cộng đồng đến hồ sơ năng lực và chứng chỉ.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Luồng tổng thể</p>
+      <h2>Hành trình học viên từ Enrollment đến hồ sơ</h2>
+      <ol class="step-list">
+        <li>Tạo học viên, lớp, gán nhóm và trạng thái quyền truy cập.</li>
+        <li>Ghi danh và bật lịch học, attendance, cộng đồng.</li>
+        <li>Học viên nhận content theo learning path và nộp bài tập.</li>
+        <li>Dữ liệu điểm, attendance và hoạt động cộng đồng cập nhật profile.</li>
+        <li>Phát credential và portfolio trên cơ sở tiêu chí đạt chuẩn.</li>
+      </ol>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Chi tiết từng chức năng</p>
+      <h2>Chi tiết vận hành người học</h2>
+      <div class="detail-grid two">
+        <article id="enrollment" class="feature">
+          <h3>1. Enrollment</h3>
+          <p>Quản trị danh sách ghi danh theo lớp/cohort và lifecycle học viên.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list"><li>Import danh sách ban đầu.</li><li>Ánh xạ khóa học và lớp.</li><li>Kiểm tra quyền truy cập theo vai trò.</li></ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Giảm rủi ro ghi danh sai lớp, sai khóa hoặc sai quyền học.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/tich-hop.html#f-sis">SIS</a></li><li><a href="/trienkhai/danh-gia.html#gradebook">Gradebook</a></li><li><a href="/trienkhai/dao-tao.html">Danh sách khóa học</a></li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="att" class="feature">
+          <h3>2. Attendance</h3>
+          <p>Theo dõi tham gia buổi học qua session, QR hoặc OTP.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list"><li>Tạo session và phương thức check-in.</li><li>Theo dõi trạng thái điểm danh.</li><li>Xuất báo cáo và gắn điều kiện dự thi.</li></ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Minh bạch điều kiện điểm danh ảnh hưởng đến quyền thi và quy chế lớp.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/danh-gia.html#bank">Question bank</a></li><li><a href="/trienkhai/ai-analytics.html#f-analytics">Risk analytics</a></li><li><a href="/trienkhai/chuan-obe.html#matrix">Outcome matrix</a></li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="community" class="feature">
+          <h3>3. Community</h3>
+          <p>Forum, nhóm học tập, trao đổi nội dung và theo dõi moderation.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list"><li>Tạo nhóm và chủ đề.</li><li>Kiểm soát quyền đăng bài, bình luận.</li><li>Thu hồi nội dung vi phạm theo policy.</li></ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Tăng tương tác và giúp phát hiện nhu cầu học tập sớm.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/dao-tao.html">Course content</a></li><li><a href="/trienkhai/ai-analytics.html#f-ai-chat">AI tutor</a></li><li><a href="/trienkhai/lo-trinh.html">UAT cộng đồng</a></li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="survey" class="feature">
+          <h3>4. Survey &amp; QA</h3>
+          <p>Thu nhận phản hồi theo khóa, lớp hoặc chiến dịch.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list"><li>Thiết kế form.</li><li>Gửi campaign tới phân khúc mục tiêu.</li><li>Tổng hợp biểu đồ + hành động cải tiến.</li></ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Khép kín vòng lặp cải tiến chất lượng giảng dạy.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/ai-analytics.html#f-dashboard">Dashboard vận hành</a></li><li><a href="/trienkhai/lo-trinh.html">Checklist cải tiến</a></li><li><a href="/trienkhai/chuan-obe.html#accred">Báo cáo kiểm định</a></li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="portfolio" class="feature">
+          <h3>5. Career portfolio</h3>
+          <p>Lưu trữ sản phẩm, kỹ năng, timeline học tập của người học.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list"><li>Thu thập đầu ra theo môn/đề tài.</li><li>Gắn evidence và mốc năng lực.</li><li>Xuất bản công khai theo quyền.</li></ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Hỗ trợ đánh giá năng lực thực tế hơn điểm số thuần túy.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/chuan-obe.html#competency">Competency</a></li><li><a href="/trienkhai/nguoi-hoc.html#credential">Credential</a></li><li><a href="/trienkhai/danh-gia.html#gradebook">Gradebook</a></li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="credential" class="feature">
+          <h3>6. Digital credential</h3>
+          <p>Phát hành badge/chứng chỉ số có mã xác thực và lịch sử cấp phát.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list"><li>Xác định điều kiện phát hành.</li><li>Tạo mẫu và ký số theo template.</li><li>Issue/revoke và gửi thông báo xác thực.</li></ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Tăng giá trị hồ sơ học viên, dễ kiểm chứng bởi nhà tuyển dụng.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/danh-gia.html#gradebook">Kết quả điểm</a></li><li><a href="/trienkhai/chuan-obe.html#accred">Bằng chứng kiểm định</a></li><li><a href="/trienkhai/tich-hop.html#f-webhook">Webhook</a></li></ul>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="band">
+      <div class="section">
+        <p class="eyebrow">Lưu ý nghiệm thu</p>
+        <h2>Mốc chuyển giao</h2>
+        <p>Mỗi luồng phải xác nhận được trạng thái dữ liệu: đăng ký học viên đúng lớp, attendance phản ánh đúng session, và credential chỉ xuất khi đủ điều kiện quy chuẩn.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer"><div class="section"><a href="/trienkhai">Quay về trang giới thiệu</a></div></footer>
+</body>
+</html>

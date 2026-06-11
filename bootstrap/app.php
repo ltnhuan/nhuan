@@ -19,6 +19,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Foundation\Providers\ConsoleSupportServiceProvider;
 use Illuminate\Foundation\Providers\FoundationServiceProvider;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Bus\BusServiceProvider;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Queue\QueueServiceProvider;
@@ -34,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
         CookieServiceProvider::class,
         EventServiceProvider::class,
         CacheServiceProvider::class,
+        BusServiceProvider::class,
         DatabaseServiceProvider::class,
         MigrationServiceProvider::class,
         EncryptionServiceProvider::class,

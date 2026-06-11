@@ -8,7 +8,7 @@ defineProps({
   apiHeaders: { type: Object, default: () => ({}) },
 })
 
-const items = ['Quiz 30%', 'Assignment 30%', 'Attendance 10%', 'Final 30%']
+const items = ['Quiz 30%', 'Bài tập 30%', 'Chuyên cần 10%', 'Thi cuối kỳ 30%']
 const rows = Array.from({ length: 18 }, (_, i) => ({
   code: `SV${String(i + 1).padStart(5, '0')}`,
   name: `Học viên ${i + 1}`,
@@ -16,25 +16,25 @@ const rows = Array.from({ length: 18 }, (_, i) => ({
   total: (74 + i % 12).toFixed(1),
   status: i % 6 === 0 ? 'Không đạt' : 'Đạt',
 }))
-const logs = ['GV Demo override Final từ 6.0 sang 6.8', 'Pull Quiz từ exam result', 'Phòng đào tạo khóa điểm chuyên cần']
+const logs = ['GV Demo ghi đè điểm thi cuối kỳ từ 6.0 sang 6.8', 'Kéo Quiz từ kết quả thi', 'Phòng đào tạo khóa điểm chuyên cần']
 const overrideReason = ref('<p>Lý do override và minh chứng kèm theo.</p>')
 </script>
 
 <template>
   <EraLmsLayout>
-    <template #breadcrumb>Sổ điểm / Matrix</template>
+    <template #breadcrumb>Sổ điểm / Ma trận</template>
 
     <section class="border-b bg-white">
       <div class="mx-auto max-w-7xl px-6 py-5">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-lg font-semibold">Grade Matrix</h1>
+            <h1 class="text-lg font-semibold">Ma trận điểm</h1>
             <p class="mt-1 text-sm text-slate-600">Bảng điểm dạng Excel, tối ưu cho lớp lớn và có lịch sử chỉnh sửa.</p>
           </div>
           <div class="flex gap-2">
-            <button class="rounded-md border px-3 py-2 text-sm">Pull nguồn</button>
-            <button class="rounded-md border px-3 py-2 text-sm">Recalculate</button>
-            <button class="rounded-md bg-slate-950 px-3 py-2 text-sm text-white">Submit duyệt</button>
+            <button class="rounded-md border px-3 py-2 text-sm">Kéo nguồn</button>
+            <button class="rounded-md border px-3 py-2 text-sm">Tính lại</button>
+            <button class="rounded-md bg-slate-950 px-3 py-2 text-sm text-white">Gửi duyệt</button>
           </div>
         </div>
       </div>
@@ -75,7 +75,7 @@ const overrideReason = ref('<p>Lý do override và minh chứng kèm theo.</p>')
         <div class="mt-5">
           <RichTextEditor v-model="overrideReason" :api-headers="apiHeaders" min-height="180px" placeholder="Lý do override, có thể đính kèm media..." />
         </div>
-        <button class="mt-3 w-full rounded-md bg-blue-900 px-3 py-2 text-sm text-white">Ghi override</button>
+          <button class="mt-3 w-full rounded-md bg-blue-900 px-3 py-2 text-sm text-white">Ghi đè</button>
       </aside>
     </section>
   </EraLmsLayout>

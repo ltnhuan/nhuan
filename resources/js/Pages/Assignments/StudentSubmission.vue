@@ -11,9 +11,9 @@ defineProps({
 const submissionBody = ref('<p>Mô tả bài làm, quy trình thực hiện và chèn minh chứng media tại đây.</p>')
 
 const history = [
-  { no: 1, status: 'Submitted', at: '2026-06-01 09:20', score: '-' },
-  { no: 2, status: 'Returned', at: '2026-06-02 14:10', score: '-' },
-  { no: 3, status: 'Graded', at: '2026-06-03 16:45', score: '8.5/10' },
+  { no: 1, status: 'Đã nộp', at: '2026-06-01 09:20', score: '-' },
+  { no: 2, status: 'Đã trả lại', at: '2026-06-02 14:10', score: '-' },
+  { no: 3, status: 'Đã chấm', at: '2026-06-03 16:45', score: '8.5/10' },
 ]
 </script>
 
@@ -29,13 +29,13 @@ const history = [
               <h1 class="text-lg font-semibold">Báo cáo thực hành an toàn</h1>
               <p class="mt-1 text-sm text-slate-600">Nộp minh chứng thực hành, mô tả quy trình và link video quan sát. Điểm đạt mở khóa bài tiếp theo: 5/10.</p>
             </div>
-            <span class="rounded bg-amber-50 px-2 py-1 text-xs text-amber-700">Due 2026-06-12</span>
+            <span class="rounded bg-amber-50 px-2 py-1 text-xs text-amber-700">Hạn: 2026-06-12</span>
           </div>
           <div class="mt-5 grid gap-3 md:grid-cols-4">
             <div class="border bg-slate-50 p-3 text-sm"><div class="text-slate-500">Loại</div><div class="font-medium">Cá nhân</div></div>
-            <div class="border bg-slate-50 p-3 text-sm"><div class="text-slate-500">Nộp</div><div class="font-medium">Mixed</div></div>
+            <div class="border bg-slate-50 p-3 text-sm"><div class="text-slate-500">Nộp</div><div class="font-medium">Kết hợp</div></div>
             <div class="border bg-slate-50 p-3 text-sm"><div class="text-slate-500">Lần nộp</div><div class="font-medium">3/3</div></div>
-            <div class="border bg-slate-50 p-3 text-sm"><div class="text-slate-500">Rubric</div><div class="font-medium">10 điểm</div></div>
+            <div class="border bg-slate-50 p-3 text-sm"><div class="text-slate-500">Bảng chấm</div><div class="font-medium">10 điểm</div></div>
           </div>
         </div>
 

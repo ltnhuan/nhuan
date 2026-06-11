@@ -42,25 +42,25 @@ onMounted(load)
 
 <template>
   <EraLmsLayout :session-user="sessionUser">
-    <template #breadcrumb>Integration Hub / Mapping Center</template>
+    <template #breadcrumb>Trung tâm tích hợp / Bản đồ ánh xạ</template>
     <section class="mx-auto max-w-7xl px-4 py-5 sm:px-6">
       <div class="flex flex-wrap items-center justify-between gap-3">
-        <h1 class="text-lg font-semibold">Mapping Center</h1>
+        <h1 class="text-lg font-semibold">Trung tâm ánh xạ</h1>
         <button class="rounded-md border px-3 py-2 text-sm" :disabled="loading" @click="load">Tải lại</button>
       </div>
       <div class="mt-4 grid gap-3 md:grid-cols-4">
         <select v-model="filters.entity_type" class="rounded-md border px-3 py-2 text-sm" @change="load">
-          <option value="">All entities</option><option>student</option><option>class</option><option>course</option><option>enrollment</option><option>grade</option><option>attendance</option>
+          <option value="">Tất cả đối tượng</option><option>học viên</option><option>lớp</option><option>khóa học</option><option>ghi danh</option><option>điểm</option><option>điểm danh</option>
         </select>
         <select v-model="filters.mapping_status" class="rounded-md border px-3 py-2 text-sm" @change="load">
-          <option value="">All statuses</option><option>active</option><option>conflict</option><option>inactive</option>
+          <option value="">Tất cả trạng thái</option><option>đang hoạt động</option><option>xung đột</option><option>ngừng hoạt động</option>
         </select>
-        <input v-model="filters.q" class="rounded-md border px-3 py-2 text-sm md:col-span-2" placeholder="Search local/external id" />
+        <input v-model="filters.q" class="rounded-md border px-3 py-2 text-sm md:col-span-2" placeholder="Tìm ID nội bộ/ID bên ngoài" />
       </div>
       <div v-if="error" class="mt-4 rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">{{ error }}</div>
       <div class="mt-5 overflow-hidden border bg-white">
         <table class="w-full text-left text-sm">
-          <thead class="bg-slate-50 text-xs uppercase text-slate-500"><tr><th class="px-4 py-3">Entity</th><th class="px-4 py-3">Local ID</th><th class="px-4 py-3">External ID</th><th class="px-4 py-3">External code</th><th class="px-4 py-3">Status</th></tr></thead>
+          <thead class="bg-slate-50 text-xs uppercase text-slate-500"><tr><th class="px-4 py-3">Đối tượng</th><th class="px-4 py-3">ID nội bộ</th><th class="px-4 py-3">ID bên ngoài</th><th class="px-4 py-3">Mã bên ngoài</th><th class="px-4 py-3">Trạng thái</th></tr></thead>
           <tbody class="divide-y">
             <tr v-if="loading"><td class="px-4 py-6 text-slate-500" colspan="5">Đang tải dữ liệu...</td></tr>
             <tr v-else-if="!visibleRows.length"><td class="px-4 py-6 text-slate-500" colspan="5">Không có mapping phù hợp.</td></tr>

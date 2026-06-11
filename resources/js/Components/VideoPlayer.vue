@@ -5,6 +5,7 @@ const props = defineProps({
   video: { type: Object, required: true },
   playback: { type: Object, required: true },
   requiredPercent: { type: Number, default: 90 },
+  apiHeaders: { type: Object, default: () => ({}) },
 })
 
 const emit = defineEmits(['heartbeat', 'event', 'completed'])
@@ -21,7 +22,7 @@ const completionText = computed(() => `Cần xem tối thiểu ${props.requiredP
 async function startSession() {
   const response = await fetch('/api/v1/video-sessions/start', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Tenant-Code': 'VABIS', 'X-Demo-User-Email': 'sv.lms@vabis.edu.vn' },
+    headers: { 'Content-Type': 'application/json', ...props.apiHeaders },
     body: JSON.stringify({ video_asset_id: props.video.id }),
   })
   session.value = response.ok ? await response.json() : null
@@ -48,7 +49,7 @@ async function sendEvent(eventType, metadata = {}) {
 
   const response = await fetch(`/api/v1/video-sessions/${session.value.id}/${endpoint}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Tenant-Code': 'VABIS', 'X-Demo-User-Email': 'sv.lms@vabis.edu.vn' },
+    headers: { 'Content-Type': 'application/json', ...props.apiHeaders },
     body: JSON.stringify(payload),
   })
 

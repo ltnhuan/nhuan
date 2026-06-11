@@ -82,4 +82,41 @@ class QuestionBankFeatureTest extends TestCase
     {
         return ['X-Tenant-Code' => 'VABIS', 'X-Demo-User-Email' => 'admin.lms@vabis.edu.vn'];
     }
+
+    public function test_question_create_and_update_preserve_requested_status(): void
+    {
+        $tenantId = 1;
+        $bank = \App\Models\QuestionBank::factory()->create(['tenant_id' => $tenantId]);
+
+        $question = app(\App\Services\QuestionService::class)->createQuestion([
+            'tenant_id' => $tenantId,
+            'question_bank_id' => $bank->id,
+            'code' => 'STATUS-KEEP-1',
+            'question_type' => 'single_choice',
+            'title' => 'Status keep',
+            'stem' => 'Chọn đáp án đúng.',
+            'difficulty' => 'medium',
+            'bloom_level' => 'understand',
+            'default_score' => 1,
+            'status' => 'review',
+            'options' => [
+                ['content' => 'Đúng', 'is_correct' => true],
+                ['content' => 'Sai', 'is_correct' => false],
+            ],
+        ]);
+
+        $this->assertSame('review', $question->status);
+
+        $updated = app(\App\Services\QuestionService::class)->updateQuestion($question, [
+            'status' => 'draft',
+            'title' => 'Status keep updated',
+            'options' => [
+                ['content' => 'Đúng', 'is_correct' => true],
+                ['content' => 'Sai', 'is_correct' => false],
+            ],
+        ]);
+
+        $this->assertSame('draft', $updated->status);
+        $this->assertDatabaseHas('questions', ['id' => $question->id, 'status' => 'draft']);
+    }
 }

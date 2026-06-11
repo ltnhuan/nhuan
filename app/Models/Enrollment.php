@@ -25,5 +25,7 @@ class Enrollment extends Model
     public function learner() { return $this->belongsTo(LmsUser::class, 'user_id'); }
     public function course() { return $this->belongsTo(Course::class); }
     public function classSection() { return $this->belongsTo(ClassSection::class); }
+    public function cohort() { return $this->belongsTo(Cohort::class); }
+    public function cohortGroup() { return $this->belongsTo(CohortGroup::class); }
     public function events() { return $this->hasMany(EnrollmentEvent::class); }
 }

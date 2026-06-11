@@ -3,11 +3,11 @@ import EraLmsLayout from '@/Layouts/EraLmsLayout.vue'
 import { computed, ref } from 'vue'
 
 const questionTypes = [
-  { key: 'text', label: 'Text' },
-  { key: 'rating', label: 'Rating' },
-  { key: 'matrix', label: 'Matrix' },
-  { key: 'mcq', label: 'MCQ' },
-  { key: 'multi_select', label: 'Multi Select' },
+  { key: 'text', label: 'Văn bản' },
+  { key: 'rating', label: 'Thang điểm' },
+  { key: 'matrix', label: 'Ma trận' },
+  { key: 'mcq', label: 'Một lựa chọn' },
+  { key: 'multi_select', label: 'Nhiều lựa chọn' },
   { key: 'nps', label: 'NPS' },
 ]
 
@@ -16,8 +16,9 @@ const questions = ref([
   { code: 'methodology', question_type: 'rating', prompt: 'Phương pháp giảng dạy', required: true },
   { code: 'interaction', question_type: 'rating', prompt: 'Tương tác với học viên', required: true },
   { code: 'course_matrix', question_type: 'matrix', prompt: 'Nội dung / Bài giảng / Khối lượng / Đánh giá', rows: ['Nội dung', 'Bài giảng', 'Khối lượng', 'Đánh giá'], columns: [1, 2, 3, 4, 5] },
-  { code: 'teacher_nps', question_type: 'nps', prompt: 'Recommendation Score', required: true },
+  { code: 'teacher_nps', question_type: 'nps', prompt: 'Điểm khuyến nghị', required: true },
 ])
+
 const draggedIndex = ref(null)
 const selected = ref(questions.value[0])
 
@@ -61,32 +62,23 @@ function dropQuestion(index) {
 
 <template>
   <EraLmsLayout>
-    <template #breadcrumb>Khảo sát / Survey Builder</template>
+    <template #breadcrumb>Khảo sát / Trình tạo</template>
     <section class="bg-white border-b">
       <div class="mx-auto max-w-7xl px-6 py-5">
-        <div class="flex items-center justify-between gap-4">
+        <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-lg font-semibold">Survey Builder</h1>
-            <p class="mt-1 text-sm text-slate-600">Kéo thả câu hỏi, cấu hình ẩn danh/định danh và lưu mẫu khảo sát dùng cho campaign.</p>
+            <h1 class="text-lg font-semibold">Trình tạo khảo sát</h1>
+            <p class="mt-1 text-sm text-slate-600">Kéo thả câu hỏi, cấu hình ẩn danh/định danh và lưu mẫu khảo sát cho chiến dịch đào tạo.</p>
           </div>
           <div class="flex gap-2">
             <button class="rounded-md border px-3 py-2 text-sm">Lưu nháp</button>
             <button class="rounded-md bg-blue-900 px-3 py-2 text-sm text-white">Xuất bản</button>
           </div>
         </div>
-        <div class="mt-5 grid gap-3 md:grid-cols-4">
-          <input class="rounded-md border px-3 py-2 text-sm md:col-span-2" value="Mẫu khảo sát chất lượng đào tạo" />
-          <select class="rounded-md border px-3 py-2 text-sm">
-            <option>Đánh giá giảng viên</option>
-            <option>Đánh giá khóa học</option>
-            <option>NPS toàn trường</option>
-          </select>
-          <label class="flex items-center gap-2 rounded-md border px-3 py-2 text-sm"><input type="checkbox" checked /> Ẩn danh mặc định</label>
-        </div>
       </div>
     </section>
 
-    <section class="mx-auto grid max-w-7xl gap-4 overflow-hidden px-6 py-5 lg:grid-cols-[220px_minmax(0,1fr)_340px]">
+    <section class="mx-auto grid max-w-7xl gap-4 px-6 py-5 lg:grid-cols-[220px_minmax(0,1fr)_340px]">
       <aside class="min-w-0 space-y-2">
         <button v-for="type in questionTypes" :key="type.key" class="flex w-full items-center justify-between rounded-md border bg-white px-3 py-2 text-sm hover:bg-sky-50" @click="addQuestion(type.key)">
           <span>{{ type.label }}</span><span class="text-slate-400">+</span>

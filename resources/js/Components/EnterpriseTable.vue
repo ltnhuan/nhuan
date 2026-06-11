@@ -35,6 +35,14 @@ function rowId(row) {
 function rowTitle(row) {
   return row?.title || row?.name || row?.full_name || row?.email || row?.code || rowId(row)
 }
+
+function columnKey(column) {
+  return typeof column === 'object' ? column.key : column
+}
+
+function columnLabel(column) {
+  return typeof column === 'object' ? column.label : column
+}
 </script>
 
 <template>
@@ -55,7 +63,7 @@ function rowTitle(row) {
         <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
           <tr>
             <th class="w-10 px-4 py-3"><input type="checkbox" /></th>
-            <th v-for="column in columns" :key="column" class="whitespace-nowrap px-4 py-3">{{ column }}</th>
+            <th v-for="column in columns" :key="columnKey(column)" class="whitespace-nowrap px-4 py-3">{{ columnLabel(column) }}</th>
             <th class="whitespace-nowrap px-4 py-3">Thao tác</th>
           </tr>
         </thead>
@@ -79,7 +87,7 @@ function rowTitle(row) {
             :data-row-payload="rowPayload(row)"
           >
             <td class="px-4 py-3"><input type="checkbox" /></td>
-            <td v-for="column in columns" :key="column" class="whitespace-nowrap px-4 py-3 text-slate-700">{{ row[column] || row[column.toLowerCase()] }}</td>
+            <td v-for="column in columns" :key="columnKey(column)" class="whitespace-nowrap px-4 py-3 text-slate-700">{{ row[columnKey(column)] || row[String(columnKey(column)).toLowerCase()] }}</td>
             <td class="whitespace-nowrap px-4 py-3"><button class="font-medium text-blue-700 hover:text-blue-900">Chi tiết</button></td>
           </tr>
           <tr v-if="!loading && bottomSpacerHeight > 0" aria-hidden="true">

@@ -39,7 +39,7 @@ defineEmits(['save', 'preview', 'submit', 'approve', 'publish', 'history', 'sett
       </div>
       <div class="flex flex-wrap justify-end gap-2">
         <div class="inline-flex h-10 items-center gap-2 rounded-md bg-emerald-50 px-3 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-100">
-          Trạng thái: <span class="font-bold">{{ course?.status || 'Published' }}</span>
+          Trạng thái: <span class="font-bold">{{ course?.status || 'Đã xuất bản' }}</span>
           <ChevronDown class="h-3.5 w-3.5" />
         </div>
         <button class="inline-flex h-10 items-center gap-2 rounded-md border border-blue-200 bg-blue-50 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-100" @click="$emit('manage')"><FolderOpen class="h-4 w-4" />Bài đã soạn</button>

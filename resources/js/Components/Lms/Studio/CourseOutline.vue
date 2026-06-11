@@ -11,7 +11,7 @@ const filtered = computed(() => props.outline.filter((section) => !search.value 
 </script>
 
 <template>
-  <aside class="w-[300px] shrink-0 border-r border-slate-200 bg-white">
+  <aside class="w-[280px] shrink-0 border-r border-slate-200 bg-white">
     <div class="border-b border-slate-200 p-4">
       <h2 class="text-sm font-bold uppercase text-slate-950">1. Chọn bài học</h2>
       <div class="relative mt-3">

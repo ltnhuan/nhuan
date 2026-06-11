@@ -13,14 +13,26 @@ const loading = ref(false)
 const result = ref(null)
 const lastAction = ref(null)
 const actions = [
-  ['sync-permissions', 'Sync permissions'],
-  ['clear-permission-cache', 'Clear permission cache'],
-  ['clear-route-cache', 'Clear route cache'],
-  ['clear-config-cache', 'Clear config cache'],
-  ['rebuild-menu', 'Rebuild menu'],
-  ['grant-full-admin', 'Grant full admin'],
-  ['run-smoke-test', 'Run smoke test'],
+  ['sync-permissions', 'Đồng bộ quyền'],
+  ['clear-permission-cache', 'Xóa cache quyền'],
+  ['clear-route-cache', 'Xóa cache route'],
+  ['clear-config-cache', 'Xóa cache cấu hình'],
+  ['rebuild-menu', 'Xây dựng lại menu'],
+  ['grant-full-admin', 'Gán quyền toàn quyền'],
+  ['run-smoke-test', 'Chạy kiểm tra nhanh'],
 ]
+const summaryLabels = {
+  users_without_role: 'Người dùng chưa có vai trò',
+  action_binding_issues: 'Vấn đề gắn hành động',
+  missing_permissions: 'Quyền thiếu',
+  button_action_missing_api: 'Nút/hành động thiếu API',
+  missing_ui_components: 'Thành phần UI thiếu',
+  api_issues: 'API lỗi',
+}
+
+function summaryLabel(key) {
+  return summaryLabels[key] || key.replaceAll('_', ' ')
+}
 
 async function api(path, options = {}) {
   const response = await fetch(`/api/v1/admin/lms/${path}`, {
@@ -32,7 +44,7 @@ async function api(path, options = {}) {
   })
   const payload = await response.json()
   if (!response.ok || payload.success === false) {
-    throw new Error(payload.message || 'System check API failed.')
+    throw new Error(payload.message || 'API kiểm tra hệ thống thất bại.')
   }
   return payload.data
 }
@@ -61,14 +73,14 @@ onMounted(load)
 
 <template>
   <EraLmsLayout :session-user="sessionUser" @logout="$emit('logout')">
-    <template #breadcrumb>Admin / LMS System Check</template>
+    <template #breadcrumb>Admin / Kiểm tra hệ thống LMS</template>
 
     <section class="space-y-5">
       <div class="rounded-lg border border-slate-200 bg-white shadow-sm">
         <div class="border-b border-slate-200 bg-slate-950 px-6 py-5 text-white">
-          <div class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">EraLMS Diagnostics</div>
-          <h1 class="mt-2 text-2xl font-bold">Kiểm tra route, menu, permission, component và API</h1>
-          <p class="mt-2 text-sm text-slate-300">Dùng màn này để phát hiện menu chết, quyền thiếu, user chưa có role, component UI thiếu và lỗi health check.</p>
+          <div class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">Chẩn đoán EraLMS</div>
+          <h1 class="mt-2 text-2xl font-bold">Kiểm tra route, menu, quyền, thành phần và API</h1>
+          <p class="mt-2 text-sm text-slate-300">Dùng màn này để phát hiện menu lỗi, quyền thiếu, người dùng chưa có vai trò, thành phần UI thiếu và lỗi kiểm tra sức khỏe hệ thống.</p>
         </div>
         <div class="flex flex-wrap gap-2 p-4">
           <button
@@ -85,7 +97,7 @@ onMounted(load)
 
       <div v-if="result" class="grid gap-4 md:grid-cols-5">
         <div v-for="(value, key) in result.summary" :key="key" class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-          <div class="text-xs font-semibold uppercase text-slate-500">{{ key.replaceAll('_', ' ') }}</div>
+          <div class="text-xs font-semibold uppercase text-slate-500">{{ summaryLabel(key) }}</div>
           <div class="mt-2 text-2xl font-bold text-slate-900">{{ value }}</div>
         </div>
       </div>
@@ -98,9 +110,9 @@ onMounted(load)
         <section
           v-for="section in [
             ['Menu trỏ route lỗi', result.menu_route_errors],
-            ['Permission thiếu', result.missing_permissions],
+            ['Quyền thiếu', result.missing_permissions],
             ['Button/action chưa có API', result.button_action_missing_api],
-            ['User không có role', result.users_without_role],
+            ['Người dùng chưa có vai trò', result.users_without_role],
             ['Component UI thiếu', result.missing_ui_components],
             ['API lỗi 403/404/405/500', result.api_issues],
           ]"
@@ -115,7 +127,7 @@ onMounted(load)
       </div>
 
       <section v-if="result" class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-        <h2 class="text-sm font-bold text-slate-900">Health check</h2>
+        <h2 class="text-sm font-bold text-slate-900">Kiểm tra sức khỏe hệ thống</h2>
         <pre class="mt-3 text-xs leading-5 text-slate-700">{{ JSON.stringify(result.health, null, 2) }}</pre>
       </section>
     </section>

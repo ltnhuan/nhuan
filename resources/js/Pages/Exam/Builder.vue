@@ -42,7 +42,7 @@ watch(selectedBlueprint, (blueprint) => {
   form.value.duration_minutes = blueprint.duration_minutes || form.value.duration_minutes
   if (blueprint.config?.sections?.length) {
     sectionRows.value = blueprint.config.sections.map((section) => ({
-      name: section.name || 'Section',
+      name: section.name || 'Phần',
       question_count: Number(section.question_count || 0),
       difficulty: arrayValue(section.difficulty),
       bloom_level: arrayValue(section.bloom_level),
@@ -80,7 +80,7 @@ function blankExam() {
 function blankBlueprint() {
   return {
     code: `BP-${Date.now().toString().slice(-5)}`,
-    name: 'Blueprint mới',
+    name: 'Ma trận đề mới',
     status: 'active',
   }
 }
@@ -91,7 +91,7 @@ async function api(path, options = {}) {
     headers: { ...props.apiHeaders, ...(options.headers || {}) },
   })
   const data = await response.json().catch(() => ({}))
-  if (!response.ok) throw new Error(data.message || 'Không gọi được API exam builder.')
+  if (!response.ok) throw new Error(data.message || 'Không gọi được API trình tạo đề.')
   return data.data || data
 }
 
@@ -111,7 +111,7 @@ async function loadAll() {
     hydrateDefaults()
     if (!selectedExamId.value && exams.value[0]) selectedExamId.value = exams.value[0].id
     if (selectedExamId.value) await loadExam(selectedExamId.value, false)
-    message.value = 'Đã tải Exam Builder.'
+    message.value = 'Đã tải trình tạo đề.'
   } catch (error) {
     message.value = error.message
   } finally {
@@ -185,11 +185,11 @@ function blueprintPayload() {
 
 async function createBlueprint() {
   if (!form.value.question_bank_id) {
-    message.value = 'Chọn ngân hàng câu hỏi trước khi tạo blueprint.'
+    message.value = 'Chọn ngân hàng câu hỏi trước khi tạo ma trận đề.'
     return
   }
   if (!blueprintForm.value.code.trim() || !blueprintForm.value.name.trim()) {
-    message.value = 'Nhập mã và tên blueprint.'
+    message.value = 'Nhập mã và tên ma trận đề.'
     return
   }
 
@@ -198,7 +198,7 @@ async function createBlueprint() {
     const blueprint = await api('/exam-blueprints', { method: 'POST', body: JSON.stringify(blueprintPayload()) })
     await refreshBlueprints()
     form.value.blueprint_id = blueprint.id
-    message.value = 'Đã tạo blueprint từ cấu hình section.'
+    message.value = 'Đã tạo ma trận đề từ cấu hình các phần.'
   } catch (error) {
     message.value = error.message
   } finally {
@@ -208,7 +208,7 @@ async function createBlueprint() {
 
 async function previewBlueprint() {
   if (!form.value.blueprint_id) {
-    message.value = 'Chọn hoặc tạo blueprint trước khi preview.'
+    message.value = 'Chọn hoặc tạo ma trận đề trước khi xem trước.'
     return
   }
 
@@ -216,7 +216,7 @@ async function previewBlueprint() {
   try {
     preview.value = await api(`/exam-blueprints/${form.value.blueprint_id}/generate-preview`, { method: 'POST' })
     activePanel.value = 'preview'
-    message.value = `Preview có ${previewQuestionCount.value} câu.`
+    message.value = `Bản xem trước có ${previewQuestionCount.value} câu.`
   } catch (error) {
     message.value = error.message
   } finally {
@@ -230,7 +230,7 @@ async function createExam() {
     return
   }
   if (!form.value.question_bank_id || !form.value.blueprint_id) {
-    message.value = 'Chọn ngân hàng câu hỏi và blueprint trước khi tạo exam.'
+    message.value = 'Chọn ngân hàng câu hỏi và ma trận đề trước khi tạo bài kiểm tra.'
     return
   }
 
@@ -240,7 +240,7 @@ async function createExam() {
     await refreshExams()
     await loadExam(exam.id)
     activePanel.value = 'build'
-    message.value = 'Đã tạo bài kiểm tra draft.'
+    message.value = 'Đã tạo bản nháp bài kiểm tra.'
   } catch (error) {
     message.value = error.message
   } finally {
@@ -250,7 +250,7 @@ async function createExam() {
 
 async function updateExam() {
   if (!selectedExam.value) {
-    message.value = 'Chọn exam trước khi cập nhật.'
+    message.value = 'Chọn bài kiểm tra trước khi cập nhật.'
     return
   }
 
@@ -259,7 +259,7 @@ async function updateExam() {
     await api(`/exams/${selectedExam.value.id}`, { method: 'PUT', body: JSON.stringify(toExamPayload()) })
     await refreshExams()
     await loadExam(selectedExam.value.id)
-    message.value = 'Đã cập nhật cấu hình exam.'
+    message.value = 'Đã cập nhật cấu hình bài kiểm tra.'
   } catch (error) {
     message.value = error.message
   } finally {
@@ -269,11 +269,11 @@ async function updateExam() {
 
 async function buildExam() {
   if (!selectedExam.value) {
-    message.value = 'Tạo hoặc chọn exam trước khi build.'
+    message.value = 'Tạo hoặc chọn bài kiểm tra trước khi dựng đề.'
     return
   }
   if (!selectedExam.value.blueprint_id) {
-    message.value = 'Exam chưa gắn blueprint.'
+    message.value = 'Bài kiểm tra chưa gắn ma trận đề.'
     return
   }
 
@@ -282,7 +282,7 @@ async function buildExam() {
     await api(`/exams/${selectedExam.value.id}/build-from-blueprint`, { method: 'POST' })
     await loadExam(selectedExam.value.id)
     activePanel.value = 'build'
-    message.value = `Đã build ${examQuestions.value.length} câu vào đề.`
+    message.value = `Đã dựng ${examQuestions.value.length} câu vào đề.`
   } catch (error) {
     message.value = error.message
   } finally {
@@ -297,7 +297,7 @@ async function publishExam() {
     await api(`/exams/${selectedExam.value.id}/publish`, { method: 'POST' })
     await refreshExams()
     await loadExam(selectedExam.value.id)
-    message.value = 'Đã publish exam.'
+    message.value = 'Đã phát hành bài kiểm tra.'
   } catch (error) {
     message.value = error.message
   } finally {
@@ -312,7 +312,7 @@ async function closeExam() {
     await api(`/exams/${selectedExam.value.id}/close`, { method: 'POST' })
     await refreshExams()
     await loadExam(selectedExam.value.id)
-    message.value = 'Đã đóng exam.'
+    message.value = 'Đã đóng bài kiểm tra.'
   } catch (error) {
     message.value = error.message
   } finally {
@@ -352,11 +352,11 @@ function newDraft() {
   blueprintForm.value = blankBlueprint()
   preview.value = null
   activePanel.value = 'configure'
-  message.value = 'Đã tạo form draft mới.'
+  message.value = 'Đã tạo form bản nháp mới.'
 }
 
 function addSection() {
-  sectionRows.value.push({ name: `Section ${sectionRows.value.length + 1}`, question_count: 5, difficulty: [], bloom_level: [], score_each: 1 })
+  sectionRows.value.push({ name: `Phần ${sectionRows.value.length + 1}`, question_count: 5, difficulty: [], bloom_level: [], score_each: 1 })
 }
 
 function removeSection(index) {
@@ -374,6 +374,36 @@ function optionLabel(item, fields = ['code', 'title']) {
   return fields.map((field) => item[field]).filter(Boolean).join(' - ')
 }
 
+const statusLabels = {
+  draft: 'Bản nháp',
+  published: 'Đã phát hành',
+  closed: 'Đã đóng',
+}
+
+const examTypeLabels = {
+  quiz: 'Bài kiểm tra ngắn',
+  midterm: 'Giữa kỳ',
+  final: 'Cuối kỳ',
+  practice: 'Luyện tập',
+}
+
+const deliveryLabels = {
+  self_paced: 'Tự học theo tiến độ',
+  scheduled: 'Theo lịch',
+  remote_proctored: 'Giám sát từ xa',
+}
+
+const resultModeLabels = {
+  after_submit: 'Sau khi nộp',
+  immediately: 'Ngay lập tức',
+  after_close: 'Sau khi đóng bài',
+  manual: 'Công bố thủ công',
+}
+
+function statusLabel(value) {
+  return statusLabels[value] || value || '-'
+}
+
 function formatDate(value) {
   if (!value) return '-'
   return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value))
@@ -388,19 +418,19 @@ function toInputDateTime(value) {
 
 <template>
   <EraLmsLayout>
-    <template #breadcrumb>Kiểm tra online / Builder</template>
+    <template #breadcrumb>Kiểm tra online / Trình tạo đề</template>
 
     <section class="min-h-[calc(100vh-7rem)] bg-slate-50">
       <div class="border-b bg-white">
         <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-5">
           <div>
-            <h1 class="text-xl font-bold text-slate-950">Exam Builder</h1>
-            <p class="mt-1 text-sm text-slate-600">Tạo blueprint, cấu hình exam, build câu hỏi, publish và kiểm tra cấu trúc đề.</p>
+            <h1 class="text-xl font-bold text-slate-950">Trình tạo đề thi</h1>
+            <p class="mt-1 text-sm text-slate-600">Tạo ma trận đề, cấu hình bài kiểm tra, dựng câu hỏi, phát hành và kiểm tra cấu trúc đề.</p>
           </div>
           <div class="flex flex-wrap gap-2">
             <button class="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold" @click="loadAll"><RefreshCw class="h-4 w-4" />Tải lại</button>
-            <button class="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold" @click="newDraft"><Plus class="h-4 w-4" />Draft mới</button>
-            <button class="inline-flex items-center gap-2 rounded-md bg-slate-950 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50" :disabled="busy" @click="createExam"><Save class="h-4 w-4" />Lưu exam</button>
+            <button class="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold" @click="newDraft"><Plus class="h-4 w-4" />Bản nháp mới</button>
+            <button class="inline-flex items-center gap-2 rounded-md bg-slate-950 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50" :disabled="busy" @click="createExam"><Save class="h-4 w-4" />Lưu bài kiểm tra</button>
           </div>
         </div>
       </div>
@@ -409,22 +439,22 @@ function toInputDateTime(value) {
         <aside class="min-w-0 space-y-4">
           <div class="border bg-white">
             <div class="border-b px-4 py-3">
-              <h2 class="text-sm font-semibold">Danh sách exam</h2>
+              <h2 class="text-sm font-semibold">Danh sách bài kiểm tra</h2>
               <p class="mt-1 text-xs text-slate-500">{{ exams.length }} bài kiểm tra</p>
             </div>
             <div class="grid grid-cols-2 gap-2 p-3">
               <select v-model="filters.status" class="rounded-md border px-2 py-2 text-xs" @change="refreshExams">
-                <option value="">Status</option>
-                <option value="draft">Draft</option>
-                <option value="published">Published</option>
-                <option value="closed">Closed</option>
+                <option value="">Trạng thái</option>
+                <option value="draft">Bản nháp</option>
+                <option value="published">Đã phát hành</option>
+                <option value="closed">Đã đóng</option>
               </select>
               <select v-model="filters.exam_type" class="rounded-md border px-2 py-2 text-xs" @change="refreshExams">
-                <option value="">Type</option>
-                <option value="quiz">Quiz</option>
-                <option value="midterm">Midterm</option>
-                <option value="final">Final</option>
-                <option value="practice">Practice</option>
+                <option value="">Loại bài</option>
+                <option value="quiz">Bài kiểm tra ngắn</option>
+                <option value="midterm">Giữa kỳ</option>
+                <option value="final">Cuối kỳ</option>
+                <option value="practice">Luyện tập</option>
               </select>
             </div>
             <div class="max-h-[560px] overflow-auto p-3 pt-0">
@@ -436,30 +466,30 @@ function toInputDateTime(value) {
                 @click="loadExam(exam.id)"
               >
                 <span class="block truncate font-semibold text-slate-950">{{ exam.title }}</span>
-                <span class="mt-1 block text-xs text-slate-500">{{ exam.code }} · {{ exam.status }} · {{ exam.questions_count || 0 }} câu</span>
+                <span class="mt-1 block text-xs text-slate-500">{{ exam.code }} · {{ statusLabel(exam.status) }} · {{ exam.questions_count || 0 }} câu</span>
               </button>
-              <div v-if="!loading && !exams.length" class="rounded-md bg-slate-50 p-4 text-sm text-slate-500">Chưa có exam.</div>
+              <div v-if="!loading && !exams.length" class="rounded-md bg-slate-50 p-4 text-sm text-slate-500">Chưa có bài kiểm tra.</div>
             </div>
           </div>
         </aside>
 
         <main class="min-w-0 space-y-4">
           <div v-if="message" class="rounded-md border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm text-cyan-900">{{ message }}</div>
-          <div v-if="loading" class="rounded-md border bg-white p-5 text-sm text-slate-500">Đang tải builder...</div>
+          <div v-if="loading" class="rounded-md border bg-white p-5 text-sm text-slate-500">Đang tải trình tạo đề...</div>
 
           <template v-else>
             <div class="grid gap-3 md:grid-cols-4">
               <button class="rounded-md border px-3 py-3 text-left text-sm" :class="activePanel === 'configure' ? 'border-cyan-500 bg-white text-cyan-800' : 'bg-white'" @click="activePanel = 'configure'">
-                <span class="block text-xs uppercase text-slate-500">Step 1</span><span class="font-semibold">Cấu hình</span>
+                <span class="block text-xs uppercase text-slate-500">Bước 1</span><span class="font-semibold">Cấu hình</span>
               </button>
               <button class="rounded-md border px-3 py-3 text-left text-sm" :class="activePanel === 'blueprint' ? 'border-cyan-500 bg-white text-cyan-800' : 'bg-white'" @click="activePanel = 'blueprint'">
-                <span class="block text-xs uppercase text-slate-500">Step 2</span><span class="font-semibold">Blueprint</span>
+                <span class="block text-xs uppercase text-slate-500">Bước 2</span><span class="font-semibold">Ma trận đề</span>
               </button>
               <button class="rounded-md border px-3 py-3 text-left text-sm" :class="activePanel === 'preview' ? 'border-cyan-500 bg-white text-cyan-800' : 'bg-white'" @click="activePanel = 'preview'">
-                <span class="block text-xs uppercase text-slate-500">Step 3</span><span class="font-semibold">Preview</span>
+                <span class="block text-xs uppercase text-slate-500">Bước 3</span><span class="font-semibold">Xem trước</span>
               </button>
               <button class="rounded-md border px-3 py-3 text-left text-sm" :class="activePanel === 'build' ? 'border-cyan-500 bg-white text-cyan-800' : 'bg-white'" @click="activePanel = 'build'">
-                <span class="block text-xs uppercase text-slate-500">Step 4</span><span class="font-semibold">Build</span>
+                <span class="block text-xs uppercase text-slate-500">Bước 4</span><span class="font-semibold">Dựng đề</span>
               </button>
             </div>
 
@@ -468,14 +498,14 @@ function toInputDateTime(value) {
                 <h2 class="text-sm font-semibold">Cấu hình bài kiểm tra</h2>
               </div>
               <div class="grid gap-4 p-5 md:grid-cols-2">
-                <label class="text-sm"><span class="text-xs font-semibold uppercase text-slate-500">Mã exam</span><input v-model="form.code" class="mt-1 h-10 w-full rounded-md border px-3 text-sm" /></label>
+                <label class="text-sm"><span class="text-xs font-semibold uppercase text-slate-500">Mã bài kiểm tra</span><input v-model="form.code" class="mt-1 h-10 w-full rounded-md border px-3 text-sm" /></label>
                 <label class="text-sm"><span class="text-xs font-semibold uppercase text-slate-500">Tiêu đề</span><input v-model="form.title" class="mt-1 h-10 w-full rounded-md border px-3 text-sm" /></label>
-                <label class="text-sm"><span class="text-xs font-semibold uppercase text-slate-500">Khóa học</span><select v-model="form.course_id" class="mt-1 h-10 w-full rounded-md border bg-white px-3 text-sm"><option value="">Không gắn course</option><option v-for="course in courses" :key="course.id" :value="course.id">{{ optionLabel(course) }}</option></select></label>
+                <label class="text-sm"><span class="text-xs font-semibold uppercase text-slate-500">Khóa học</span><select v-model="form.course_id" class="mt-1 h-10 w-full rounded-md border bg-white px-3 text-sm"><option value="">Không gắn khóa học</option><option v-for="course in courses" :key="course.id" :value="course.id">{{ optionLabel(course) }}</option></select></label>
                 <label class="text-sm"><span class="text-xs font-semibold uppercase text-slate-500">Ngân hàng câu hỏi</span><select v-model="form.question_bank_id" class="mt-1 h-10 w-full rounded-md border bg-white px-3 text-sm"><option v-for="bank in banks" :key="bank.id" :value="bank.id">{{ optionLabel(bank, ['code', 'name']) }}</option></select></label>
-                <label class="text-sm"><span class="text-xs font-semibold uppercase text-slate-500">Blueprint</span><select v-model="form.blueprint_id" class="mt-1 h-10 w-full rounded-md border bg-white px-3 text-sm"><option value="">Chọn blueprint</option><option v-for="blueprint in blueprints" :key="blueprint.id" :value="blueprint.id">{{ optionLabel(blueprint, ['code', 'name']) }}</option></select></label>
-                <label class="text-sm"><span class="text-xs font-semibold uppercase text-slate-500">Loại exam</span><select v-model="form.exam_type" class="mt-1 h-10 w-full rounded-md border bg-white px-3 text-sm"><option value="quiz">Quiz</option><option value="midterm">Midterm</option><option value="final">Final</option><option value="practice">Practice</option></select></label>
-                <label class="text-sm"><span class="text-xs font-semibold uppercase text-slate-500">Delivery</span><select v-model="form.delivery_mode" class="mt-1 h-10 w-full rounded-md border bg-white px-3 text-sm"><option value="self_paced">Self paced</option><option value="scheduled">Scheduled</option><option value="remote_proctored">Remote proctored</option></select></label>
-                <label class="text-sm"><span class="text-xs font-semibold uppercase text-slate-500">Hiển thị kết quả</span><select v-model="form.show_result_mode" class="mt-1 h-10 w-full rounded-md border bg-white px-3 text-sm"><option value="after_submit">After submit</option><option value="immediately">Immediately</option><option value="after_close">After close</option><option value="manual">Manual</option></select></label>
+                <label class="text-sm"><span class="text-xs font-semibold uppercase text-slate-500">Ma trận đề</span><select v-model="form.blueprint_id" class="mt-1 h-10 w-full rounded-md border bg-white px-3 text-sm"><option value="">Chọn ma trận đề</option><option v-for="blueprint in blueprints" :key="blueprint.id" :value="blueprint.id">{{ optionLabel(blueprint, ['code', 'name']) }}</option></select></label>
+                <label class="text-sm"><span class="text-xs font-semibold uppercase text-slate-500">Loại bài kiểm tra</span><select v-model="form.exam_type" class="mt-1 h-10 w-full rounded-md border bg-white px-3 text-sm"><option v-for="(label, value) in examTypeLabels" :key="value" :value="value">{{ label }}</option></select></label>
+                <label class="text-sm"><span class="text-xs font-semibold uppercase text-slate-500">Cách tổ chức</span><select v-model="form.delivery_mode" class="mt-1 h-10 w-full rounded-md border bg-white px-3 text-sm"><option v-for="(label, value) in deliveryLabels" :key="value" :value="value">{{ label }}</option></select></label>
+                <label class="text-sm"><span class="text-xs font-semibold uppercase text-slate-500">Hiển thị kết quả</span><select v-model="form.show_result_mode" class="mt-1 h-10 w-full rounded-md border bg-white px-3 text-sm"><option v-for="(label, value) in resultModeLabels" :key="value" :value="value">{{ label }}</option></select></label>
                 <label class="text-sm"><span class="text-xs font-semibold uppercase text-slate-500">Tổng điểm</span><input v-model="form.total_score" type="number" class="mt-1 h-10 w-full rounded-md border px-3 text-sm" /></label>
                 <label class="text-sm"><span class="text-xs font-semibold uppercase text-slate-500">Điểm đạt</span><input v-model="form.pass_score" type="number" class="mt-1 h-10 w-full rounded-md border px-3 text-sm" /></label>
                 <label class="text-sm"><span class="text-xs font-semibold uppercase text-slate-500">Thời gian phút</span><input v-model="form.duration_minutes" type="number" class="mt-1 h-10 w-full rounded-md border px-3 text-sm" /></label>
@@ -485,40 +515,40 @@ function toInputDateTime(value) {
                 <label class="md:col-span-2 text-sm"><span class="text-xs font-semibold uppercase text-slate-500">Mô tả</span><textarea v-model="form.description" rows="3" class="mt-1 w-full rounded-md border px-3 py-2 text-sm"></textarea></label>
               </div>
               <div class="flex flex-wrap gap-3 border-t px-5 py-4">
-                <label class="inline-flex items-center gap-2 text-sm"><input v-model="form.shuffle_questions" type="checkbox" /> Shuffle câu hỏi</label>
-                <label class="inline-flex items-center gap-2 text-sm"><input v-model="form.shuffle_options" type="checkbox" /> Shuffle đáp án</label>
+                <label class="inline-flex items-center gap-2 text-sm"><input v-model="form.shuffle_questions" type="checkbox" /> Trộn câu hỏi</label>
+                <label class="inline-flex items-center gap-2 text-sm"><input v-model="form.shuffle_options" type="checkbox" /> Trộn đáp án</label>
                 <label class="inline-flex items-center gap-2 text-sm"><input v-model="form.show_correct_answers" type="checkbox" /> Hiện đáp án đúng</label>
               </div>
             </section>
 
             <section v-else-if="activePanel === 'blueprint'" class="border bg-white">
               <div class="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4">
-                <div><h2 class="text-sm font-semibold">Blueprint sections</h2><p class="mt-1 text-xs text-slate-500">{{ selectedBank?.name || 'Chọn ngân hàng để tạo blueprint' }}</p></div>
-                <button class="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold" @click="addSection"><Plus class="h-4 w-4" />Thêm section</button>
+                <div><h2 class="text-sm font-semibold">Phần trong ma trận đề</h2><p class="mt-1 text-xs text-slate-500">{{ selectedBank?.name || 'Chọn ngân hàng để tạo ma trận đề' }}</p></div>
+                <button class="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold" @click="addSection"><Plus class="h-4 w-4" />Thêm phần</button>
               </div>
               <div class="space-y-3 p-5">
                 <div class="grid gap-3 md:grid-cols-2">
-                  <input v-model="blueprintForm.code" class="rounded-md border px-3 py-2 text-sm" placeholder="Mã blueprint" />
-                  <input v-model="blueprintForm.name" class="rounded-md border px-3 py-2 text-sm" placeholder="Tên blueprint" />
+                  <input v-model="blueprintForm.code" class="rounded-md border px-3 py-2 text-sm" placeholder="Mã ma trận đề" />
+                  <input v-model="blueprintForm.name" class="rounded-md border px-3 py-2 text-sm" placeholder="Tên ma trận đề" />
                 </div>
                 <div v-for="(section, index) in sectionRows" :key="index" class="grid gap-3 rounded-md border p-3 md:grid-cols-[1fr_110px_1fr_1fr_100px_42px]">
                   <input v-model="section.name" class="rounded-md border px-3 py-2 text-sm" />
                   <input v-model="section.question_count" type="number" class="rounded-md border px-3 py-2 text-sm" />
-                  <input :value="section.difficulty.join(', ')" class="rounded-md border px-3 py-2 text-sm" placeholder="easy, medium" @input="section.difficulty = arrayValue($event.target.value)" />
-                  <input :value="section.bloom_level.join(', ')" class="rounded-md border px-3 py-2 text-sm" placeholder="remember, apply" @input="section.bloom_level = arrayValue($event.target.value)" />
+                  <input :value="section.difficulty.join(', ')" class="rounded-md border px-3 py-2 text-sm" placeholder="dễ, trung bình" @input="section.difficulty = arrayValue($event.target.value)" />
+                  <input :value="section.bloom_level.join(', ')" class="rounded-md border px-3 py-2 text-sm" placeholder="nhớ, vận dụng" @input="section.bloom_level = arrayValue($event.target.value)" />
                   <input v-model="section.score_each" type="number" step="0.25" class="rounded-md border px-3 py-2 text-sm" />
                   <button class="grid h-10 place-items-center rounded-md border text-rose-700" @click="removeSection(index)"><XCircle class="h-4 w-4" /></button>
                 </div>
               </div>
               <div class="flex flex-wrap gap-2 border-t px-5 py-4">
-                <button class="inline-flex items-center gap-2 rounded-md bg-slate-950 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50" :disabled="busy" @click="createBlueprint"><Save class="h-4 w-4" />Tạo blueprint</button>
-                <button class="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold disabled:opacity-50" :disabled="busy" @click="previewBlueprint"><Eye class="h-4 w-4" />Preview blueprint</button>
+                <button class="inline-flex items-center gap-2 rounded-md bg-slate-950 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50" :disabled="busy" @click="createBlueprint"><Save class="h-4 w-4" />Tạo ma trận đề</button>
+                <button class="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold disabled:opacity-50" :disabled="busy" @click="previewBlueprint"><Eye class="h-4 w-4" />Xem trước ma trận</button>
               </div>
             </section>
 
             <section v-else-if="activePanel === 'preview'" class="border bg-white">
               <div class="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4">
-                <div><h2 class="text-sm font-semibold">Random preview</h2><p class="mt-1 text-xs text-slate-500">{{ previewQuestionCount }} câu từ {{ previewSections.length }} section</p></div>
+                <div><h2 class="text-sm font-semibold">Xem trước đề ngẫu nhiên</h2><p class="mt-1 text-xs text-slate-500">{{ previewQuestionCount }} câu từ {{ previewSections.length }} phần</p></div>
                 <button class="inline-flex items-center gap-2 rounded-md bg-slate-950 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50" :disabled="busy" @click="previewBlueprint"><WandSparkles class="h-4 w-4" />Sinh lại</button>
               </div>
               <div class="p-5">
@@ -536,26 +566,26 @@ function toInputDateTime(value) {
                     </div>
                   </div>
                 </div>
-                <div v-if="!previewSections.length" class="rounded-md bg-slate-50 p-5 text-sm text-slate-500">Chưa có preview. Bấm Preview blueprint để sinh danh sách câu hỏi.</div>
+                <div v-if="!previewSections.length" class="rounded-md bg-slate-50 p-5 text-sm text-slate-500">Chưa có bản xem trước. Bấm Xem trước ma trận để sinh danh sách câu hỏi.</div>
               </div>
             </section>
 
             <section v-else class="border bg-white">
               <div class="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4">
-                <div><h2 class="text-sm font-semibold">Build & publish</h2><p class="mt-1 text-xs text-slate-500">{{ selectedExam?.title || 'Chưa chọn exam' }}</p></div>
+                <div><h2 class="text-sm font-semibold">Dựng và phát hành</h2><p class="mt-1 text-xs text-slate-500">{{ selectedExam?.title || 'Chưa chọn bài kiểm tra' }}</p></div>
                 <div class="flex flex-wrap gap-2">
                   <button class="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold" @click="useSelectedExam"><RefreshCw class="h-4 w-4" />Nạp vào form</button>
                   <button class="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold disabled:opacity-50" :disabled="busy" @click="updateExam"><Save class="h-4 w-4" />Cập nhật</button>
-                  <button class="inline-flex items-center gap-2 rounded-md bg-cyan-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50" :disabled="busy" @click="buildExam"><WandSparkles class="h-4 w-4" />Build</button>
-                  <button class="inline-flex items-center gap-2 rounded-md bg-slate-950 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50" :disabled="busy" @click="publishExam"><Send class="h-4 w-4" />Publish</button>
-                  <button class="inline-flex items-center gap-2 rounded-md border border-rose-200 px-3 py-2 text-sm font-semibold text-rose-700 disabled:opacity-50" :disabled="busy" @click="closeExam"><XCircle class="h-4 w-4" />Close</button>
+                  <button class="inline-flex items-center gap-2 rounded-md bg-cyan-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50" :disabled="busy" @click="buildExam"><WandSparkles class="h-4 w-4" />Dựng đề</button>
+                  <button class="inline-flex items-center gap-2 rounded-md bg-slate-950 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50" :disabled="busy" @click="publishExam"><Send class="h-4 w-4" />Phát hành</button>
+                  <button class="inline-flex items-center gap-2 rounded-md border border-rose-200 px-3 py-2 text-sm font-semibold text-rose-700 disabled:opacity-50" :disabled="busy" @click="closeExam"><XCircle class="h-4 w-4" />Đóng bài</button>
                 </div>
               </div>
               <div class="grid gap-4 p-5 md:grid-cols-4">
-                <div class="rounded-md bg-slate-50 p-3 text-sm"><div class="text-xs text-slate-500">Status</div><div class="mt-1 font-semibold">{{ selectedExam?.status || '-' }}</div></div>
-                <div class="rounded-md bg-slate-50 p-3 text-sm"><div class="text-xs text-slate-500">Sections</div><div class="mt-1 font-semibold">{{ examSections.length }}</div></div>
-                <div class="rounded-md bg-slate-50 p-3 text-sm"><div class="text-xs text-slate-500">Questions</div><div class="mt-1 font-semibold">{{ examQuestions.length }}</div></div>
-                <div class="rounded-md bg-slate-50 p-3 text-sm"><div class="text-xs text-slate-500">Built score</div><div class="mt-1 font-semibold">{{ builtScore }}</div></div>
+                <div class="rounded-md bg-slate-50 p-3 text-sm"><div class="text-xs text-slate-500">Trạng thái</div><div class="mt-1 font-semibold">{{ statusLabel(selectedExam?.status) }}</div></div>
+                <div class="rounded-md bg-slate-50 p-3 text-sm"><div class="text-xs text-slate-500">Số phần</div><div class="mt-1 font-semibold">{{ examSections.length }}</div></div>
+                <div class="rounded-md bg-slate-50 p-3 text-sm"><div class="text-xs text-slate-500">Số câu hỏi</div><div class="mt-1 font-semibold">{{ examQuestions.length }}</div></div>
+                <div class="rounded-md bg-slate-50 p-3 text-sm"><div class="text-xs text-slate-500">Tổng điểm đã dựng</div><div class="mt-1 font-semibold">{{ builtScore }}</div></div>
               </div>
               <div class="px-5 pb-5">
                 <div class="overflow-hidden border">
@@ -568,7 +598,7 @@ function toInputDateTime(value) {
                         <td class="px-3 py-3">{{ row.question?.question_type }}</td>
                         <td class="px-3 py-3">{{ row.score }}</td>
                       </tr>
-                      <tr v-if="!examQuestions.length"><td colspan="4" class="px-3 py-8 text-center text-slate-500">Chưa có câu hỏi. Build từ blueprint để tạo cấu trúc đề.</td></tr>
+                      <tr v-if="!examQuestions.length"><td colspan="4" class="px-3 py-8 text-center text-slate-500">Chưa có câu hỏi. Dựng đề từ ma trận để tạo cấu trúc đề.</td></tr>
                     </tbody>
                   </table>
                 </div>
@@ -579,10 +609,10 @@ function toInputDateTime(value) {
 
         <aside class="min-w-0 space-y-4">
           <div class="border bg-white p-4">
-            <h2 class="text-sm font-semibold">Exam đang chọn</h2>
+            <h2 class="text-sm font-semibold">Bài kiểm tra đang chọn</h2>
             <div class="mt-3 space-y-2 text-sm">
               <div class="flex justify-between"><span class="text-slate-500">Mã</span><strong>{{ selectedExam?.code || '-' }}</strong></div>
-              <div class="flex justify-between"><span class="text-slate-500">Trạng thái</span><strong>{{ selectedExam?.status || '-' }}</strong></div>
+              <div class="flex justify-between"><span class="text-slate-500">Trạng thái</span><strong>{{ statusLabel(selectedExam?.status) }}</strong></div>
               <div class="flex justify-between"><span class="text-slate-500">Thời lượng</span><strong>{{ selectedExam?.duration_minutes || '-' }} phút</strong></div>
               <div class="flex justify-between"><span class="text-slate-500">Mở</span><span>{{ formatDate(selectedExam?.open_at) }}</span></div>
               <div class="flex justify-between"><span class="text-slate-500">Đóng</span><span>{{ formatDate(selectedExam?.close_at) }}</span></div>
@@ -591,16 +621,16 @@ function toInputDateTime(value) {
           <div class="border bg-white p-4">
             <h2 class="text-sm font-semibold">Nguồn đề</h2>
             <div class="mt-3 space-y-3 text-sm">
-              <div class="rounded-md bg-slate-50 p-3"><div class="text-xs text-slate-500">Question bank</div><div class="mt-1 font-semibold">{{ selectedBank?.name || selectedExam?.question_bank?.name || '-' }}</div></div>
-              <div class="rounded-md bg-slate-50 p-3"><div class="text-xs text-slate-500">Blueprint</div><div class="mt-1 font-semibold">{{ selectedBlueprint?.name || selectedExam?.blueprint?.name || '-' }}</div></div>
+              <div class="rounded-md bg-slate-50 p-3"><div class="text-xs text-slate-500">Ngân hàng câu hỏi</div><div class="mt-1 font-semibold">{{ selectedBank?.name || selectedExam?.question_bank?.name || '-' }}</div></div>
+              <div class="rounded-md bg-slate-50 p-3"><div class="text-xs text-slate-500">Ma trận đề</div><div class="mt-1 font-semibold">{{ selectedBlueprint?.name || selectedExam?.blueprint?.name || '-' }}</div></div>
             </div>
           </div>
           <div class="border bg-white p-4">
             <h2 class="text-sm font-semibold">Checklist</h2>
             <div class="mt-3 space-y-2 text-sm">
-              <div class="flex justify-between"><span>Có blueprint</span><strong :class="form.blueprint_id ? 'text-emerald-700' : 'text-amber-700'">{{ form.blueprint_id ? 'OK' : 'Thiếu' }}</strong></div>
-              <div class="flex justify-between"><span>Có bank</span><strong :class="form.question_bank_id ? 'text-emerald-700' : 'text-amber-700'">{{ form.question_bank_id ? 'OK' : 'Thiếu' }}</strong></div>
-              <div class="flex justify-between"><span>Pass score</span><strong :class="Number(form.pass_score) <= Number(form.total_score) ? 'text-emerald-700' : 'text-rose-700'">{{ Number(form.pass_score) <= Number(form.total_score) ? 'OK' : 'Sai' }}</strong></div>
+              <div class="flex justify-between"><span>Có ma trận đề</span><strong :class="form.blueprint_id ? 'text-emerald-700' : 'text-amber-700'">{{ form.blueprint_id ? 'OK' : 'Thiếu' }}</strong></div>
+              <div class="flex justify-between"><span>Có ngân hàng câu hỏi</span><strong :class="form.question_bank_id ? 'text-emerald-700' : 'text-amber-700'">{{ form.question_bank_id ? 'OK' : 'Thiếu' }}</strong></div>
+              <div class="flex justify-between"><span>Điểm đạt</span><strong :class="Number(form.pass_score) <= Number(form.total_score) ? 'text-emerald-700' : 'text-rose-700'">{{ Number(form.pass_score) <= Number(form.total_score) ? 'OK' : 'Sai' }}</strong></div>
               <div class="flex justify-between"><span>Đã build</span><strong :class="examQuestions.length ? 'text-emerald-700' : 'text-amber-700'">{{ examQuestions.length ? 'OK' : 'Chưa' }}</strong></div>
             </div>
           </div>

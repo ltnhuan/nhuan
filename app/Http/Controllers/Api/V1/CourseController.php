@@ -14,6 +14,8 @@ use App\Services\ActivityRegistryService;
 use App\Services\ApprovalWorkflowService;
 use App\Services\CourseStructureService;
 use App\Services\CourseStudioService;
+use App\Services\DataDeletePolicyService;
+use App\Services\StatusTransitionValidator;
 use App\Services\TenantContext;
 use App\Support\ApiResponse;
 use App\Support\ApiPagination;
@@ -75,11 +77,32 @@ class CourseController extends Controller
         return $course->load(['category', 'academicUnit', 'owner', 'versions.creator', 'publishLogs']);
     }
 
-    public function update(Request $request, Course $course)
+    public function update(Request $request, Course $course, StatusTransitionValidator $transitions)
     {
+        if ($request->filled('status')) {
+            $transitions->assertAllowed('course', $course->status, (string) $request->input('status'));
+        }
+
         $course->fill($request->all())->save();
 
         return $course->fresh(['category', 'academicUnit', 'owner']);
+    }
+
+    public function destroy(Course $course, DataDeletePolicyService $deletePolicy)
+    {
+        try {
+            $deletePolicy->assertCanHardDelete($course);
+        } catch (\RuntimeException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 409);
+        }
+
+        if (in_array($course->status, ['approved', 'review'], true)) {
+            return response()->json($deletePolicy->archiveInstead($course), 200);
+        }
+
+        $course->delete();
+
+        return response()->noContent();
     }
 
     public function clone(Course $course, CourseStudioService $studio, Request $request)
@@ -211,9 +234,12 @@ class CourseController extends Controller
     {
         return Exam::query()
             ->where('tenant_id', $tenantContext->id())
+            ->when($request->filled('course_id'), fn ($query) => $query->where('course_id', $request->integer('course_id')))
+            ->when($request->filled('component_id'), fn ($query) => $query->where('component_id', $request->integer('component_id')))
+            ->withCount('questions')
             ->orderByDesc('updated_at')
             ->limit(50)
-            ->get(['id', 'title', 'exam_type', 'status', 'duration_minutes', 'pass_score', 'total_score']);
+            ->get(['id', 'code', 'title', 'description', 'exam_type', 'status', 'duration_minutes', 'pass_score', 'total_score', 'max_attempts', 'shuffle_questions', 'shuffle_options', 'show_result_mode']);
     }
 
     public function assignmentSelectOptions(Request $request, TenantContext $tenantContext)

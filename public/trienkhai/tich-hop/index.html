@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>T&#237;ch hợp &amp; vận h&#224;nh - EraLMS</title>
+  <link rel="stylesheet" href="/trienkhai/assets/site.css">
+</head>
+<body>
+  <header class="topbar">
+    <nav class="nav">
+      <a class="brand" href="/trienkhai"><span class="brand-mark">E</span><span>EraLMS triển khai</span></a>
+      <div class="nav-links">
+      <a href="/trienkhai">Home</a>
+      <a href="/trienkhai/dao-tao.html">Đào tạo</a>
+      <a href="/trienkhai/danh-gia.html">Đánh giá</a>
+      <a href="/trienkhai/nguoi-hoc.html">Người học</a>
+      <a href="/trienkhai/chuan-obe.html">Chuẩn & OBE</a>
+      <a class="active" href="/trienkhai/tich-hop.html">Tích hợp</a>
+      <a href="/trienkhai/ai-analytics.html">AI & Analytics</a>
+      <a href="/trienkhai/tat-ca-chuc-nang.html">Tất cả chức năng</a>
+      <a href="/trienkhai/lo-trinh.html">Lộ trình</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-title">
+      <div class="section">
+        <p class="eyebrow">Phân hệ Tích hợp &amp; vận hành</p>
+        <h1>Chi tiết triển khai theo chức năng</h1>
+        <p>Tập trung vào nền tảng hệ thống: tenant, IAM, SIS, API, webhook, backup và kiểm soát vận hành.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Luồng tổng thể</p>
+      <h2>Luồng vận hành an toàn theo dự án</h2>
+      <ol class="step-list">
+        <li>Thiết lập tenant, campus, user, role, permission.</li>
+        <li>Kích hoạt tích hợp SIS/API và kiểm tra mapping dữ liệu.</li>
+        <li>Đưa dữ liệu sản xuất theo job đồng bộ và xử lý conflict.</li>
+        <li>Giám sát webhook, audit log và thiết lập backup/rollback.</li>
+        <li>Vận hành theo kế hoạch UAT – go-live.</li>
+      </ol>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Chi tiết từng chức năng</p>
+      <h2>Bản đồ chi tiết triển khai</h2>
+      <div class="detail-grid two">
+        <article id="f-tenant" class="feature">
+          <h3>1. Tenant và tổ chức</h3>
+          <p>Quản lý phân vùng tenant và cấu hình mặc định theo đơn vị.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list"><li>Tạo tenant và mã định danh.</li><li>Cấu hình branding + quyền mặc định.</li><li>Kiểm tra dữ liệu không lẫn tenant.</li></ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Cho phép mở rộng multi-tenant và kiểm soát dữ liệu.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/tich-hop.html#f-user">Role &amp; permission</a></li><li><a href="/trienkhai/tich-hop.html#f-audit">Audit log</a></li><li><a href="/trienkhai/lo-trinh.html">Go-live</a></li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="f-user" class="feature">
+          <h3>2. User / Role / Permission</h3>
+          <p>Điều phối phân quyền người dùng theo chức năng.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list"><li>Import user, gán role.</li><li>Kiểm soát action registry.</li><li>Kiểm tra UI/API policy theo actor.</li></ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Hạn chế rủi ro truy cập sai hoặc thao tác trái quyền.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/dao-tao.html">Course management</a></li><li><a href="/trienkhai/danh-gia.html">Đánh giá</a></li><li><a href="/trienkhai/tich-hop.html#f-user">User/Role</a></li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="f-sis" class="feature">
+          <h3>3. SIS Integration</h3>
+          <p>Đồng bộ học viên, lớp, khóa, điểm và điểm danh theo hệ thống nguồn.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list"><li>Cấu hình nguồn + mapping.</li><li>Test sync thử.</li><li>Giải quyết conflict trước production.</li></ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Đảm bảo dữ liệu nhất quán với HRM/SIS hoặc hệ thống học vụ.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/nguoi-hoc.html#enrollment">Enrollment</a></li><li><a href="/trienkhai/danh-gia.html#gradebook">Gradebook</a></li><li><a href="/trienkhai/tich-hop.html#f-webhook">Webhook</a></li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="f-api" class="feature">
+          <h3>4. API v1 / Catalog</h3>
+          <p>Cung cấp endpoint cho tích hợp portal, mobile, BI.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list"><li>Kiểm tra /integration-api/catalog.</li><li>Đồng bộ openapi và key policy.</li><li>Thông báo version cho đội ngoài.</li></ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Rút gọn chi phí tích hợp mới và giảm lỗi API sai version.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/dao-tao.html">Course</a></li><li><a href="/trienkhai/danh-gia.html#bank">Question bank</a></li><li><a href="/trienkhai/ai-analytics.html">BI / Analytics</a></li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="f-webhook" class="feature">
+          <h3>5. Webhook inbound/outbound</h3>
+          <p>Nhận và đẩy sự kiện giữa LMS và hệ sinh thái ngoài.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list"><li>Khai báo endpoint và secret.</li><li>Gửi thử sự kiện.</li><li>Theo dõi delivery và retry.</li></ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Bảo đảm đồng bộ gần thời gian thực giữa nhiều hệ thống.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/tich-hop.html#f-audit">Audit log</a></li><li><a href="/trienkhai/danh-gia.html#gradebook">Điểm/grade events</a></li><li><a href="/trienkhai/lo-trinh.html">Monitoring</a></li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="f-audit" class="feature">
+          <h3>6. Audit &amp; vận hành</h3>
+          <p>Ghi log truy vết và quản lý vận hành an toàn.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list"><li>Thu thập log theo actor/action.</li><li>Phân quyền truy xuất theo vai trò.</li><li>Đặt retention + backup kiểm định.</li></ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Hỗ trợ điều tra sự cố, tuân thủ và audit.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/lo-trinh.html">Go-live checklist</a></li><li><a href="/trienkhai/lo-trinh.html">UAT</a></li><li><a href="/trienkhai/tich-hop.html#f-api">Security + API</a></li></ul>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="band">
+      <div class="section">
+        <p class="eyebrow">Lưu ý nghiệm thu</p>
+        <h2>Điều kiện an toàn khi đưa hệ thống lên production</h2>
+        <p>Mỗi kịch bản vận hành phải có log, retry, phân quyền và cơ chế rollback rõ ràng để chứng minh khả năng phục hồi sau lỗi tích hợp.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer"><div class="section"><a href="/trienkhai">Quay về trang giới thiệu</a></div></footer>
+</body>
+</html>

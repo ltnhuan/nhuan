@@ -26,6 +26,7 @@ class DigitalCredentialService
         return DB::transaction(function () use ($tenantId, $data) {
             $certificate = Certificate::query()->where('tenant_id', $tenantId)->findOrFail($data['certificate_id']);
             $learner = LmsUser::query()->where('tenant_id', $tenantId)->findOrFail($data['user_id']);
+            $this->assertCertificateEligibility($tenantId, $learner->id, $data['course_id'] ?? null);
             $code = $data['issue_code'] ?? $this->nextCode('CERT');
             $issuedAt = $data['issued_at'] ?? now();
             $hash = $this->hashPayload($tenantId, $code, $learner->id, $certificate->id, $issuedAt);
@@ -255,6 +256,35 @@ class DigitalCredentialService
             'competency', 'ai_skill' => data_get($completion->metadata, 'competency_status') === ($conditions['status'] ?? 'achieved'),
             default => false,
         };
+    }
+
+    private function assertCertificateEligibility(int $tenantId, int $userId, ?int $courseId): void
+    {
+        if (! $courseId) {
+            return;
+        }
+
+        $completed = LearningCompletion::query()
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->where('course_id', $courseId)
+            ->where('completion_type', 'course')
+            ->where('status', 'completed')
+            ->exists();
+
+        if (! $completed) {
+            throw new \RuntimeException('Không thể cấp chứng chỉ khi người học chưa hoàn thành khóa học.');
+        }
+
+        $summaries = DB::table('grade_summaries')
+            ->join('gradebooks', 'gradebooks.id', '=', 'grade_summaries.gradebook_id')
+            ->where('grade_summaries.tenant_id', $tenantId)
+            ->where('grade_summaries.user_id', $userId)
+            ->where('gradebooks.course_id', $courseId);
+
+        if ((clone $summaries)->exists() && ! (clone $summaries)->whereIn('pass_status', ['passed', 'pass'])->exists()) {
+            throw new \RuntimeException('Không thể cấp chứng chỉ khi điểm tổng kết chưa đạt.');
+        }
     }
 
     private function nextCode(string $prefix): string

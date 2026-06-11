@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Course;
+use App\Models\LearnerRiskProfile;
 use App\Models\LearningMetric;
 use App\Models\LmsUser;
 use App\Models\RiskAlert;
@@ -90,6 +91,97 @@ class LearningAnalyticsFeatureTest extends TestCase
         $this->assertNotEmpty($response->json('progress_trend'));
         $this->assertNotEmpty($response->json('grade_distribution'));
         $this->assertNotEmpty($response->json('completion_funnel'));
+    }
+
+    public function test_metrics_endpoint_obeys_course_and_date_filters(): void
+    {
+        [$student, $course] = $this->studentCourse();
+        $secondCourse = Course::factory()->create();
+
+        $this->metric($student->id, $course->id, [
+            'metric_date' => now()->subDays(2)->toDateString(),
+            'quiz_score' => 80,
+        ]);
+        $this->metric($student->id, $secondCourse->id, [
+            'metric_date' => now()->toDateString(),
+            'quiz_score' => 70,
+        ]);
+
+        $response = $this->withHeader('X-Tenant-Code', 'VABIS')
+            ->withHeader('X-Demo-User-Email', 'admin.lms@vabis.edu.vn')
+            ->getJson('/api/v1/analytics/metrics?course_id='.$course->id.'&from='.now()->subDays(3)->toDateString().'&to='.now()->subDays(1)->toDateString());
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'data');
+        $this->assertSame((string) $course->id, (string) $response->json('data.0.course_id'));
+    }
+
+    public function test_risks_and_alerts_endpoints_apply_date_filters_on_reports_page(): void
+    {
+        [$student, $course] = $this->studentCourse();
+        $secondStudent = LmsUser::query()->where('user_type', 'student')->where('id', '!=', $student->id)->firstOrFail();
+
+        LearnerRiskProfile::query()->create([
+            'tenant_id' => 1,
+            'user_id' => $student->id,
+            'course_id' => $course->id,
+            'risk_score' => 55,
+            'risk_level' => 'medium',
+            'risk_factors' => ['forum_activity_low'],
+            'recommendations' => ['duy trì tiến độ'],
+            'last_calculated_at' => now()->subDays(10),
+        ]);
+
+        LearnerRiskProfile::query()->create([
+            'tenant_id' => 1,
+            'user_id' => $secondStudent->id,
+            'course_id' => $course->id,
+            'risk_score' => 62,
+            'risk_level' => 'medium',
+            'risk_factors' => ['forum_activity_low'],
+            'recommendations' => ['duy trì tiến độ'],
+            'last_calculated_at' => now()->subDays(2),
+        ]);
+
+        RiskAlert::query()->create([
+            'tenant_id' => 1,
+            'user_id' => $student->id,
+            'course_id' => $course->id,
+            'risk_profile_id' => null,
+            'alert_type' => 'course_dropout',
+            'severity' => 'medium',
+            'status' => 'open',
+            'message' => 'Cảnh báo test',
+            'recommended_actions' => ['theo dõi'],
+            'triggered_at' => now()->subDays(2),
+        ]);
+
+        RiskAlert::query()->create([
+            'tenant_id' => 1,
+            'user_id' => $student->id,
+            'course_id' => $course->id,
+            'risk_profile_id' => null,
+            'alert_type' => 'course_dropout',
+            'severity' => 'medium',
+            'status' => 'open',
+            'message' => 'Cảnh báo cũ',
+            'recommended_actions' => ['xử lý'],
+            'triggered_at' => now()->subDays(10),
+        ]);
+
+        $risks = $this->withHeader('X-Tenant-Code', 'VABIS')
+            ->withHeader('X-Demo-User-Email', 'admin.lms@vabis.edu.vn')
+            ->getJson('/api/v1/analytics/risks?course_id='.$course->id.'&from='.now()->subDays(5)->toDateString().'&to='.now()->subDays(1)->toDateString());
+
+        $risks->assertOk();
+        $risks->assertJsonCount(1, 'data');
+
+        $alerts = $this->withHeader('X-Tenant-Code', 'VABIS')
+            ->withHeader('X-Demo-User-Email', 'admin.lms@vabis.edu.vn')
+            ->getJson('/api/v1/analytics/alerts?course_id='.$course->id.'&from='.now()->subDays(5)->toDateString().'&to='.now()->subDays(1)->toDateString());
+
+        $alerts->assertOk();
+        $alerts->assertJsonCount(1, 'data');
     }
 
     private function studentCourse(): array

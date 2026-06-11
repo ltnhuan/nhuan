@@ -16,3 +16,5 @@ Use Course Management to create, filter, clone, submit, approve, publish or arch
 Repository authors can create folders, upload files, add new versions, move/copy/share items, review metadata, get download URLs and submit items for approval. Files are deduplicated by checksum when possible.
 
 See `docs/course-studio/prompt-02-course-studio.md` for detailed Prompt 02 architecture and endpoints.
+
+The shared school-wide sample repository is seeded by `SharedLearningRepositorySeeder`; see `docs/shared-learning-repository.md` for its folder tree, metadata schema and 5,000 sample items.

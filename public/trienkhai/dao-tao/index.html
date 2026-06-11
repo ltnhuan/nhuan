@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Đ&#224;o tạo &amp; học liệu - EraLMS</title>
+  <link rel="stylesheet" href="/trienkhai/assets/site.css">
+</head>
+<body>
+  <header class="topbar">
+    <nav class="nav">
+      <a class="brand" href="/trienkhai"><span class="brand-mark">E</span><span>EraLMS triển khai</span></a>
+      <div class="nav-links">
+      <a href="/trienkhai">Home</a>
+      <a class="active" href="/trienkhai/dao-tao.html">Đào tạo</a>
+      <a href="/trienkhai/danh-gia.html">Đánh giá</a>
+      <a href="/trienkhai/nguoi-hoc.html">Người học</a>
+      <a href="/trienkhai/chuan-obe.html">Chuẩn & OBE</a>
+      <a href="/trienkhai/tich-hop.html">Tích hợp</a>
+      <a href="/trienkhai/ai-analytics.html">AI & Analytics</a>
+      <a href="/trienkhai/tat-ca-chuc-nang.html">Tất cả chức năng</a>
+      <a href="/trienkhai/lo-trinh.html">Lộ trình</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-title">
+      <div class="section">
+        <p class="eyebrow">Phân hệ Đào tạo &amp; học liệu</p>
+        <h1>Chi tiết triển khai theo chức năng</h1>
+        <p>Phân hệ tập trung vào thiết kế và vận hành học liệu theo một chuỗi nghiệp vụ rõ ràng: kế hoạch nội dung → soạn giảng → điều phối học viên → theo dõi hoàn thành.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Luồng tổng thể</p>
+      <h2>Khởi tạo khóa học đến vận hành học tập</h2>
+      <ol class="step-list">
+        <li>Khởi tạo <strong>Tenant, campus, phân quyền</strong> rồi cấp quyền quản lý khóa học.</li>
+        <li>Tạo khóa học + cấu trúc section/section → thêm tài nguyên và quiz liên quan.</li>
+        <li>Đưa bản nháp qua review, chỉnh sửa lần cuối rồi <strong>publish</strong> theo lịch.</li>
+        <li>Thiết lập learning path, quy tắc mở khóa và điều kiện hoàn thành.</li>
+        <li>Gắn hoạt động học liệu di động/video để theo dõi tiến độ theo thiết bị.</li>
+      </ol>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Chi tiết từng chức năng</p>
+      <h2>Chi tiết quy trình vận hành</h2>
+      <div class="detail-grid two">
+        <article id="course" class="feature">
+          <h3>1. Quản trị khóa học</h3>
+          <p>Quản lý danh mục, phiên bản và trạng thái lifecycle của khóa học.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list">
+                <li>Tạo bản ghi khóa học (code, title, owner, nhóm).</li>
+                <li>Tạo các phần, component, quiz và tài nguyên đi kèm.</li>
+                <li>Thiết lập quy tắc mở của từng khóa.</li>
+                <li>Submit duyệt trước khi publish.</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Duy trì cấu trúc khóa học nhất quán, giảm lỗi khi nhân bản nội dung cho nhiều lớp.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/danh-gia.html#gradebook">Sổ điểm</a></li><li><a href="/trienkhai/tich-hop.html#f-sis">SIS</a></li><li><a href="/trienkhai/lo-trinh.html">Lộ trình UAT</a></li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="studio" class="feature">
+          <h3>2. Course Studio</h3>
+          <p>Soạn nội dung theo section/unit/component và xem trước trước khi phát hành.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list">
+                <li>Tạo khung nội dung, gán CLO/PLO, deadline, tài nguyên.</li>
+                <li>Preview trước khi publish để kiểm tra định dạng.</li>
+                <li>Đánh dấu rule hoàn thành cho từng phần.</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Bảo đảm nội dung giảng dạy có chuẩn chất lượng và trace được trong quá trình chỉnh sửa.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/dao-tao.html#video">Video</a></li><li><a href="/trienkhai/tich-hop.html#f-api">API v1</a></li><li><a href="/trienkhai/chuan-obe.html#outcome">OBE outcomes</a></li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="repo" class="feature">
+          <h3>3. Kho học liệu</h3>
+          <p>Quản lý tài nguyên học liệu phiên bản hóa, chia sẻ và phê duyệt.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list">
+                <li>Upload file theo danh mục.</li>
+                <li>Phân loại version + quy tắc quyền xem/sửa.</li>
+                <li>Đính kèm vào đơn vị học liệu cần dùng.</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Tái sử dụng tài nguyên an toàn, giảm công sức tạo mới cho giảng viên.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/dao-tao.html#studio">Course Studio</a></li><li><a href="/trienkhai/chuan-obe.html#standards">SCORM/xAPI</a></li><li><a href="/trienkhai/ai-analytics.html#f-ai-doc">AI document</a></li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="video" class="feature">
+          <h3>4. Video platform</h3>
+          <p>Quản lý upload, encode, bản quyền xem và theo dõi tiến độ xem.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list">
+                <li>Upload asset và tạo phiên media.</li>
+                <li>Kiểm tra playback URL và quyền truy cập.</li>
+                <li>Theo dõi xem lại theo học viên/lớp.</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Bảo đảm tài liệu đa phương tiện ổn định cho học tập tự chủ.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/dao-tao.html#lpath">Learning path</a></li><li><a href="/trienkhai/ai-analytics.html#f-analytics">Progress analytics</a></li><li><a href="/trienkhai/nguoi-hoc.html#enrollment">Enrollment</a></li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="lpath" class="feature">
+          <h3>5. Learning path</h3>
+          <p>Thiết lập điều kiện mở khóa nội dung theo tiến độ theo lớp hoặc theo cá nhân.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list">
+                <li>Định nghĩa rule theo thời gian, điểm, thành phần đã hoàn thành.</li>
+                <li>Cấu hình hành trình theo khóa hoặc lớp.</li>
+                <li>Kích hoạt và chạy thử trước hàng loạt.</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Tăng tính kiểm soát trình tự học và giảm sai lệch chương trình đào tạo.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/danh-gia.html#gradebook">Sổ điểm</a></li><li><a href="/trienkhai/tich-hop.html#f-user">Role &amp; permission</a></li><li><a href="/trienkhai/nguoi-hoc.html#att">Attendance</a></li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="mobile" class="feature">
+          <h3>6. Mobile learning</h3>
+          <p>Hỗ trợ luồng offline, đồng bộ lại tiến độ khi có mạng.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list">
+                <li>Đăng ký manifest và cấu hình đồng bộ nền.</li>
+                <li>Tạo offline queue cho các thao tác học cơ bản.</li>
+                <li>Đặt ưu tiên đồng bộ sau khôi phục mạng.</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Giảm phụ thuộc thiết bị máy tính và tăng mức tham gia học tập ngoài lớp.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/nguoi-hoc.html#att">Attendance</a></li><li><a href="/trienkhai/ai-analytics.html#f-dashboard">Báo cáo quản trị</a></li><li><a href="/trienkhai/tich-hop.html#f-audit">Audit log</a></li></ul>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="band">
+      <div class="section">
+        <p class="eyebrow">Lưu ý nghiệm thu</p>
+        <h2>Mốc kiểm chứng trước chuyển giai đoạn</h2>
+        <p>Luồng được chốt khi mỗi feature có: 1) endpoint/API hoạt động đúng, 2) luồng nghiệp vụ có tài liệu, 3) dữ liệu liên kết module đúng quyền, 4) có dữ liệu mẫu đủ 1 lớp thử nghiệm.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer"><div class="section"><a href="/trienkhai">Quay về trang giới thiệu</a></div></footer>
+</body>
+</html>

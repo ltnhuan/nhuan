@@ -63,11 +63,13 @@ class EnrollmentController extends Controller
         $query = Enrollment::query()
             ->where('tenant_id', $tenant->id())
             ->with(['learner:id,code,full_name,email,user_type,status', 'classSection:id,code,name,section_type', 'course:id,code,title'])
+            ->when(($viewer = LmsUser::query()->find($this->userId($request, (int) $tenant->id())))?->user_type === 'student', fn ($q) => $q->where('user_id', $viewer->id))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->input('status')))
             ->when($request->filled('source'), fn ($q) => $q->where('source', $request->input('source')))
             ->when($request->filled('course_id'), fn ($q) => $q->where('course_id', $request->integer('course_id')))
             ->when($request->filled('class_section_id'), fn ($q) => $q->where('class_section_id', $request->integer('class_section_id')))
             ->when($request->filled('cohort_id'), fn ($q) => $q->where('cohort_id', $request->integer('cohort_id')))
+            ->when($request->boolean('mine'), fn ($q) => $q->where('user_id', $this->userId($request, (int) $tenant->id())))
             ->when($request->filled('q'), function ($q) use ($request) {
                 $term = '%'.$request->input('q').'%';
                 $q->whereHas('learner', fn ($user) => $user->where('code', 'like', $term)->orWhere('full_name', 'like', $term)->orWhere('email', 'like', $term));

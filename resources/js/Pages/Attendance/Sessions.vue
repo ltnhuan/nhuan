@@ -51,7 +51,7 @@ onMounted(load)
     <template #breadcrumb>Điểm danh online / Phiên điểm danh</template>
     <section class="mx-auto grid max-w-7xl gap-4 px-4 py-5 sm:px-6 lg:grid-cols-[360px_1fr]">
       <aside class="border bg-white p-4">
-        <h1 class="text-lg font-semibold">Attendance Session</h1>
+        <h1 class="text-lg font-semibold">Phiên điểm danh</h1>
         <div v-if="error" class="mt-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">{{ error }}</div>
         <div v-if="loading" class="mt-4 rounded-md bg-slate-50 p-4 text-sm text-slate-500">Đang tải dữ liệu...</div>
         <div v-else-if="!sessions.length" class="mt-4 rounded-md bg-slate-50 p-4 text-sm text-slate-500">Chưa có phiên điểm danh.</div>
@@ -71,7 +71,7 @@ onMounted(load)
         <div class="mt-4 grid gap-3 md:grid-cols-5"><button v-for="method in methods" :key="method" class="rounded-md border px-3 py-4 text-sm hover:bg-blue-50">{{ method }}</button></div>
         <div class="mt-5 overflow-hidden border">
           <table class="w-full text-left text-sm">
-            <thead class="bg-slate-50 text-xs uppercase text-slate-500"><tr><th class="px-4 py-3">Phiên</th><th class="px-4 py-3">Loại</th><th class="px-4 py-3">Open</th><th class="px-4 py-3">Close</th><th class="px-4 py-3">Status</th><th class="px-4 py-3">Records</th></tr></thead>
+            <thead class="bg-slate-50 text-xs uppercase text-slate-500"><tr><th class="px-4 py-3">Phiên</th><th class="px-4 py-3">Loại</th><th class="px-4 py-3">Mở lúc</th><th class="px-4 py-3">Đóng lúc</th><th class="px-4 py-3">Trạng thái</th><th class="px-4 py-3">Số bản ghi</th></tr></thead>
             <tbody class="divide-y">
               <tr v-if="loading"><td class="px-4 py-6 text-slate-500" colspan="6">Đang tải dữ liệu...</td></tr>
               <tr v-else-if="!sessions.length"><td class="px-4 py-6 text-slate-500" colspan="6">Không có dữ liệu.</td></tr>

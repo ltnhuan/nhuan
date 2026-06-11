@@ -88,7 +88,12 @@ class CourseStructureService
 
     public function outline(Course $course): array
     {
-        $sections = $course->sections()->with(['components.contentItem'])->get();
+        $sections = $course->sections()->with([
+            'components.contentItem',
+            'components.exam.questions.question.options',
+            'components.assignment.rubric.criteria.levels',
+            'components.videoAsset',
+        ])->get();
 
         return $this->buildTree($sections->whereNull('parent_id'), $sections);
     }
@@ -107,6 +112,47 @@ class CourseStructureService
                 'settings' => $section->settings ?? [],
                 'components' => $section->components->map(function (CourseComponent $component) {
                     $content = $component->contentItem;
+                    $exam = $component->exam;
+                    $assignment = $component->assignment;
+                    $videoAsset = $component->videoAsset;
+                    $config = $component->config ?? [];
+
+                    if ($exam) {
+                        $config = array_replace($config, [
+                            'exam_id' => $exam->id,
+                            'exam_title' => $exam->title,
+                            'exam_code' => $exam->code,
+                            'exam_description' => $exam->description,
+                            'exam_type' => $exam->exam_type,
+                            'questions_count' => $exam->questions->count(),
+                            'question_count' => $exam->questions->count(),
+                            'duration_minutes' => $exam->duration_minutes,
+                            'pass_score' => (float) $exam->pass_score,
+                            'total_score' => (float) $exam->total_score,
+                            'max_attempts' => $exam->max_attempts,
+                            'shuffle_questions' => $exam->shuffle_questions,
+                            'shuffle_options' => $exam->shuffle_options,
+                            'show_result_mode' => $exam->show_result_mode,
+                        ]);
+                    }
+
+                    if ($assignment) {
+                        $config = array_replace($config, [
+                            'assignment_id' => $assignment->id,
+                            'assignment_title' => $assignment->title,
+                            'assignment_description' => $assignment->description,
+                            'rubric_id' => $assignment->rubric_id,
+                            'pass_score' => (float) $assignment->pass_score,
+                            'max_score' => (float) $assignment->max_score,
+                        ]);
+                    }
+
+                    if ($videoAsset) {
+                        $config = array_replace($config, [
+                            'video_asset_id' => $videoAsset->id,
+                            'duration_seconds' => $videoAsset->duration_seconds,
+                        ]);
+                    }
 
                     return [
                         'id' => $component->id,
@@ -119,7 +165,17 @@ class CourseStructureService
                             ...$content->only(['id', 'title', 'item_type', 'status', 'mime_type']),
                             'download_url' => app(RepositoryService::class)->signedDownloadUrl($content),
                         ] : null,
-                        'config' => $component->config ?? [],
+                        'exam' => $exam ? [
+                            ...$exam->only(['id', 'code', 'title', 'description', 'exam_type', 'status', 'duration_minutes', 'pass_score', 'total_score', 'max_attempts']),
+                            'questions_count' => $exam->questions->count(),
+                        ] : null,
+                        'assignment' => $assignment ? [
+                            ...$assignment->only(['id', 'title', 'description', 'status', 'due_at', 'max_score', 'pass_score', 'rubric_id']),
+                        ] : null,
+                        'video_asset' => $videoAsset ? [
+                            ...$videoAsset->only(['id', 'title', 'duration_seconds', 'processing_status', 'hls_master_path', 'thumbnail_url']),
+                        ] : null,
+                        'config' => $config,
                     ];
                 })->values()->all(),
                 'children' => $this->buildTree($all->where('parent_id', $section->id), $all),

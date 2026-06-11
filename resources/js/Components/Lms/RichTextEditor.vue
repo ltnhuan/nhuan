@@ -53,10 +53,17 @@ const props = defineProps({
   minHeight: { type: String, default: '260px' },
   apiHeaders: { type: Object, default: () => ({}) },
   uploadUrl: { type: String, default: '/api/v1/editor/media-upload' },
+  toolbarScale: { type: String, default: 'md' },
 })
 
 const emit = defineEmits(['update:modelValue', 'media-uploaded'])
 const editorInstance = ref(null)
+const toolbarScaleFactor = computed(() => {
+  if (props.toolbarScale === 'lg') return 1.25
+  if (props.toolbarScale === 'xl') return 1.5
+  if (props.toolbarScale === 'sm') return 0.9
+  return 1
+})
 
 class EraLmsUploadAdapter {
   constructor(loader) {
@@ -292,12 +299,15 @@ function escapeAttribute(value) {
 </script>
 
 <template>
-  <div class="eralms-rich-text-editor min-w-0 max-w-full overflow-hidden rounded-md border border-slate-300 bg-white shadow-sm">
+  <div
+    class="eralms-rich-text-editor min-w-0 max-w-full overflow-hidden rounded-md border border-slate-300 bg-white shadow-sm"
+    :style="{ '--era-rte-toolbar-scale': toolbarScaleFactor }"
+  >
     <div class="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2">
       <button type="button" class="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100" @click="openMediaPicker('image/*')">Ảnh</button>
       <button type="button" class="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100" @click="openMediaPicker('audio/*')">Âm thanh</button>
       <button type="button" class="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100" @click="openMediaPicker('video/*')">Video</button>
-      <span class="text-xs text-slate-500">Upload media vào Repository và chèn trực tiếp vào nội dung.</span>
+      <span class="text-xs text-slate-500">Tải media vào kho học liệu và chèn trực tiếp vào nội dung.</span>
     </div>
     <ckeditor
       :editor="ClassicEditor"
@@ -310,6 +320,10 @@ function escapeAttribute(value) {
 </template>
 
 <style scoped>
+.eralms-rich-text-editor {
+  --era-rte-toolbar-scale: 1;
+}
+
 .eralms-rich-text-editor :deep(.ck),
 .eralms-rich-text-editor :deep(.ck-editor),
 .eralms-rich-text-editor :deep(.ck-editor__main),
@@ -326,5 +340,29 @@ function escapeAttribute(value) {
 
 .eralms-rich-text-editor :deep(.ck-editor__editable_inline) {
   overflow-wrap: anywhere;
+}
+
+.eralms-rich-text-editor :deep(.ck-button),
+.eralms-rich-text-editor :deep(.ck-dropdown__button) {
+  min-height: calc(28px * var(--era-rte-toolbar-scale));
+  min-width: calc(28px * var(--era-rte-toolbar-scale));
+  padding: calc(0.28rem * var(--era-rte-toolbar-scale)) calc(0.4rem * var(--era-rte-toolbar-scale));
+  font-size: calc(12px * var(--era-rte-toolbar-scale));
+}
+
+.eralms-rich-text-editor :deep(.ck-button .ck-button__icon) {
+  transform: scale(var(--era-rte-toolbar-scale));
+}
+
+.eralms-rich-text-editor :deep(.ck-dropdown__panel) {
+  font-size: calc(12px * var(--era-rte-toolbar-scale));
+}
+
+.eralms-rich-text-editor :deep(.ck.ck-button.ck-on) {
+  border-radius: 0.25rem;
+}
+
+.eralms-rich-text-editor :deep(.ck-button .ck-button__label) {
+  padding-top: 2px;
 }
 </style>

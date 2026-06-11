@@ -12,6 +12,7 @@ class ClassSection extends Model
 
     public function course() { return $this->belongsTo(Course::class); }
     public function cohort() { return $this->belongsTo(Cohort::class); }
+    public function cohortGroup() { return $this->belongsTo(CohortGroup::class); }
     public function enrollments() { return $this->hasMany(Enrollment::class); }
     public function teacherAssignments() { return $this->hasMany(TeacherAssignment::class); }
 }

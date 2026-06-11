@@ -10,6 +10,7 @@ use App\Models\EngagementScore;
 use App\Models\LearnerRiskProfile;
 use App\Models\LearningMetric;
 use App\Models\RiskAlert;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -17,6 +18,10 @@ use Illuminate\Support\Facades\DB;
 
 class LearningAnalyticsService
 {
+    public function __construct(private readonly PerformanceCacheService $cacheService)
+    {
+    }
+
     public function calculateRisk(int $tenantId, int $userId, ?int $courseId = null, int $days = 30): LearnerRiskProfile
     {
         $metrics = LearningMetric::query()
@@ -45,6 +50,7 @@ class LearningAnalyticsService
 
         $this->syncEngagementScore($tenantId, $userId, $courseId, $signals);
         $this->generateAlerts($profile, $signals);
+        $this->cacheService->forgetTenant($tenantId);
 
         return $profile->fresh();
     }
@@ -52,53 +58,68 @@ class LearningAnalyticsService
     public function dashboard(int $tenantId, string $audience = 'executive', array $filters = []): array
     {
         $courseId = $filters['course_id'] ?? null;
-        $from = Carbon::parse($filters['from'] ?? now()->subDays(89)->toDateString())->toDateString();
+        $from = Carbon::parse($filters['from'] ?? now()->subDays(30)->toDateString())->toDateString();
         $to = Carbon::parse($filters['to'] ?? now()->toDateString())->toDateString();
+        $scope = implode(':', [
+            'audience', $audience,
+            'tenant', $tenantId,
+            'course', $courseId ?: 'all',
+            'from', $from,
+            'to', $to,
+        ]);
 
-        $profiles = LearnerRiskProfile::query()
-            ->where('tenant_id', $tenantId)
-            ->when($courseId, fn ($q) => $q->where('course_id', $courseId));
+        return $this->cacheService->dashboardSummary($tenantId, $scope, function () use ($tenantId, $audience, $courseId, $from, $to) {
+            $profiles = LearnerRiskProfile::query()
+                ->where('tenant_id', $tenantId)
+                ->when($courseId, fn ($q) => $q->where('course_id', $courseId));
 
-        $metrics = LearningMetric::query()
-            ->where('tenant_id', $tenantId)
-            ->when($courseId, fn ($q) => $q->where('course_id', $courseId))
-            ->whereDate('metric_date', '>=', $from)
-            ->whereDate('metric_date', '<=', $to);
+            $metrics = LearningMetric::query()
+                ->where('tenant_id', $tenantId)
+                ->when($courseId, fn ($q) => $q->where('course_id', $courseId))
+                ->whereDate('metric_date', '>=', $from)
+                ->whereDate('metric_date', '<=', $to);
 
-        $latestSummary = AnalyticsDailySummary::query()
-            ->where('tenant_id', $tenantId)
-            ->when($courseId, fn ($q) => $q->where('scope_type', 'course')->where('scope_id', $courseId))
-            ->latest('period_start')
-            ->first();
+            $riskSummary = $this->riskProfileSummary((clone $profiles));
+            $metricSummary = $this->metricSummary((clone $metrics));
+            $latestSummary = AnalyticsDailySummary::query()
+                ->where('tenant_id', $tenantId)
+                ->when($courseId, fn ($q) => $q->where('scope_type', 'course')->where('scope_id', $courseId))
+                ->latest('period_start')
+                ->first();
 
-        $riskByLevel = (clone $profiles)
-            ->select('risk_level', DB::raw('count(*) as total'))
-            ->groupBy('risk_level')
-            ->pluck('total', 'risk_level');
+            $openAlerts = RiskAlert::query()
+                ->where('tenant_id', $tenantId)
+                ->where('status', 'open')
+                ->when($courseId, fn ($q) => $q->where('course_id', $courseId));
 
-        return [
-            'audience' => $audience,
-            'kpis' => [
-                'learners' => (clone $metrics)->distinct('user_id')->count('user_id'),
-                'avg_progress' => round((float) ((clone $metrics)->avg(DB::raw('(video_completion + assignment_completion) / 2')) ?? 0), 2),
-                'avg_grade' => round((float) ((clone $metrics)->avg('quiz_score') ?? 0), 2),
-                'avg_engagement' => round((float) (EngagementScore::query()->where('tenant_id', $tenantId)->when($courseId, fn ($q) => $q->where('course_id', $courseId))->avg('engagement_score') ?? 0), 2),
-                'avg_risk_score' => round((float) ((clone $profiles)->avg('risk_score') ?? 0), 2),
-                'open_alerts' => RiskAlert::query()->where('tenant_id', $tenantId)->where('status', 'open')->when($courseId, fn ($q) => $q->where('course_id', $courseId))->count(),
-            ],
-            'risk_distribution' => [
-                'low' => (int) ($riskByLevel['low'] ?? 0),
-                'medium' => (int) ($riskByLevel['medium'] ?? 0),
-                'high' => (int) ($riskByLevel['high'] ?? 0),
-                'critical' => (int) ($riskByLevel['critical'] ?? 0),
-            ],
-            'progress_trend' => $this->trend($tenantId, $from, $to, $courseId),
-            'grade_distribution' => $this->gradeDistribution($metrics),
-            'heatmap' => $this->heatmap($tenantId, $from, $to, $courseId),
-            'completion_funnel' => $this->completionFunnel($metrics),
-            'alerts' => RiskAlert::query()->where('tenant_id', $tenantId)->where('status', 'open')->when($courseId, fn ($q) => $q->where('course_id', $courseId))->with(['learner:id,full_name,code,email', 'course:id,title,code'])->latest('triggered_at')->limit($audience === 'student' ? 5 : 20)->get(),
-            'latest_summary' => $latestSummary,
-        ];
+            return [
+                'audience' => $audience,
+                'kpis' => [
+                    'learners' => (int) $metricSummary['learners'],
+                    'avg_progress' => round((float) $metricSummary['avg_progress'], 2),
+                    'avg_grade' => round((float) $metricSummary['avg_grade'], 2),
+                    'avg_engagement' => round((float) (EngagementScore::query()
+                        ->where('tenant_id', $tenantId)
+                        ->when($courseId, fn ($q) => $q->where('course_id', $courseId))
+                        ->whereDate('score_date', '>=', $from)
+                        ->whereDate('score_date', '<=', $to)
+                        ->avg('engagement_score') ?? 0), 2),
+                    'avg_risk_score' => round((float) $riskSummary['avg_risk_score'], 2),
+                    'open_alerts' => (int) $openAlerts->count(),
+                ],
+                'risk_distribution' => $riskSummary['distribution'],
+                'progress_trend' => $this->trend($tenantId, $from, $to, $courseId),
+                'grade_distribution' => $this->gradeDistributionFromSummary($metricSummary),
+                'heatmap' => $this->heatmap($tenantId, $from, $to, $courseId),
+                'completion_funnel' => $this->completionFunnelFromSummary($metricSummary),
+                'alerts' => (clone $openAlerts)
+                    ->with(['learner:id,full_name,code,email', 'course:id,title,code'])
+                    ->latest('triggered_at')
+                    ->limit($audience === 'student' ? 5 : 20)
+                    ->get(),
+                'latest_summary' => $latestSummary,
+            ];
+        });
     }
 
     public function buildSummary(int $tenantId, string $period, CarbonInterface $start, ?CarbonInterface $end = null, string $scopeType = 'tenant', ?int $scopeId = null): array
@@ -119,20 +140,23 @@ class LearningAnalyticsService
             ->where('tenant_id', $tenantId)
             ->when($scopeType === 'course', fn ($q) => $q->where('course_id', $scopeId));
 
+        $metricSummary = $this->metricSummary((clone $metrics));
+        $riskSummary = $this->riskProfileSummary((clone $profiles));
+
         $payload = [
             'tenant_id' => $tenantId,
             'scope_type' => $scopeType,
             'scope_id' => $scopeId,
             'period_start' => $start->toDateString(),
             'period_end' => $end->toDateString(),
-            'learner_count' => (clone $metrics)->distinct('user_id')->count('user_id'),
-            'avg_progress' => round((float) ((clone $metrics)->avg(DB::raw('(video_completion + assignment_completion) / 2')) ?? 0), 2),
-            'avg_grade' => round((float) ((clone $metrics)->avg('quiz_score') ?? 0), 2),
+            'learner_count' => (int) $metricSummary['learners'],
+            'avg_progress' => round((float) $metricSummary['avg_progress'], 2),
+            'avg_grade' => round((float) $metricSummary['avg_grade'], 2),
             'avg_engagement' => round((float) (EngagementScore::query()->where('tenant_id', $tenantId)->when($scopeType === 'course', fn ($q) => $q->where('course_id', $scopeId))->whereDate('score_date', '>=', $start->toDateString())->whereDate('score_date', '<=', $end->toDateString())->avg('engagement_score') ?? 0), 2),
-            'avg_risk_score' => round((float) ((clone $profiles)->avg('risk_score') ?? 0), 2),
-            'high_risk_count' => (clone $profiles)->where('risk_level', 'high')->count(),
-            'critical_risk_count' => (clone $profiles)->where('risk_level', 'critical')->count(),
-            'completion_rate' => round((float) ((clone $metrics)->where('video_completion', '>=', 80)->where('assignment_completion', '>=', 80)->count() * 100 / max((clone $metrics)->count(), 1)), 2),
+            'avg_risk_score' => round((float) $riskSummary['avg_risk_score'], 2),
+            'high_risk_count' => $riskSummary['high'],
+            'critical_risk_count' => $riskSummary['critical'],
+            'completion_rate' => $this->completionRateFromSummary($metricSummary),
             'chart_data' => ['trend' => $this->trend($tenantId, $start->toDateString(), $end->toDateString(), $scopeType === 'course' ? $scopeId : null)],
         ];
 
@@ -151,6 +175,8 @@ class LearningAnalyticsService
             ['tenant_id' => $tenantId, 'scope_type' => $scopeType, 'scope_id' => $scopeId, 'period_type' => $period, 'period_start' => $start->toDateString()],
             ['period_end' => $end->toDateString(), 'metrics' => $payload]
         );
+
+        $this->cacheService->forgetTenant($tenantId);
 
         return $summary->toArray();
     }
@@ -255,6 +281,68 @@ class LearningAnalyticsService
         }
     }
 
+    private function riskProfileSummary(EloquentBuilder $profiles): array
+    {
+        $profileSummary = (clone $profiles)
+            ->selectRaw('COUNT(*) as total_profiles')
+            ->selectRaw('AVG(risk_score) as avg_risk_score')
+            ->selectRaw("SUM(CASE WHEN risk_level = 'low' THEN 1 ELSE 0 END) as low")
+            ->selectRaw("SUM(CASE WHEN risk_level = 'medium' THEN 1 ELSE 0 END) as medium")
+            ->selectRaw("SUM(CASE WHEN risk_level = 'high' THEN 1 ELSE 0 END) as high")
+            ->selectRaw("SUM(CASE WHEN risk_level = 'critical' THEN 1 ELSE 0 END) as critical")
+            ->first();
+
+        return [
+            'avg_risk_score' => (float) ($profileSummary->avg_risk_score ?? 0),
+            'distribution' => [
+                'low' => (int) ($profileSummary->low ?? 0),
+                'medium' => (int) ($profileSummary->medium ?? 0),
+                'high' => (int) ($profileSummary->high ?? 0),
+                'critical' => (int) ($profileSummary->critical ?? 0),
+            ],
+            'high' => (int) ($profileSummary->high ?? 0),
+            'critical' => (int) ($profileSummary->critical ?? 0),
+        ];
+    }
+
+    private function metricSummary(EloquentBuilder $metrics): array
+    {
+        $metricSummary = (clone $metrics)
+            ->selectRaw('COUNT(*) as total_records')
+            ->selectRaw('COUNT(DISTINCT user_id) as learners')
+            ->selectRaw("AVG((video_completion + assignment_completion) / 2) as avg_progress")
+            ->selectRaw('AVG(quiz_score) as avg_grade')
+            ->selectRaw('SUM(CASE WHEN login_frequency > 0 THEN 1 ELSE 0 END) as login_rows')
+            ->selectRaw('SUM(CASE WHEN video_completion >= 50 THEN 1 ELSE 0 END) as video_rows')
+            ->selectRaw('SUM(CASE WHEN assignment_completion >= 50 THEN 1 ELSE 0 END) as assignment_rows')
+            ->selectRaw("SUM(CASE WHEN video_completion >= 80 AND assignment_completion >= 80 THEN 1 ELSE 0 END) as completion_rows")
+            ->selectRaw('SUM(CASE WHEN quiz_score < 50 THEN 1 ELSE 0 END) as grade_0_49')
+            ->selectRaw('SUM(CASE WHEN quiz_score >= 50 AND quiz_score < 65 THEN 1 ELSE 0 END) as grade_50_64')
+            ->selectRaw('SUM(CASE WHEN quiz_score >= 65 AND quiz_score < 80 THEN 1 ELSE 0 END) as grade_65_79')
+            ->selectRaw('SUM(CASE WHEN quiz_score >= 80 THEN 1 ELSE 0 END) as grade_80_100')
+            ->first();
+
+        $total = (float) max((int) ($metricSummary->total_records ?? 0), 1);
+
+        return [
+            'total_records' => (int) ($metricSummary->total_records ?? 0),
+            'learners' => (int) ($metricSummary->learners ?? 0),
+            'avg_progress' => (float) ($metricSummary->avg_progress ?? 0),
+            'avg_grade' => (float) ($metricSummary->avg_grade ?? 0),
+            'login_rows' => (int) ($metricSummary->login_rows ?? 0),
+            'video_rows' => (int) ($metricSummary->video_rows ?? 0),
+            'assignment_rows' => (int) ($metricSummary->assignment_rows ?? 0),
+            'completion_rows' => (int) ($metricSummary->completion_rows ?? 0),
+            'grade_distribution' => [
+                '0-49' => (int) ($metricSummary->grade_0_49 ?? 0),
+                '50-64' => (int) ($metricSummary->grade_50_64 ?? 0),
+                '65-79' => (int) ($metricSummary->grade_65_79 ?? 0),
+                '80-100' => (int) ($metricSummary->grade_80_100 ?? 0),
+            ],
+            'total_rows' => $total,
+        ];
+    }
+
     private function trend(int $tenantId, string $from, string $to, ?int $courseId): array
     {
         return LearningMetric::query()
@@ -289,25 +377,54 @@ class LearningAnalyticsService
             ->when($courseId, fn ($q) => $q->where('course_id', $courseId))
             ->whereDate('metric_date', '>=', $from)
             ->whereDate('metric_date', '<=', $to)
-            ->get(['metric_date', 'login_frequency', 'study_time_minutes', 'forum_activity'])
-            ->groupBy(fn (LearningMetric $metric) => Carbon::parse($metric->metric_date)->dayOfWeek)
-            ->map(fn (Collection $items, int $weekday) => [
-                'weekday' => $weekday,
-                'intensity' => round($items->avg(fn (LearningMetric $metric) => $metric->login_frequency + ($metric->study_time_minutes / 60) + $metric->forum_activity), 2),
+            ->selectRaw($this->weekDayExpression().' AS weekday, AVG(login_frequency + (study_time_minutes / 60) + forum_activity) AS intensity')
+            ->groupByRaw($this->weekDayExpression())
+            ->orderByRaw($this->weekDayExpression())
+            ->get()
+            ->map(fn ($item) => [
+                'weekday' => (int) $item->weekday,
+                'intensity' => round((float) $item->intensity, 2),
             ])
-            ->sortBy('weekday')
-            ->values()
             ->all();
     }
 
-    private function completionFunnel($metrics): array
+    private function completionFunnelFromSummary(array $summary): array
     {
-        $total = max((clone $metrics)->count(), 1);
+        $total = max((int) ($summary['total_records'] ?? 1), 1);
         return [
-            ['stage' => 'Đăng nhập', 'value' => (clone $metrics)->where('login_frequency', '>', 0)->count(), 'rate' => round((clone $metrics)->where('login_frequency', '>', 0)->count() * 100 / $total, 2)],
-            ['stage' => 'Xem video', 'value' => (clone $metrics)->where('video_completion', '>=', 50)->count(), 'rate' => round((clone $metrics)->where('video_completion', '>=', 50)->count() * 100 / $total, 2)],
-            ['stage' => 'Nộp bài', 'value' => (clone $metrics)->where('assignment_completion', '>=', 50)->count(), 'rate' => round((clone $metrics)->where('assignment_completion', '>=', 50)->count() * 100 / $total, 2)],
-            ['stage' => 'Hoàn thành', 'value' => (clone $metrics)->where('video_completion', '>=', 80)->where('assignment_completion', '>=', 80)->count(), 'rate' => round((clone $metrics)->where('video_completion', '>=', 80)->where('assignment_completion', '>=', 80)->count() * 100 / $total, 2)],
+            ['stage' => 'Đăng nhập', 'value' => (int) ($summary['login_rows'] ?? 0), 'rate' => round(((float) ($summary['login_rows'] ?? 0) * 100 / $total), 2)],
+            ['stage' => 'Xem video', 'value' => (int) ($summary['video_rows'] ?? 0), 'rate' => round(((float) ($summary['video_rows'] ?? 0) * 100 / $total), 2)],
+            ['stage' => 'Nộp bài', 'value' => (int) ($summary['assignment_rows'] ?? 0), 'rate' => round(((float) ($summary['assignment_rows'] ?? 0) * 100 / $total), 2)],
+            ['stage' => 'Hoàn thành', 'value' => (int) ($summary['completion_rows'] ?? 0), 'rate' => round(((float) ($summary['completion_rows'] ?? 0) * 100 / $total), 2)],
         ];
+    }
+
+    private function completionRateFromSummary(array $summary): float
+    {
+        $total = max((int) $summary['total_records'], 0);
+        if ($total === 0) {
+            return 0.0;
+        }
+
+        return round(((float) $summary['completion_rows'] * 100) / $total, 2);
+    }
+
+    private function gradeDistributionFromSummary(array $summary): array
+    {
+        return [
+            '0-49' => (int) ($summary['grade_distribution']['0-49'] ?? 0),
+            '50-64' => (int) ($summary['grade_distribution']['50-64'] ?? 0),
+            '65-79' => (int) ($summary['grade_distribution']['65-79'] ?? 0),
+            '80-100' => (int) ($summary['grade_distribution']['80-100'] ?? 0),
+        ];
+    }
+
+    private function weekDayExpression(): string
+    {
+        return match (DB::getDriverName()) {
+            'mysql', 'mariadb' => 'DAYOFWEEK(metric_date) - 1',
+            'pgsql' => 'EXTRACT(DOW FROM metric_date)',
+            default => "strftime('%w', metric_date)",
+        };
     }
 }

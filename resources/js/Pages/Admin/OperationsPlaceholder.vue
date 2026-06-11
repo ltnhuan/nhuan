@@ -15,12 +15,12 @@ defineEmits(['logout'])
 const { loading, toast, runAction } = useLmsAction(props.apiHeaders)
 
 const actions = [
-  { action_key: 'action.scan', label: 'Scan actions', route: '/api/v1/admin/lms/action-check/scan', method: 'POST' },
-  { action_key: 'action.sync', label: 'Sync actions', route: '/api/v1/admin/lms/action-check/sync-actions', method: 'POST', confirm_required: true, confirm_message: 'Đồng bộ action registry?' },
-  { action_key: 'action.fix_permissions', label: 'Fix permissions', route: '/api/v1/admin/lms/action-check/fix-permissions', method: 'POST', confirm_required: true, confirm_message: 'Tạo các permission còn thiếu?' },
-  { action_key: 'action.smoke', label: 'Run smoke test', route: '/api/v1/admin/lms/action-check/smoke-test', method: 'POST', confirm_required: true, confirm_message: 'Chạy smoke test action flow?' },
-  { action_key: 'moodle.parity.report', label: 'Moodle parity report', route: '/api/v1/admin/lms/moodle-parity', method: 'GET' },
-  { action_key: 'moodle.parity.sync', label: 'Sync Moodle parity', route: '/api/v1/admin/lms/moodle-parity/sync', method: 'POST', confirm_required: true, confirm_message: 'Sync action, permission và menu theo Moodle parity?' },
+  { action_key: 'action.scan', label: 'Quét hành động', route: '/api/v1/admin/lms/action-check/scan', method: 'POST' },
+  { action_key: 'action.sync', label: 'Đồng bộ hành động', route: '/api/v1/admin/lms/action-check/sync-actions', method: 'POST', confirm_required: true, confirm_message: 'Đồng bộ danh mục hành động?' },
+  { action_key: 'action.fix_permissions', label: 'Sửa quyền', route: '/api/v1/admin/lms/action-check/fix-permissions', method: 'POST', confirm_required: true, confirm_message: 'Tạo các quyền còn thiếu?' },
+  { action_key: 'action.smoke', label: 'Chạy kiểm tra nhanh', route: '/api/v1/admin/lms/action-check/smoke-test', method: 'POST', confirm_required: true, confirm_message: 'Chạy smoke test action flow?' },
+  { action_key: 'moodle.parity.report', label: 'Báo cáo tương thích Moodle', route: '/api/v1/admin/lms/moodle-parity', method: 'GET' },
+  { action_key: 'moodle.parity.sync', label: 'Đồng bộ tương thích Moodle', route: '/api/v1/admin/lms/moodle-parity/sync', method: 'POST', confirm_required: true, confirm_message: 'Đồng bộ action, quyền và menu theo Moodle parity?' },
 ]
 
 async function run(action) {
@@ -49,7 +49,7 @@ async function run(action) {
         </div>
         <div class="space-y-4 p-4">
           <ActionBar :actions="actions" :loading-map="loading" @run="run" />
-          <a class="inline-flex rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" href="/admin/lms/action-check">Mở Action Check</a>
+          <a class="inline-flex rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" href="/admin/lms/action-check">Mở kiểm tra hành động</a>
         </div>
       </div>
     </section>

@@ -37,6 +37,16 @@ class LmsUser extends Model
             ->withTimestamps();
     }
 
+    public function enrollments()
+    {
+        return $this->hasMany(Enrollment::class, 'user_id');
+    }
+
+    public function careerProfile()
+    {
+        return $this->hasOne(CareerProfile::class, 'user_id');
+    }
+
     public function auditLogs()
     {
         return $this->hasMany(AuditLog::class, 'actor_id');

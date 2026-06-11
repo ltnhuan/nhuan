@@ -248,7 +248,7 @@ function statusClass(status) {
 
 <template>
   <EraLmsLayout :session-user="sessionUser" @logout="$emit('logout')">
-    <template #breadcrumb>Quản lý ghi danh / Enrollment lifecycle</template>
+    <template #breadcrumb>Quản lý ghi danh / Vòng đời ghi danh</template>
 
     <section class="mx-auto max-w-7xl space-y-4 px-6 py-5">
       <div class="grid gap-3 md:grid-cols-4">
@@ -272,25 +272,25 @@ function statusClass(status) {
 
       <section class="border bg-white">
         <div class="flex flex-wrap items-center gap-2 border-b p-3">
-          <h1 class="text-sm font-semibold">Enrollment Records</h1>
+          <h1 class="text-sm font-semibold">Bản ghi ghi danh</h1>
           <input v-model="filters.q" class="ml-auto h-9 w-72 rounded-md border px-3 text-sm" placeholder="Tìm học viên, email, mã học viên" @keyup.enter="loadPage(1)" />
           <select v-model="filters.status" class="h-9 rounded-md border px-2 text-sm" @change="loadPage(1)">
-            <option value="">Lifecycle status</option>
+            <option value="">Trạng thái vòng đời</option>
             <option v-for="status in statuses" :key="status" :value="status">{{ status }}</option>
           </select>
           <select v-model="filters.source" class="h-9 rounded-md border px-2 text-sm" @change="loadPage(1)">
-            <option value="">Enrollment source</option>
+            <option value="">Nguồn ghi danh</option>
             <option v-for="source in sources" :key="source" :value="source">{{ source }}</option>
           </select>
           <button class="h-9 rounded-md border px-3 text-sm" :disabled="loading" @click="loadPage(1)">Tải lại</button>
         </div>
 
         <div class="flex flex-wrap items-center gap-2 border-b bg-slate-50 p-3 text-xs">
-          <span class="font-medium">{{ selectedCount }} selected</span>
-          <button class="rounded-md border bg-white px-3 py-1.5 disabled:opacity-50" :disabled="!selectedCount || actionLoading" @click="bulkAction('activate')">Activate</button>
-          <button class="rounded-md border bg-white px-3 py-1.5 disabled:opacity-50" :disabled="!selectedCount || actionLoading" @click="bulkAction('suspend')">Suspend</button>
-          <button class="rounded-md border bg-white px-3 py-1.5 disabled:opacity-50" :disabled="!selectedCount || actionLoading" @click="bulkAction('complete')">Complete</button>
-          <button class="rounded-md border bg-white px-3 py-1.5 disabled:opacity-50" :disabled="!selectedCount || actionLoading" @click="bulkAction('withdraw')">Withdraw</button>
+          <span class="font-medium">{{ selectedCount }} đã chọn</span>
+          <button class="rounded-md border bg-white px-3 py-1.5 disabled:opacity-50" :disabled="!selectedCount || actionLoading" @click="bulkAction('activate')">Kích hoạt</button>
+          <button class="rounded-md border bg-white px-3 py-1.5 disabled:opacity-50" :disabled="!selectedCount || actionLoading" @click="bulkAction('suspend')">Tạm dừng</button>
+          <button class="rounded-md border bg-white px-3 py-1.5 disabled:opacity-50" :disabled="!selectedCount || actionLoading" @click="bulkAction('complete')">Hoàn thành</button>
+          <button class="rounded-md border bg-white px-3 py-1.5 disabled:opacity-50" :disabled="!selectedCount || actionLoading" @click="bulkAction('withdraw')">Rút khỏi lớp</button>
           <span class="ml-auto text-slate-500">Bấm đúp vào một dòng để xem chi tiết</span>
         </div>
 
@@ -312,7 +312,7 @@ function statusClass(status) {
             <input type="checkbox" :checked="selected.has(row.id)" @click.stop @change="toggle(row.id)" />
             <div class="font-mono text-xs">{{ row.code || `ENR-${String(row.id).padStart(6, '0')}` }}</div>
             <div>
-              <div class="font-medium text-slate-900">{{ row.learner?.full_name || 'Learner' }}</div>
+              <div class="font-medium text-slate-900">{{ row.learner?.full_name || 'Học viên' }}</div>
               <div class="text-xs text-slate-500">{{ row.learner?.email || row.learner?.code || '-' }}</div>
             </div>
             <div>
@@ -351,20 +351,20 @@ function statusClass(status) {
           </div>
         </section>
         <section class="border bg-white p-4">
-          <h2 class="text-sm font-semibold">Teacher Assignment</h2>
+          <h2 class="text-sm font-semibold">Phân công giảng viên</h2>
           <div class="mt-3 grid gap-2 text-sm">
-            <button class="rounded-md border px-3 py-2 text-left">Main Teacher</button>
-            <button class="rounded-md border px-3 py-2 text-left">Assistant Teacher</button>
-            <button class="rounded-md border px-3 py-2 text-left">Advisor</button>
-            <button class="rounded-md border px-3 py-2 text-left">Evaluator</button>
+            <button class="rounded-md border px-3 py-2 text-left">Giáo viên chính</button>
+            <button class="rounded-md border px-3 py-2 text-left">Giáo viên hỗ trợ</button>
+            <button class="rounded-md border px-3 py-2 text-left">Cố vấn</button>
+            <button class="rounded-md border px-3 py-2 text-left">Đánh giá viên</button>
           </div>
         </section>
         <section class="border bg-white p-4">
-          <h2 class="text-sm font-semibold">Import Queue</h2>
+          <h2 class="text-sm font-semibold">Hàng đợi nhập liệu</h2>
           <div class="mt-3 space-y-2 text-sm">
-            <div class="flex justify-between border px-3 py-2"><span>CSV bulk import</span><span>processing</span></div>
-            <div class="flex justify-between border px-3 py-2"><span>SIS enrollment sync</span><span>queued</span></div>
-            <div class="flex justify-between border px-3 py-2"><span>API import</span><span>completed</span></div>
+            <div class="flex justify-between border px-3 py-2"><span>Nhập hàng loạt CSV</span><span>đang xử lý</span></div>
+            <div class="flex justify-between border px-3 py-2"><span>Đồng bộ SIS</span><span>đang chờ</span></div>
+            <div class="flex justify-between border px-3 py-2"><span>Nhập qua API</span><span>hoàn tất</span></div>
           </div>
         </section>
       </div>
@@ -375,7 +375,7 @@ function statusClass(status) {
         <div class="flex items-start justify-between gap-3 border-b px-5 py-4">
           <div>
             <div class="text-xs font-semibold uppercase text-slate-500">Chi tiết ghi danh</div>
-            <h2 class="mt-1 text-lg font-bold text-slate-950">{{ detail.learner?.full_name || 'Learner' }}</h2>
+            <h2 class="mt-1 text-lg font-bold text-slate-950">{{ detail.learner?.full_name || 'Học viên' }}</h2>
             <p class="mt-1 text-sm text-slate-500">{{ detail.code || `ENR-${String(detail.id).padStart(6, '0')}` }} · {{ detail.learner?.email || detail.learner?.code || '-' }}</p>
           </div>
           <div class="flex gap-2">
@@ -453,7 +453,7 @@ function statusClass(status) {
         <div class="flex items-start justify-between gap-3 border-b px-5 py-4">
           <div>
             <div class="text-xs font-semibold uppercase text-slate-500">Sửa ghi danh</div>
-            <h2 class="mt-1 text-lg font-bold text-slate-950">{{ editing.learner?.full_name || 'Learner' }}</h2>
+            <h2 class="mt-1 text-lg font-bold text-slate-950">{{ editing.learner?.full_name || 'Học viên' }}</h2>
             <p class="mt-1 text-sm text-slate-500">{{ editing.course?.title || '-' }} · {{ editing.class_section?.name || editing.classSection?.name || '-' }}</p>
           </div>
           <button class="rounded-md border px-3 py-1.5 text-sm" @click="closeEdit">Đóng</button>

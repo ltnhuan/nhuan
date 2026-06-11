@@ -9,7 +9,7 @@ function iconName(type) {
 }
 
 function labelFor(type) {
-  const labels = { text: 'Đọc', video: 'Xem', pdf: 'Tài liệu', file: 'Tài liệu', quiz: 'Quiz', assignment: 'Bài tập', forum: 'Thảo luận', live_session: 'Live', scorm: 'SCORM' }
+  const labels = { text: 'Văn bản', video: 'Video', pdf: 'Tài liệu', file: 'Tài liệu', quiz: 'Kiểm tra', assignment: 'Bài tập', forum: 'Diễn đàn', live_session: 'Phiên trực tuyến', scorm: 'SCORM' }
   return labels[type] || type
 }
 
@@ -46,7 +46,9 @@ function accentFor(type) {
     <div class="text-xs font-semibold text-slate-600">{{ labelFor(component.component_type) }}</div>
     <div class="text-xs text-slate-600">{{ component.config?.estimated_minutes ? `${component.config.estimated_minutes} phút` : '-' }}</div>
     <div>
-      <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700">{{ component.status || 'Published' }}</span>
+      <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700">
+        {{ component.status || 'Nháp' }}
+      </span>
     </div>
     <div class="flex items-center justify-end gap-1">
       <button class="grid h-7 w-7 place-items-center rounded-md border border-slate-200 bg-white text-slate-600 hover:bg-slate-50" title="Xem thử" @click.stop="$emit('preview', component)"><Play class="h-3.5 w-3.5" /></button>

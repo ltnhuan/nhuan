@@ -34,8 +34,16 @@ class AttemptService
     public function markReview(ExamAttempt $attempt,int $attemptQuestionId,bool $marked=true): ExamAttemptQuestion { $aq=ExamAttemptQuestion::query()->where('attempt_id',$attempt->id)->findOrFail($attemptQuestionId); $aq->forceFill(['is_marked_review'=>$marked])->save(); return $aq; }
     public function submitAttempt(ExamAttempt $attempt): ExamAttempt
     {
-        return Cache::lock("exam-submit:{$attempt->id}",10)->block(3,function() use($attempt){ if(in_array($attempt->status,['submitted','graded','auto_submitted'],true)) return $attempt; $attempt->forceFill(['status'=>'submitted','submitted_at'=>now(),'time_spent_seconds'=>now()->diffInSeconds($attempt->started_at)])->save(); foreach($attempt->answers()->with('attemptQuestion')->get() as $answer) $this->grading->gradeAnswer($answer); $graded=$this->grading->calculateAttemptScore($attempt->fresh()); $this->integration->syncQuizCompletion($graded); return $graded; });
+        return Cache::lock("exam-submit:{$attempt->id}",10)->block(3,function() use($attempt){ if($attempt->status==='graded') return $attempt; $submittedStatus=$attempt->status==='auto_submitted'?'auto_submitted':'submitted'; $attempt->forceFill(['status'=>$submittedStatus,'submitted_at'=>now(),'time_spent_seconds'=>now()->diffInSeconds($attempt->started_at)])->save(); $this->createMissingZeroAnswers($attempt->fresh('attemptQuestions')); foreach($attempt->answers()->with('attemptQuestion')->get() as $answer) $this->grading->gradeAnswer($answer); $graded=$this->grading->calculateAttemptScore($attempt->fresh()); $this->integration->syncQuizCompletion($graded); return $graded; });
     }
-    public function autoSubmitExpiredAttempt(ExamAttempt $attempt): ExamAttempt { $attempt->forceFill(['status'=>'auto_submitted'])->save(); return $this->submitAttempt($attempt); }
+    public function autoSubmitExpiredAttempt(ExamAttempt $attempt): ExamAttempt { $attempt->forceFill(['status'=>'auto_submitted'])->save(); return $this->submitAttempt($attempt->fresh()); }
     public function preventDuplicateSubmit(ExamAttempt $attempt): bool { return in_array($attempt->status,['submitted','graded','auto_submitted'],true); }
+    private function createMissingZeroAnswers(ExamAttempt $attempt): void
+    {
+        $answeredIds=$attempt->answers()->pluck('attempt_question_id')->all();
+        foreach($attempt->attemptQuestions as $question){
+            if(in_array($question->id,$answeredIds,true)) continue;
+            ExamAnswer::query()->create(['tenant_id'=>$attempt->tenant_id,'attempt_id'=>$attempt->id,'attempt_question_id'=>$question->id,'question_id'=>$question->question_id,'answer_data'=>[],'is_correct'=>false,'score'=>0,'feedback'=>'Chưa trả lời','graded_at'=>now()]);
+        }
+    }
 }

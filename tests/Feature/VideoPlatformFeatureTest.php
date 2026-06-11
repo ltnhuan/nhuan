@@ -6,6 +6,7 @@ use App\Models\CourseComponent;
 use App\Models\LmsUser;
 use App\Models\Tenant;
 use App\Models\VideoAsset;
+use App\Models\VideoProgressSummary;
 use App\Services\VideoAntiFakeService;
 use App\Services\VideoAssetService;
 use App\Services\VideoTrackingService;
@@ -95,6 +96,64 @@ class VideoPlatformFeatureTest extends TestCase
     public function test_antifake_detects_impossible_speed(): void
     {
         $this->assertTrue(app(VideoAntiFakeService::class)->detectImpossibleWatchSpeed(10, 2.5));
+    }
+
+    public function test_video_analytics_endpoint_returns_operational_summary(): void
+    {
+        $asset = $this->videoAsset(['processing_status' => 'ready']);
+        $student = LmsUser::query()->where('user_type', 'student')->firstOrFail();
+
+        VideoProgressSummary::query()->create([
+            'tenant_id' => $asset->tenant_id,
+            'user_id' => $student->id,
+            'course_id' => $asset->course_id,
+            'component_id' => $asset->component_id,
+            'video_asset_id' => $asset->id,
+            'total_duration_seconds' => 100,
+            'watched_seconds' => 95,
+            'max_position_seconds' => 95,
+            'watch_percent' => 95,
+            'is_completed' => true,
+            'suspicious_score' => 0,
+            'last_watched_at' => now(),
+            'metadata' => [],
+        ]);
+
+        $this->withHeaders($this->adminHeaders())
+            ->getJson('/api/v1/videos/analytics')
+            ->assertOk()
+            ->assertJsonPath('summary.videos', 1)
+            ->assertJsonPath('summary.ready', 1)
+            ->assertJsonPath('summary.completion_rate', 100)
+            ->assertJsonPath('progress.0.video_asset_id', $asset->id)
+            ->assertJsonPath('top_videos.0.video_asset_id', $asset->id);
+    }
+
+    public function test_update_and_delete_video_asset_from_management_screen(): void
+    {
+        $asset = $this->videoAsset();
+
+        $this->withHeaders($this->adminHeaders())
+            ->putJson("/api/v1/videos/{$asset->id}", [
+                'title' => 'Video đã chỉnh',
+                'description' => 'Mô tả mới',
+                'duration_seconds' => 720,
+                'processing_status' => 'ready',
+                'visibility' => 'tenant',
+                'settings' => ['min_watch_percent' => 85, 'allow_download' => false],
+            ])
+            ->assertOk()
+            ->assertJsonPath('title', 'Video đã chỉnh')
+            ->assertJsonPath('visibility', 'tenant')
+            ->assertJsonPath('settings.min_watch_percent', 85);
+
+        $this->assertDatabaseHas('video_assets', ['id' => $asset->id, 'title' => 'Video đã chỉnh', 'visibility' => 'tenant']);
+
+        $this->withHeaders($this->adminHeaders())
+            ->deleteJson("/api/v1/videos/{$asset->id}")
+            ->assertNoContent();
+
+        $this->assertDatabaseMissing('video_assets', ['id' => $asset->id]);
     }
 
     private function videoAsset(array $overrides = []): VideoAsset

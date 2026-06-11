@@ -61,11 +61,11 @@ onMounted(load)
 
 <template>
   <EraLmsLayout :session-user="sessionUser">
-    <template #breadcrumb>Điểm danh online / Checkin</template>
+    <template #breadcrumb>Điểm danh online / Điểm danh</template>
     <section class="mx-auto max-w-3xl px-4 py-5 sm:px-6">
       <div class="border bg-white p-5">
         <div class="flex flex-wrap items-center justify-between gap-3">
-          <div><h1 class="text-lg font-semibold">Student Checkin</h1><p class="mt-1 text-sm text-slate-600">Nhập OTP hoặc QR token của phiên đang mở.</p></div>
+          <div><h1 class="text-lg font-semibold">Điểm danh sinh viên</h1><p class="mt-1 text-sm text-slate-600">Nhập OTP hoặc mã QR của phiên đang mở.</p></div>
           <button class="rounded-md border px-3 py-2 text-sm" :disabled="loading" @click="load">Tải lại</button>
         </div>
         <div v-if="error" class="mt-4 rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">{{ error }}</div>
@@ -77,12 +77,12 @@ onMounted(load)
             <h2 class="text-sm font-semibold">OTP</h2>
             <select v-model="selectedId" class="mt-3 w-full rounded-md border px-3 py-2 text-sm"><option v-for="session in sessions" :key="session.id" :value="session.id">{{ session.title }}</option></select>
             <input v-model="otp" class="mt-3 w-full rounded-md border px-3 py-3 text-center text-2xl font-semibold tracking-widest" />
-            <button class="mt-3 w-full rounded-md bg-blue-900 px-3 py-2 text-sm text-white" @click="submitOtp">Checkin OTP</button>
+            <button class="mt-3 w-full rounded-md bg-blue-900 px-3 py-2 text-sm text-white" @click="submitOtp">Gửi OTP</button>
           </div>
           <div class="border p-4">
-            <h2 class="text-sm font-semibold">QR/Mobile</h2>
+            <h2 class="text-sm font-semibold">QR/Di động</h2>
             <textarea v-model="qrToken" rows="6" class="mt-3 w-full rounded-md border px-3 py-2 font-mono text-xs"></textarea>
-            <button class="mt-3 w-full rounded-md border px-3 py-2 text-sm" @click="submitQr">Checkin bằng QR token</button>
+            <button class="mt-3 w-full rounded-md border px-3 py-2 text-sm" @click="submitQr">Điểm danh bằng mã QR</button>
           </div>
         </div>
       </div>

@@ -4,16 +4,20 @@ use App\Http\Controllers\Api\V1\CoreController;
 use App\Http\Controllers\Api\V1\AssignmentController;
 use App\Http\Controllers\Api\V1\AttendanceController;
 use App\Http\Controllers\Api\V1\AiLearningController;
+use App\Http\Controllers\Api\V1\ApiOperationsController;
 use App\Http\Controllers\Api\V1\CareerPortfolioController;
 use App\Http\Controllers\Api\V1\Core\RbacController;
 use App\Http\Controllers\Api\V1\Core\UserController;
 use App\Http\Controllers\Api\V1\Core\WhiteLabelController;
 use App\Http\Controllers\Api\V1\CourseController;
+use App\Http\Controllers\Api\V1\DataIntegrityController;
 use App\Http\Controllers\Api\V1\DigitalCredentialController;
 use App\Http\Controllers\Api\V1\EnrollmentController;
+use App\Http\Controllers\Api\V1\EnterpriseDashboardController;
 use App\Http\Controllers\Api\V1\ExamController;
 use App\Http\Controllers\Api\V1\GradebookController;
 use App\Http\Controllers\Api\V1\HealthController;
+use App\Http\Controllers\Api\V1\IntegrationApiCatalogController;
 use App\Http\Controllers\Api\V1\IntegrationController;
 use App\Http\Controllers\Api\V1\LearningStandardsController;
 use App\Http\Controllers\Api\V1\LearningAnalyticsController;
@@ -23,6 +27,7 @@ use App\Http\Controllers\Api\V1\MobileLearningController;
 use App\Http\Controllers\Api\V1\OBEController;
 use App\Http\Controllers\Api\V1\QuestionBankController;
 use App\Http\Controllers\Api\V1\RepositoryController;
+use App\Http\Controllers\Api\V1\StudentController;
 use App\Http\Controllers\Api\V1\SurveyController;
 use App\Http\Controllers\Api\V1\VideoController;
 use App\Services\LmsActionRegistryService;
@@ -79,9 +84,44 @@ Route::prefix('v1/admin/lms')->middleware(['api', 'tenant.resolve'])->group(func
             'menu' => $system->rebuildMenu(),
         ], 'Moodle parity sync completed.');
     })->name('api.admin.lms.moodle-parity.sync');
+
+    Route::get('data-integrity', [DataIntegrityController::class, 'dashboard'])->name('api.admin.lms.data-integrity');
+    Route::post('data-integrity/run', [DataIntegrityController::class, 'runAll'])->name('api.admin.lms.data-integrity.run');
+    Route::post('data-integrity/run/{module}', [DataIntegrityController::class, 'runModule'])->name('api.admin.lms.data-integrity.run-module');
+    Route::post('data-integrity/auto-fix', [DataIntegrityController::class, 'autoFix'])->name('api.admin.lms.data-integrity.auto-fix');
+    Route::post('data-integrity/ignore', [DataIntegrityController::class, 'ignore'])->name('api.admin.lms.data-integrity.ignore');
+    Route::get('data-integrity/export', [DataIntegrityController::class, 'export'])->name('api.admin.lms.data-integrity.export');
 });
 
 Route::prefix('v1')->middleware(['api', 'api.performance', 'tenant.resolve'])->group(function () {
+    Route::prefix('dashboards')->group(function () {
+        Route::get('executive', [EnterpriseDashboardController::class, 'executive']);
+        Route::get('academic', [EnterpriseDashboardController::class, 'academic']);
+        Route::get('faculty', [EnterpriseDashboardController::class, 'faculty']);
+        Route::get('teacher', [EnterpriseDashboardController::class, 'teacher']);
+        Route::get('student', [EnterpriseDashboardController::class, 'student']);
+        Route::get('exam', [EnterpriseDashboardController::class, 'exam']);
+        Route::get('attendance', [EnterpriseDashboardController::class, 'attendance']);
+        Route::get('gradebook', [EnterpriseDashboardController::class, 'gradebook']);
+        Route::get('integration', [EnterpriseDashboardController::class, 'integration']);
+        Route::get('content', [EnterpriseDashboardController::class, 'content']);
+        Route::get('certificate', [EnterpriseDashboardController::class, 'certificate']);
+        Route::get('ai', [EnterpriseDashboardController::class, 'ai']);
+        Route::get('risk', [EnterpriseDashboardController::class, 'risk']);
+        Route::post('export', [EnterpriseDashboardController::class, 'export']);
+    });
+
+    Route::get('analytics/alerts', [EnterpriseDashboardController::class, 'alerts']);
+    Route::post('analytics/alerts/{id}/acknowledge', [EnterpriseDashboardController::class, 'acknowledgeAlert']);
+    Route::post('analytics/alerts/{id}/resolve', [EnterpriseDashboardController::class, 'resolveAlert']);
+    Route::get('analytics/forecasts', [EnterpriseDashboardController::class, 'forecasts']);
+    Route::post('analytics/rebuild-snapshots', [EnterpriseDashboardController::class, 'rebuildSnapshots']);
+    Route::get('analytics/drilldown', [EnterpriseDashboardController::class, 'drilldown']);
+    Route::get('analytics/benchmark', [EnterpriseDashboardController::class, 'benchmark']);
+
+    Route::get('integration-api/catalog', [IntegrationApiCatalogController::class, 'catalog'])->middleware('permission:integration.view,tenant');
+    Route::get('integration-api/openapi.json', [IntegrationApiCatalogController::class, 'openApi'])->middleware('permission:integration.view,tenant');
+
     Route::post('editor/media-upload', [RepositoryController::class, 'editorUpload']);
 
     Route::prefix('mobile')->group(function () {
@@ -114,7 +154,7 @@ Route::prefix('v1')->middleware(['api', 'api.performance', 'tenant.resolve'])->g
 
     Route::get('course-categories', [CourseController::class, 'categories']);
     Route::get('activity-types', [CourseController::class, 'activityTypes']);
-    Route::apiResource('courses', CourseController::class)->only(['index', 'store', 'show', 'update']);
+    Route::apiResource('courses', CourseController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
     Route::post('courses/{course}/clone', [CourseController::class, 'clone']);
     Route::post('courses/{course}/submit-review', [CourseController::class, 'submitReview']);
     Route::post('courses/{course}/approve', [CourseController::class, 'approve']);
@@ -175,8 +215,11 @@ Route::prefix('v1')->middleware(['api', 'api.performance', 'tenant.resolve'])->g
     Route::post('completions/{completion}/reject', [LearningPathController::class, 'rejectCompletion'])->middleware('permission:completion.approve,course');
 
     Route::get('videos', [VideoController::class, 'index'])->middleware('permission:video.view,tenant');
+    Route::get('videos/analytics', [VideoController::class, 'analytics'])->middleware('permission:video.analytics.view,tenant');
     Route::post('videos/upload', [VideoController::class, 'upload'])->middleware('permission:video.upload,tenant');
     Route::get('videos/{video}', [VideoController::class, 'show'])->middleware('permission:video.view,tenant');
+    Route::put('videos/{video}', [VideoController::class, 'update'])->middleware('permission:video.upload,tenant');
+    Route::delete('videos/{video}', [VideoController::class, 'destroy'])->middleware('permission:video.upload,tenant');
     Route::post('videos/{video}/attach-component', [VideoController::class, 'attachComponent'])->middleware('permission:video.attach,course');
     Route::post('videos/{video}/process', [VideoController::class, 'process'])->middleware('permission:video.process,tenant');
     Route::get('videos/{video}/playback-url', [VideoController::class, 'playbackUrl'])->middleware('permission:progress.view_own,course');
@@ -280,8 +323,20 @@ Route::prefix('v1')->middleware(['api', 'api.performance', 'tenant.resolve'])->g
     Route::post('gradebooks/{gradebook}/approve', [GradebookController::class, 'approve'])->middleware('permission:grade.approve,tenant');
     Route::post('gradebooks/{gradebook}/reject', [GradebookController::class, 'reject'])->middleware('permission:grade.approve,tenant');
     Route::post('gradebooks/{gradebook}/sync-to-sis', [GradebookController::class, 'sync'])->middleware('permission:grade.sync_sis,tenant');
+    Route::get('student-home', [StudentController::class, 'home'])->middleware('permission:progress.view_own,tenant');
+    Route::get('student/courses', [StudentController::class, 'courses'])->middleware('permission:progress.view_own,tenant');
+    Route::get('student/journey/{course}', [StudentController::class, 'journey'])->middleware('permission:progress.view_own,tenant');
+    Route::get('student/tasks', [StudentController::class, 'tasks'])->middleware('permission:progress.view_own,tenant');
+    Route::get('student/grades', [StudentController::class, 'grades'])->middleware('permission:gradebook.view,tenant');
+    Route::get('student/attendance', [StudentController::class, 'attendance'])->middleware('permission:eligibility.view,tenant');
+    Route::get('student/portfolio', [StudentController::class, 'portfolio'])->middleware('permission:career.view,tenant');
+    Route::get('student/career', [StudentController::class, 'career'])->middleware('permission:career.view,tenant');
+    Route::get('student/credentials', [StudentController::class, 'credentials'])->middleware('permission:credential.wallet,tenant');
+    Route::get('student/digital-twin', [StudentController::class, 'digitalTwin'])->middleware('permission:career.view,tenant');
+    Route::get('students/{student}/digital-twin', [StudentController::class, 'showDigitalTwin'])->middleware('permission:career.view,tenant');
 
     Route::get('career/dashboard', [CareerPortfolioController::class, 'dashboard'])->middleware('permission:career.view,tenant');
+    Route::get('career/digital-twin', [CareerPortfolioController::class, 'digitalTwin'])->middleware('permission:career.view,tenant');
     Route::post('career/profile', [CareerPortfolioController::class, 'profile'])->middleware('permission:career.manage_own,tenant');
     Route::put('career/profiles/{profile}', [CareerPortfolioController::class, 'updateProfile'])->middleware('permission:career.manage_own,tenant');
     Route::post('digital-portfolios/{portfolio}/items', [CareerPortfolioController::class, 'addItem'])->middleware('permission:portfolio.manage_own,tenant');
@@ -347,6 +402,59 @@ Route::prefix('v1')->middleware(['api', 'api.performance', 'tenant.resolve'])->g
     Route::post('integrations/push/progress', [IntegrationController::class, 'pushProgress'])->middleware('permission:integration.push,tenant');
     Route::get('integrations/health', [IntegrationController::class, 'health'])->middleware('permission:integration.view,tenant');
 
+        Route::prefix('api-ops')->group(function () {
+        Route::get('dashboard', [ApiOperationsController::class, 'dashboard'])->middleware('permission:api_ops.view,tenant');
+        Route::get('options', [ApiOperationsController::class, 'options'])->middleware('permission:api_ops.view,tenant');
+
+        Route::get('systems', [ApiOperationsController::class, 'systems'])->middleware('permission:api_ops.view,tenant');
+        Route::post('systems', [ApiOperationsController::class, 'storeSystem'])->middleware('permission:api_ops.system.manage,tenant');
+        Route::put('systems/{system}', [ApiOperationsController::class, 'updateSystem'])->middleware('permission:api_ops.system.manage,tenant');
+        Route::post('systems/{system}/test-connection', [ApiOperationsController::class, 'testConnection'])->middleware('permission:api_ops.system.manage,tenant');
+
+        Route::get('endpoints', [ApiOperationsController::class, 'endpoints'])->middleware('permission:api_ops.view,tenant');
+        Route::post('endpoints', [ApiOperationsController::class, 'storeEndpoint'])->middleware('permission:api_ops.endpoint.manage,tenant');
+        Route::put('endpoints/{endpoint}', [ApiOperationsController::class, 'updateEndpoint'])->middleware('permission:api_ops.endpoint.manage,tenant');
+        Route::post('endpoints/{endpoint}/test', [ApiOperationsController::class, 'testEndpoint'])->middleware('permission:api_ops.console.use,tenant');
+
+        Route::get('requests', [ApiOperationsController::class, 'requests'])->middleware('permission:api_ops.request.view,tenant');
+        Route::get('events', [ApiOperationsController::class, 'events'])->middleware('permission:api_ops.view,tenant');
+        Route::post('events/{event}/retry', [ApiOperationsController::class, 'retryEvent'])->middleware('permission:api_ops.sync.retry,tenant');
+        Route::post('events/{event}/ignore', [ApiOperationsController::class, 'ignoreEvent'])->middleware('permission:api_ops.sync.retry,tenant');
+
+        Route::post('webhooks/inbound/{systemCode}', [ApiOperationsController::class, 'inboundWebhook'])->middleware('throttle:120,1');
+        Route::get('webhooks', [ApiOperationsController::class, 'webhooks'])->middleware('permission:api_ops.view,tenant');
+        Route::post('webhooks', [ApiOperationsController::class, 'storeWebhook'])->middleware('permission:api_ops.webhook.manage,tenant');
+        Route::put('webhooks/{webhook}', [ApiOperationsController::class, 'updateWebhook'])->middleware('permission:api_ops.webhook.manage,tenant');
+        Route::post('webhooks/{webhook}/test', [ApiOperationsController::class, 'testWebhook'])->middleware('permission:api_ops.webhook.manage,tenant');
+        Route::post('webhooks/{webhook}/retry-failed', [ApiOperationsController::class, 'retryFailedWebhooks'])->middleware('permission:api_ops.webhook.manage,tenant');
+        Route::get('webhook-deliveries', [ApiOperationsController::class, 'webhookDeliveries'])->middleware('permission:api_ops.view,tenant');
+
+        Route::get('mappings', [ApiOperationsController::class, 'mappings'])->middleware('permission:api_ops.view,tenant');
+        Route::post('mappings', [ApiOperationsController::class, 'storeMapping'])->middleware('permission:api_ops.mapping.manage,tenant');
+        Route::put('mappings/{mapping}', [ApiOperationsController::class, 'updateMapping'])->middleware('permission:api_ops.mapping.manage,tenant');
+        Route::post('mappings/validate', [ApiOperationsController::class, 'validateMapping'])->middleware('permission:api_ops.mapping.manage,tenant');
+
+        Route::get('entity-mappings', [ApiOperationsController::class, 'entityMappings'])->middleware('permission:api_ops.view,tenant');
+        Route::post('entity-mappings/resolve-conflict', [ApiOperationsController::class, 'resolveEntityMappingConflict'])->middleware('permission:api_ops.mapping.manage,tenant');
+
+        Route::get('sync-jobs', [ApiOperationsController::class, 'syncJobs'])->middleware('permission:api_ops.view,tenant');
+        Route::post('sync-jobs', [ApiOperationsController::class, 'storeSyncJob'])->middleware('permission:api_ops.sync.run,tenant');
+        Route::post('sync-jobs/{job}/run', [ApiOperationsController::class, 'runSyncJob'])->middleware('permission:api_ops.sync.run,tenant');
+        Route::post('sync-jobs/{job}/retry', [ApiOperationsController::class, 'retrySyncJob'])->middleware('permission:api_ops.sync.retry,tenant');
+        Route::post('sync-jobs/{job}/cancel', [ApiOperationsController::class, 'cancelSyncJob'])->middleware('permission:api_ops.sync.run,tenant');
+
+        Route::get('health', [ApiOperationsController::class, 'health'])->middleware('permission:api_ops.health.view,tenant');
+        Route::post('health/check-now', [ApiOperationsController::class, 'checkHealthNow'])->middleware('permission:api_ops.health.view,tenant');
+
+        Route::get('contracts', [ApiOperationsController::class, 'contracts'])->middleware('permission:api_ops.view,tenant');
+        Route::post('contracts', [ApiOperationsController::class, 'storeContract'])->middleware('permission:api_ops.contract.manage,tenant');
+        Route::put('contracts/{contract}', [ApiOperationsController::class, 'updateContract'])->middleware('permission:api_ops.contract.manage,tenant');
+        Route::post('contracts/{contract}/activate', [ApiOperationsController::class, 'activateContract'])->middleware('permission:api_ops.contract.manage,tenant');
+
+        Route::post('console/test-request', [ApiOperationsController::class, 'consoleTestRequest'])->middleware('permission:api_ops.console.use,tenant');
+        Route::get('audit-logs', [ApiOperationsController::class, 'auditLogs'])->middleware('permission:api_ops.view,tenant');
+    });
+
     Route::prefix('learning-standards')->group(function () {
         Route::get('scorm/packages', [LearningStandardsController::class, 'packages']);
         Route::post('scorm/packages', [LearningStandardsController::class, 'uploadScorm']);
@@ -405,9 +513,9 @@ Route::prefix('v1')->middleware(['api', 'api.performance', 'tenant.resolve'])->g
         Route::get('metrics', [LearningAnalyticsController::class, 'metrics'])->middleware('permission:analytics.dashboard,tenant');
         Route::get('risks', [LearningAnalyticsController::class, 'risks'])->middleware('permission:analytics.risk,tenant');
         Route::post('risks/calculate', [LearningAnalyticsController::class, 'calculateRisk'])->middleware('permission:analytics.risk,tenant');
-        Route::get('alerts', [LearningAnalyticsController::class, 'alerts'])->middleware('permission:analytics.alerts,tenant');
-        Route::post('alerts/{alert}/acknowledge', [LearningAnalyticsController::class, 'acknowledge'])->middleware('permission:analytics.alerts,tenant');
-        Route::post('alerts/{alert}/resolve', [LearningAnalyticsController::class, 'resolve'])->middleware('permission:analytics.alerts,tenant');
+        Route::get('alerts', [EnterpriseDashboardController::class, 'alerts'])->middleware('permission:analytics.alerts,tenant');
+        Route::post('alerts/{id}/acknowledge', [EnterpriseDashboardController::class, 'acknowledgeAlert'])->middleware('permission:analytics.alerts,tenant');
+        Route::post('alerts/{id}/resolve', [EnterpriseDashboardController::class, 'resolveAlert'])->middleware('permission:analytics.alerts,tenant');
         Route::post('summaries/build', [LearningAnalyticsController::class, 'buildSummary'])->middleware('permission:analytics.warehouse,tenant');
     });
 
@@ -458,6 +566,7 @@ Route::prefix('v1')->middleware(['api', 'api.performance', 'tenant.resolve'])->g
     });
 
     Route::prefix('ai')->middleware('permission:ai.use,tenant')->group(function () {
+        Route::get('workspace', [AiLearningController::class, 'workspace']);
         Route::get('documents', [AiLearningController::class, 'documents']);
         Route::post('ingest', [AiLearningController::class, 'ingest']);
         Route::post('ask', [AiLearningController::class, 'ask']);

@@ -124,6 +124,28 @@ class IntegrationHubFeatureTest extends TestCase
         $this->assertArrayHasKey('events', $health);
     }
 
+    public function test_integration_api_catalog_and_openapi_are_available(): void
+    {
+        $headers = ['X-Demo-User-Email' => 'admin.lms@vabis.edu.vn'];
+
+        $catalog = $this->withHeaders($headers)
+            ->getJson('/api/v1/integration-api/catalog')
+            ->assertOk()
+            ->json('data');
+
+        $this->assertSame('/api/v1', $catalog['base_path']);
+        $this->assertContains('Integration Hub', collect($catalog['modules'])->pluck('name')->all());
+        $this->assertArrayHasKey('headers', $catalog['standards']);
+
+        $openApi = $this->withHeaders($headers)
+            ->getJson('/api/v1/integration-api/openapi.json')
+            ->assertOk()
+            ->json();
+
+        $this->assertSame('3.1.0', $openApi['openapi']);
+        $this->assertArrayHasKey('/api/v1/integrations/events', $openApi['paths']);
+    }
+
     private function system(): IntegrationSystem
     {
         return IntegrationSystem::query()->first() ?: IntegrationSystem::query()->create(['tenant_id'=>1,'code'=>'SIS-MOCK','name'=>'Mock SIS','system_type'=>'sis','base_url'=>'https://sis.example.test','auth_type'=>'api_key','status'=>'active','settings'=>['mock'=>true,'webhook_secret'=>'secret']]);

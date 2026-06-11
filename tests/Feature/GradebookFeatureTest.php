@@ -144,6 +144,48 @@ class GradebookFeatureTest extends TestCase
         $this->assertSame($student->id, $response->json('rows.0.user_id'));
     }
 
+    public function test_student_grade_dashboard_returns_gpa_analytics_and_drilldown(): void
+    {
+        [$gradebook, $student, $items] = $this->gradebookWithItems();
+        $other = LmsUser::query()->where('user_type', 'student')->where('id', '!=', $student->id)->firstOrFail();
+        $items[0]->forceFill(['source_id' => 99])->save();
+        $items[1]->forceFill(['source_id' => 77])->save();
+
+        LearnerGrade::query()->create(['tenant_id' => 1, 'gradebook_id' => $gradebook->id, 'grade_item_id' => $items[0]->id, 'user_id' => $student->id, 'raw_score' => 8, 'final_score' => 8, 'source_status' => 'final']);
+        LearnerGrade::query()->create(['tenant_id' => 1, 'gradebook_id' => $gradebook->id, 'grade_item_id' => $items[1]->id, 'user_id' => $student->id, 'raw_score' => 6, 'final_score' => 6, 'source_status' => 'final']);
+        LearnerGrade::query()->create(['tenant_id' => 1, 'gradebook_id' => $gradebook->id, 'grade_item_id' => $items[0]->id, 'user_id' => $other->id, 'raw_score' => 4, 'final_score' => 4, 'source_status' => 'final']);
+        app(GradeFormulaService::class)->calculateLearner($gradebook, collect($items), $student->id);
+        app(GradeFormulaService::class)->calculateLearner($gradebook, collect([$items[0]]), $other->id);
+
+        $response = $this->withHeader('X-Tenant-Code', 'VABIS')
+            ->withHeader('X-Demo-User-Email', $student->email)
+            ->getJson('/api/v1/student/grades');
+
+        $response->assertOk()
+            ->assertJsonPath('student.id', $student->id)
+            ->assertJsonStructure([
+                'student',
+                'context',
+                'metrics' => ['current_gpa', 'semester_gpa', 'program_gpa', 'expected_gpa', 'graduation_gpa'],
+                'grade_trend',
+                'course_grades',
+                'grade_distribution',
+                'comparison',
+                'analytics' => ['pass_rate', 'fail_rate', 'peer_pass_rate', 'retake_risk', 'retake_courses'],
+                'charts' => ['line', 'bar', 'radar', 'distribution'],
+                'drilldown' => ['courses', 'quiz', 'assignment', 'exam'],
+                'forecast' => ['expected_gpa', 'graduation_gpa', 'trend_delta', 'confidence', 'recommendations'],
+                'performance' => ['target_ms', 'duration_ms'],
+            ]);
+
+        $this->assertCount(1, $response->json('course_grades'));
+        $this->assertSame('Quiz', $response->json('drilldown.quiz.0.title'));
+        $this->assertSame('Assignment', $response->json('drilldown.assignment.0.title'));
+        $this->assertStringStartsWith('/courses/learn?course_id=', $response->json('course_grades.0.href'));
+        $this->assertStringStartsWith('/exams/take?', $response->json('drilldown.quiz.0.href'));
+        $this->assertStringStartsWith('/assignments/submission?', $response->json('drilldown.assignment.0.href'));
+    }
+
     private function gradebookWithItems(): array
     {
         $course = Course::query()->firstOrFail();

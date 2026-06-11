@@ -1,15 +1,40 @@
 <script setup>
-import { computed, defineAsyncComponent, ref } from 'vue'
+import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, provide, ref } from 'vue'
 import Login from './Pages/Auth/Login.vue'
 
 const page = (loader) => defineAsyncComponent(loader)
 const AdminSystemCheck = page(() => import('./Pages/Admin/SystemCheck.vue'))
 const AdminActionCheck = page(() => import('./Pages/Admin/ActionCheck.vue'))
+const AdminDataIntegrity = page(() => import('./Pages/Admin/DataIntegrity.vue'))
 const AdminOperationsPlaceholder = page(() => import('./Pages/Admin/OperationsPlaceholder.vue'))
 const AdminMoodleParity = page(() => import('./Pages/Admin/MoodleParity.vue'))
+const ApiOpsDashboard = page(() => import('./Pages/ApiOps/Dashboard.vue'))
+const ApiOpsRegistry = page(() => import('./Pages/ApiOps/Registry.vue'))
+const ApiOpsRequests = page(() => import('./Pages/ApiOps/Requests.vue'))
+const ApiOpsEvents = page(() => import('./Pages/ApiOps/Events.vue'))
+const ApiOpsWebhooks = page(() => import('./Pages/ApiOps/Webhooks.vue'))
+const ApiOpsMappings = page(() => import('./Pages/ApiOps/Mappings.vue'))
+const ApiOpsEntityMappings = page(() => import('./Pages/ApiOps/EntityMappings.vue'))
+const ApiOpsSyncJobs = page(() => import('./Pages/ApiOps/SyncJobs.vue'))
+const ApiOpsHealth = page(() => import('./Pages/ApiOps/Health.vue'))
+const ApiOpsConsole = page(() => import('./Pages/ApiOps/Console.vue'))
+const ApiOpsContracts = page(() => import('./Pages/ApiOps/Contracts.vue'))
 const Dashboard = page(() => import('./Pages/Core/Dashboard.vue'))
 const AiLearningPlatform = page(() => import('./Pages/AI/LearningPlatform.vue'))
 const AnalyticsDashboard = page(() => import('./Pages/Analytics/Dashboard.vue'))
+const LmsAcademicDashboard = page(() => import('./Pages/Lms/Dashboards/AcademicDashboard.vue'))
+const LmsAiDashboard = page(() => import('./Pages/Lms/Dashboards/AiDashboard.vue'))
+const LmsAttendanceDashboard = page(() => import('./Pages/Lms/Dashboards/AttendanceDashboard.vue'))
+const LmsCertificateDashboard = page(() => import('./Pages/Lms/Dashboards/CertificateDashboard.vue'))
+const LmsContentDashboard = page(() => import('./Pages/Lms/Dashboards/ContentDashboard.vue'))
+const LmsExamDashboard = page(() => import('./Pages/Lms/Dashboards/ExamDashboard.vue'))
+const LmsExecutiveDashboard = page(() => import('./Pages/Lms/Dashboards/ExecutiveDashboard.vue'))
+const LmsFacultyDashboard = page(() => import('./Pages/Lms/Dashboards/FacultyDashboard.vue'))
+const LmsGradebookDashboard = page(() => import('./Pages/Lms/Dashboards/GradebookDashboard.vue'))
+const LmsIntegrationDashboard = page(() => import('./Pages/Lms/Dashboards/IntegrationDashboard.vue'))
+const LmsRiskDashboard = page(() => import('./Pages/Lms/Dashboards/RiskDashboard.vue'))
+const LmsStudentDashboard = page(() => import('./Pages/Lms/Dashboards/StudentDashboard.vue'))
+const LmsTeacherDashboard = page(() => import('./Pages/Lms/Dashboards/TeacherDashboard.vue'))
 const AssignmentsManagement = page(() => import('./Pages/Assignments/Management.vue'))
 const AssignmentsStudentSubmission = page(() => import('./Pages/Assignments/StudentSubmission.vue'))
 const AssignmentsTeacherGrading = page(() => import('./Pages/Assignments/TeacherGrading.vue'))
@@ -18,6 +43,7 @@ const AttendanceLiveSessions = page(() => import('./Pages/Attendance/LiveSession
 const AttendanceSessions = page(() => import('./Pages/Attendance/Sessions.vue'))
 const AttendanceStudentCheckin = page(() => import('./Pages/Attendance/StudentCheckin.vue'))
 const AttendanceTeacherBoard = page(() => import('./Pages/Attendance/TeacherBoard.vue'))
+const CareerDigitalTwinIdp = page(() => import('./Pages/Career/DigitalTwinIdp.vue'))
 const CareerEmployerPortal = page(() => import('./Pages/Career/EmployerPortal.vue'))
 const CareerPortfolioDashboard = page(() => import('./Pages/Career/PortfolioDashboard.vue'))
 const CareerPublicPortfolio = page(() => import('./Pages/Career/PublicPortfolio.vue'))
@@ -72,6 +98,10 @@ const QuestionBankOutcomeMatrix = page(() => import('./Pages/QuestionBank/Outcom
 const ScormManager = page(() => import('./Pages/Standards/ScormManager.vue'))
 const SurveyBuilder = page(() => import('./Pages/Survey/Builder.vue'))
 const SurveyDashboard = page(() => import('./Pages/Survey/Dashboard.vue'))
+const StudentHomeDashboard = page(() => import('./Pages/Student/HomeDashboard.vue'))
+const StudentLearningJourney = page(() => import('./Pages/Student/LearningJourney.vue'))
+const StudentMyLearning = page(() => import('./Pages/Student/MyLearning.vue'))
+const StudentTaskCenter = page(() => import('./Pages/Student/TaskCenter.vue'))
 const VideoAnalytics = page(() => import('./Pages/Video/Analytics.vue'))
 const VideoLessonVideo = page(() => import('./Pages/Video/LessonVideo.vue'))
 const VideoManager = page(() => import('./Pages/Video/Manager.vue'))
@@ -93,16 +123,83 @@ const session = ref({
   user: props.user,
   demoUserEmail: props.demoUserEmail,
 })
+const routeLocation = ref({
+  path: window.location.pathname,
+  search: window.location.search,
+})
+
+function syncLocation() {
+  routeLocation.value = {
+    path: window.location.pathname,
+    search: window.location.search,
+  }
+}
+
+function navigateTo(url, options = {}) {
+  const target = new URL(url, window.location.origin)
+  const next = `${target.pathname}${target.search}${target.hash}`
+
+  if (next === `${window.location.pathname}${window.location.search}${window.location.hash}`) {
+    return
+  }
+
+  window.history[options.replace ? 'replaceState' : 'pushState']({}, '', next)
+  syncLocation()
+  window.scrollTo({ top: 0 })
+}
+
+onMounted(() => window.addEventListener('popstate', syncLocation))
+onBeforeUnmount(() => window.removeEventListener('popstate', syncLocation))
+provide('navigateTo', navigateTo)
 
 const headers = computed(() => ({
   'Content-Type': 'application/json',
+  Accept: 'application/json',
   'X-CSRF-TOKEN': props.csrfToken,
   'X-Tenant-Code': props.tenant?.code || 'VABIS',
   ...(session.value.demoUserEmail ? { 'X-Demo-User-Email': session.value.demoUserEmail } : {}),
 }))
 
+const enterpriseDashboardPages = {
+  academic: LmsAcademicDashboard,
+  ai: LmsAiDashboard,
+  attendance: LmsAttendanceDashboard,
+  certificate: LmsCertificateDashboard,
+  content: LmsContentDashboard,
+  exam: LmsExamDashboard,
+  executive: LmsExecutiveDashboard,
+  faculty: LmsFacultyDashboard,
+  gradebook: LmsGradebookDashboard,
+  integration: LmsIntegrationDashboard,
+  risk: LmsRiskDashboard,
+  student: LmsStudentDashboard,
+  teacher: LmsTeacherDashboard,
+}
+
 const currentPage = computed(() => {
-  const path = window.location.pathname
+  const path = routeLocation.value.path
+  const isLearner = session.value.user?.user_type === 'student'
+
+  if (isLearner && path === '/') {
+    return StudentHomeDashboard
+  }
+
+  if (path.startsWith('/student/tasks')) {
+    return StudentTaskCenter
+  }
+
+  if (path.startsWith('/student/journey')) {
+    return StudentLearningJourney
+  }
+
+  if (path.startsWith('/student/my-learning')) {
+    return StudentMyLearning
+  }
+
+  if (path.startsWith('/dashboards')) {
+    const key = path.split('/').filter(Boolean)[1] || 'executive'
+    return enterpriseDashboardPages[key] || LmsExecutiveDashboard
+  }
 
   if (path.startsWith('/admin/lms/system-check')) {
     return AdminSystemCheck
@@ -110,6 +207,24 @@ const currentPage = computed(() => {
 
   if (path.startsWith('/admin/lms/action-check')) {
     return AdminActionCheck
+  }
+
+  if (path.startsWith('/admin/lms/data-integrity')) {
+    return AdminDataIntegrity
+  }
+
+  if (path.startsWith('/admin/api-ops')) {
+    if (path.startsWith('/admin/api-ops/registry')) return ApiOpsRegistry
+    if (path.startsWith('/admin/api-ops/requests')) return ApiOpsRequests
+    if (path.startsWith('/admin/api-ops/events')) return ApiOpsEvents
+    if (path.startsWith('/admin/api-ops/webhooks')) return ApiOpsWebhooks
+    if (path.startsWith('/admin/api-ops/mappings')) return ApiOpsMappings
+    if (path.startsWith('/admin/api-ops/entity-mappings')) return ApiOpsEntityMappings
+    if (path.startsWith('/admin/api-ops/sync-jobs')) return ApiOpsSyncJobs
+    if (path.startsWith('/admin/api-ops/health')) return ApiOpsHealth
+    if (path.startsWith('/admin/api-ops/console')) return ApiOpsConsole
+    if (path.startsWith('/admin/api-ops/contracts')) return ApiOpsContracts
+    return ApiOpsDashboard
   }
 
   if (path.startsWith('/courses/learn')) {
@@ -121,6 +236,10 @@ const currentPage = computed(() => {
   }
 
   if (path.startsWith('/courses')) {
+    if (isLearner) {
+      return StudentMyLearning
+    }
+
     return CoursesIndex
   }
 
@@ -288,6 +407,10 @@ const currentPage = computed(() => {
     return CareerPublicPortfolio
   }
 
+  if (path.startsWith('/career/digital-twin')) {
+    return CareerDigitalTwinIdp
+  }
+
   if (path.startsWith('/career')) {
     return CareerPortfolioDashboard
   }
@@ -408,7 +531,7 @@ const currentPage = computed(() => {
 })
 
 const currentPageProps = computed(() => {
-  const path = window.location.pathname
+  const path = routeLocation.value.path
 
   if (path.startsWith('/security')) {
     return { title: 'Bảo mật', subtitle: 'Quản lý phiên đăng nhập, chính sách khóa tài khoản, audit và kiểm tra quyền truy cập.' }
@@ -419,11 +542,11 @@ const currentPageProps = computed(() => {
   }
 
   if (path.startsWith('/plugins')) {
-    return { title: 'Plugin', subtitle: 'Quản lý plugin, connector, trạng thái cài đặt và đồng bộ extension.' }
+    return { title: 'Plugin', subtitle: 'Quản lý plugin, bộ kết nối, trạng thái cài đặt và đồng bộ tiện ích mở rộng.' }
   }
 
   if (path.startsWith('/backup')) {
-    return { title: 'Sao lưu', subtitle: 'Quản lý backup dữ liệu, lịch chạy, restore point và kiểm tra khôi phục.' }
+    return { title: 'Sao lưu', subtitle: 'Quản lý bản sao lưu dữ liệu, lịch chạy, điểm khôi phục và kiểm tra khôi phục.' }
   }
 
   if (path.startsWith('/uat')) {
@@ -463,8 +586,10 @@ async function logout() {
     user: null,
     demoUserEmail: null,
   }
-  window.history.replaceState({}, '', '/login')
+  navigateTo('/login', { replace: true })
 }
+
+const currentRouteKey = computed(() => `${routeLocation.value.path}${routeLocation.value.search}`)
 </script>
 
 <template>
@@ -476,6 +601,7 @@ async function logout() {
   />
   <component
     :is="currentPage"
+    :key="currentRouteKey"
     v-else
     :session-user="session.user"
     :api-headers="headers"

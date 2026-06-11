@@ -12,6 +12,12 @@ return [
         'certificate' => 'certificate',
         'sync_sis' => 'sync-sis',
         'ai' => 'ai',
+        'api_events' => 'api-events',
+        'api_webhooks' => 'api-webhooks',
+        'api_sync' => 'api-sync',
+        'api_retry' => 'api-retry',
+        'api_health' => 'api-health',
+        'api_alerts' => 'api-alerts',
     ],
     'connections' => [
         'sync' => [

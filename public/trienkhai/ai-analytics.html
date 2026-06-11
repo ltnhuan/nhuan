@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI &amp; Analytics - EraLMS</title>
+  <link rel="stylesheet" href="/trienkhai/assets/site.css">
+</head>
+<body>
+  <header class="topbar">
+    <nav class="nav">
+      <a class="brand" href="/trienkhai"><span class="brand-mark">E</span><span>EraLMS triển khai</span></a>
+      <div class="nav-links">
+      <a href="/trienkhai">Home</a>
+      <a href="/trienkhai/dao-tao.html">Đào tạo</a>
+      <a href="/trienkhai/danh-gia.html">Đánh giá</a>
+      <a href="/trienkhai/nguoi-hoc.html">Người học</a>
+      <a href="/trienkhai/chuan-obe.html">Chuẩn & OBE</a>
+      <a href="/trienkhai/tich-hop.html">Tích hợp</a>
+      <a class="active" href="/trienkhai/ai-analytics.html">AI & Analytics</a>
+      <a href="/trienkhai/tat-ca-chuc-nang.html">Tất cả chức năng</a>
+      <a href="/trienkhai/lo-trinh.html">Lộ trình</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-title">
+      <div class="section">
+        <p class="eyebrow">Phân hệ AI &amp; Analytics</p>
+        <h1>Chi tiết triển khai theo chức năng</h1>
+        <p>Phân hệ này mở rộng năng lực LMS theo dữ liệu: tự động sinh tài nguyên, hỗ trợ trợ giảng và giám sát rủi ro.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Luồng tổng thể</p>
+      <h2>Pipeline dữ liệu AI và báo cáo</h2>
+      <ol class="step-list">
+        <li>Ingest tài liệu + metadata học liệu.</li>
+        <li>Build index/embedding và phân tích ngữ nghĩa.</li>
+        <li>AI tạo quiz/summary/flashcard theo bối cảnh quyền truy cập.</li>
+        <li>Dashboard thu nhận dữ liệu hành vi học tập và cảnh báo risk.</li>
+        <li>Xuất liệu báo cáo cho giảng viên, quản lý, kiểm định.</li>
+      </ol>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Chi tiết từng chức năng</p>
+      <h2>Chi tiết triển khai</h2>
+      <div class="detail-grid two">
+        <article id="f-ai-doc" class="feature">
+          <h3>1. AI document pipeline</h3>
+          <p>Xuất sinh nội dung học tập từ tài liệu đã tải lên.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list"><li>Upload tài liệu source.</li><li>Chạy chunk + embedding.</li><li>Tạo quiz/flashcard và ghi metadata.</li></ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Tăng tốc soạn giáo án và giảm thời gian chuẩn bị bài học.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/dao-tao.html#studio">Course Studio</a></li><li><a href="/trienkhai/danh-gia.html#bank">Question bank</a></li><li><a href="/trienkhai/chuan-obe.html#standards">xAPI events</a></li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="f-ai-chat" class="feature">
+          <h3>2. AI chat &amp; tutoring</h3>
+          <p>Hỗ trợ hỏi đáp, tóm tắt nội dung và gợi ý học tiếp.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list"><li>Cấu hình policy truy cập nội dung.</li><li>Gắn context theo khóa/học viên.</li><li>Theo dõi chất lượng câu trả lời.</li></ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Giảm tải hỗ trợ thủ công và giúp học viên học chủ động.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/nguoi-hoc.html#community">Community</a></li><li><a href="/trienkhai/dao-tao.html#lpath">Learning path</a></li><li><a href="/trienkhai/chuan-obe.html#outcome">Outcome</a></li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="f-analytics" class="feature">
+          <h3>3. Learning analytics</h3>
+          <p>Phân tích engagement, completion, tỉ lệ rủi ro học viên.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list"><li>Định nghĩa metric KPI.</li><li>Triển khai job snapshot.</li><li>Cấu hình cảnh báo theo ngưỡng.</li></ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Phát hiện sớm học viên yếu và can thiệp kịp thời.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/nguoi-hoc.html#att">Attendance</a></li><li><a href="/trienkhai/danh-gia.html#gradebook">Gradebook</a></li><li><a href="/trienkhai/lo-trinh.html">UAT</a></li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="f-dashboard" class="feature">
+          <h3>4. Báo cáo quản trị</h3>
+          <p>Tổng hợp báo cáo theo tenant, đơn vị, khóa, giảng viên, outcome.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list"><li>Xây KPI theo dashboard.</li><li>Tổ hợp filter quyền.</li><li>Xuất báo cáo và lưu lịch sử truy vấn.</li></ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Hỗ trợ quyết định vận hành và theo dõi chất lượng đào tạo.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/tich-hop.html#f-audit">Audit log</a></li><li><a href="/trienkhai/tich-hop.html#f-webhook">Webhook</a></li><li><a href="/trienkhai/lo-trinh.html">Go-live dashboard</a></li></ul>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="band">
+      <div class="section">
+        <p class="eyebrow">Lưu ý nghiệm thu</p>
+        <h2>Điểm kiểm soát dữ liệu</h2>
+        <p>Kiểm soát prompt policy, bias, và traceability cho phản hồi AI; đồng thời validate công thức cảnh báo risk theo ngưỡng đã được phê duyệt.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer"><div class="section"><a href="/trienkhai">Quay về trang giới thiệu</a></div></footer>
+</body>
+</html>

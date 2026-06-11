@@ -51,10 +51,51 @@ Route::post('/logout', function () {
         ->withoutCookie('eralms_demo_user');
 });
 
+Route::get('/trienkhai', function () {
+    return response()->file(public_path('trienkhai/index.html'));
+})->name('trienkhai');
+
+Route::get('/trienkhai/{page}', function (string $page) {
+    $page = trim($page, '/');
+    $file = public_path("trienkhai/{$page}.html");
+
+    if (! is_file($file)) {
+        abort(404);
+    }
+
+    return response()->file($file);
+})->where('page', '.*')->name('trienkhai.page');
+
 $spaRoutes = [
     'dashboard' => '/',
+    'lms.dashboards' => '/dashboards',
+    'lms.dashboards.executive' => '/dashboards/executive',
+    'lms.dashboards.academic' => '/dashboards/academic',
+    'lms.dashboards.faculty' => '/dashboards/faculty',
+    'lms.dashboards.teacher' => '/dashboards/teacher',
+    'lms.dashboards.student' => '/dashboards/student',
+    'lms.dashboards.exam' => '/dashboards/exam',
+    'lms.dashboards.attendance' => '/dashboards/attendance',
+    'lms.dashboards.gradebook' => '/dashboards/gradebook',
+    'lms.dashboards.integration' => '/dashboards/integration',
+    'lms.dashboards.content' => '/dashboards/content',
+    'lms.dashboards.risk' => '/dashboards/risk',
+    'lms.dashboards.certificate' => '/dashboards/certificate',
+    'lms.dashboards.ai' => '/dashboards/ai',
     'admin.lms.system-check' => '/admin/lms/system-check',
     'admin.lms.action-check' => '/admin/lms/action-check',
+    'admin.lms.data-integrity' => '/admin/lms/data-integrity',
+    'admin.api-ops' => '/admin/api-ops',
+    'admin.api-ops.registry' => '/admin/api-ops/registry',
+    'admin.api-ops.requests' => '/admin/api-ops/requests',
+    'admin.api-ops.events' => '/admin/api-ops/events',
+    'admin.api-ops.webhooks' => '/admin/api-ops/webhooks',
+    'admin.api-ops.mappings' => '/admin/api-ops/mappings',
+    'admin.api-ops.entity-mappings' => '/admin/api-ops/entity-mappings',
+    'admin.api-ops.sync-jobs' => '/admin/api-ops/sync-jobs',
+    'admin.api-ops.health' => '/admin/api-ops/health',
+    'admin.api-ops.console' => '/admin/api-ops/console',
+    'admin.api-ops.contracts' => '/admin/api-ops/contracts',
     'lms.analytics' => '/analytics',
     'lms.reports' => '/reports',
     'lms.ai' => '/ai',
@@ -132,7 +173,13 @@ if (! function_exists('appPayload')) {
                     'email' => 'admin.lms@vabis.edu.vn',
                     'password' => 'admin123456',
                     'accounts' => [
-                        ['label' => 'Admin', 'email' => 'admin.lms@vabis.edu.vn', 'password' => 'admin123456'],
+                        ['label' => 'Admin LMS', 'email' => 'admin.lms@vabis.edu.vn', 'password' => 'admin123456'],
+                        ['label' => 'Đào tạo', 'email' => 'daotao.lms@vabis.edu.vn', 'password' => 'admin123456'],
+                        ['label' => 'Khoa', 'email' => 'khoa.lms@vabis.edu.vn', 'password' => 'admin123456'],
+                        ['label' => 'Giảng viên', 'email' => 'gv.lms@vabis.edu.vn', 'password' => 'admin123456'],
+                        ['label' => 'Sinh viên', 'email' => 'sv.lms@vabis.edu.vn', 'password' => 'admin123456'],
+                        ['label' => 'Phụ huynh', 'email' => 'phuhuynh.lms@vabis.edu.vn', 'password' => 'admin123456'],
+                        ['label' => 'BGH', 'email' => 'bgh.lms@vabis.edu.vn', 'password' => 'admin123456'],
                         ['label' => 'Learner test', 'email' => 'learner.test@vabis.edu.vn', 'password' => 'learner123456'],
                     ],
                 ],

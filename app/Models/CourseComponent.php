@@ -40,4 +40,19 @@ class CourseComponent extends Model
     {
         return $this->belongsTo(ActivityType::class, 'component_type', 'key');
     }
+
+    public function exam()
+    {
+        return $this->hasOne(Exam::class, 'component_id');
+    }
+
+    public function assignment()
+    {
+        return $this->hasOne(Assignment::class, 'component_id');
+    }
+
+    public function videoAsset()
+    {
+        return $this->hasOne(VideoAsset::class, 'component_id');
+    }
 }

@@ -9,11 +9,11 @@ const props = defineProps({
 defineEmits(['logout'])
 
 const tabs = [
-  { key: 'home', label: 'Home', icon: '⌂' },
-  { key: 'courses', label: 'Courses', icon: '▤' },
-  { key: 'offline', label: 'Offline', icon: '⇩' },
-  { key: 'attendance', label: 'Attend', icon: '◎' },
-  { key: 'wallet', label: 'Wallet', icon: '◇' },
+  { key: 'home', label: 'Trang chủ', icon: '⌂' },
+  { key: 'courses', label: 'Khóa học', icon: '▤' },
+  { key: 'offline', label: 'Ngoại tuyến', icon: '⇩' },
+  { key: 'attendance', label: 'Điểm danh', icon: '◎' },
+  { key: 'wallet', label: 'Ví số', icon: '◇' },
 ]
 
 const activeTab = ref('home')
@@ -22,7 +22,7 @@ const loading = ref(true)
 const payload = ref(null)
 const offlineItems = ref([])
 const queue = ref([])
-const quizDraft = ref({ question: 'Chọn đáp án đúng cho bài học offline', answer: '' })
+const quizDraft = ref({ question: 'Chọn đáp án đúng cho bài học ngoại tuyến', answer: '' })
 const syncMessage = ref('')
 const actionMessage = ref('')
 const selectedPrompt = ref('')
@@ -37,6 +37,27 @@ const notifications = computed(() => payload.value?.notifications || [])
 const wallet = computed(() => payload.value?.credential_wallet || { certificates: [], badges: [] })
 const aiPrompts = computed(() => payload.value?.ai_tutor?.offline_prompts || [])
 const attendance = computed(() => payload.value?.attendance || { qr_enabled: false, otp_enabled: false, active_session_id: null, status: 'none' })
+const typeLabels = {
+  assignment: 'Bài tập',
+  attendance: 'Điểm danh',
+  certificate: 'Chứng chỉ',
+  credential: 'Chứng chỉ số',
+}
+const statusLabels = {
+  none: 'Chưa có',
+  ready: 'Sẵn sàng',
+  issued: 'Đã cấp',
+  pending: 'Đang chờ',
+  completed: 'Hoàn tất',
+}
+
+function labelType(value) {
+  return typeLabels[String(value || '').toLowerCase()] || value
+}
+
+function labelStatus(value) {
+  return statusLabels[String(value || '').toLowerCase()] || value
+}
 
 onMounted(async () => {
   window.addEventListener('online', () => {
@@ -56,9 +77,9 @@ async function fetchBootstrap(showMessage = true) {
   loading.value = true
   try {
     payload.value = await api('/api/v1/mobile/bootstrap')
-    if (showMessage) actionMessage.value = 'Dữ liệu mobile đã tải mới.'
+    if (showMessage) actionMessage.value = 'Dữ liệu di động đã tải mới.'
   } catch (error) {
-    actionMessage.value = error.message || 'Không tải được dữ liệu mobile.'
+    actionMessage.value = error.message || 'Không tải được dữ liệu di động.'
   } finally {
     loading.value = false
   }
@@ -83,7 +104,7 @@ async function api(url, options = {}) {
 
 async function downloadCourse(course) {
   if (!course?.components?.length) {
-    actionMessage.value = 'Khóa học này chưa có nội dung để tải offline.'
+    actionMessage.value = 'Khóa học này chưa có nội dung để tải ngoại tuyến.'
     return
   }
 
@@ -95,7 +116,7 @@ async function downloadCourse(course) {
   }
   await putStore('offline_content', bundle)
   offlineItems.value = await allStore('offline_content')
-  actionMessage.value = `Đã lưu offline: ${course.title}.`
+  actionMessage.value = `Đã lưu ngoại tuyến: ${course.title}.`
 }
 
 async function saveLessonProgress(course, component, progressPercent = 100) {
@@ -143,7 +164,7 @@ async function saveQuizAnswer() {
 async function syncPending() {
   queue.value = await allStore('offline_queue')
   if (!online.value) {
-    syncMessage.value = 'Đang offline, dữ liệu sẽ sync khi có mạng.'
+    syncMessage.value = 'Đang ngoại tuyến, dữ liệu sẽ đồng bộ khi có mạng.'
     actionMessage.value = syncMessage.value
     return
   }
@@ -178,7 +199,7 @@ async function syncPending() {
 
 function choosePrompt(prompt) {
   selectedPrompt.value = prompt
-  actionMessage.value = `Đã chọn prompt AI offline: ${prompt}.`
+  actionMessage.value = `Đã chọn gợi ý AI ngoại tuyến: ${prompt}.`
 }
 
 function mobileCheckIn(mode) {
@@ -264,18 +285,18 @@ async function loadLocal() {
 
 <template>
   <EraLmsLayout :session-user="sessionUser" @logout="$emit('logout')">
-    <template #breadcrumb>Mobile Learning</template>
+    <template #breadcrumb>Học tập di động</template>
 
   <div class="min-h-[calc(100vh-6rem)] bg-zinc-50 text-zinc-950">
     <header class="sticky top-0 z-20 border-b border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur">
       <div class="mx-auto flex max-w-md items-center gap-3">
         <div>
           <div class="text-sm font-semibold">EraLMS Mobile</div>
-          <div class="text-xs text-zinc-500">{{ sessionUser?.full_name || 'Mobile Learner' }}</div>
+          <div class="text-xs text-zinc-500">{{ sessionUser?.full_name || 'Học viên di động' }}</div>
         </div>
         <div class="ml-auto flex items-center gap-2">
           <span class="rounded-full px-2 py-1 text-xs font-medium" :class="online ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'">
-            {{ online ? 'Online' : 'Offline' }}
+            {{ online ? 'Trực tuyến' : 'Ngoại tuyến' }}
           </span>
           <span v-if="pendingCount" class="rounded-full bg-zinc-900 px-2 py-1 text-xs font-medium text-white">{{ pendingCount }} pending</span>
         </div>
@@ -283,13 +304,13 @@ async function loadLocal() {
     </header>
 
     <main class="mx-auto max-w-md px-4 pb-24 pt-4">
-      <div v-if="loading" class="rounded-lg border border-zinc-200 bg-white p-4 text-sm text-zinc-500">Đang tải dữ liệu mobile...</div>
+      <div v-if="loading" class="rounded-lg border border-zinc-200 bg-white p-4 text-sm text-zinc-500">Đang tải dữ liệu di động...</div>
       <template v-else>
       <div v-if="actionMessage" class="mb-3 rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm text-cyan-900">{{ actionMessage }}</div>
 
       <section v-if="activeTab === 'home'" class="space-y-4">
         <div class="rounded-lg bg-zinc-950 p-4 text-white">
-          <div class="text-xs uppercase tracking-wide text-zinc-300">Continue Learning</div>
+          <div class="text-xs uppercase tracking-wide text-zinc-300">Tiếp tục học</div>
           <div class="mt-2 text-xl font-semibold">{{ continueLearning[0]?.title || myCourses[0]?.title }}</div>
           <div class="mt-3 h-2 rounded-full bg-zinc-700">
             <div class="h-2 rounded-full bg-cyan-400" :style="{ width: `${continueLearning[0]?.progress_percent || 0}%` }"></div>
@@ -298,14 +319,14 @@ async function loadLocal() {
 
         <div class="grid grid-cols-2 gap-3">
           <div v-for="item in notifications" :key="item.type" class="rounded-lg border border-zinc-200 bg-white p-3">
-            <div class="text-xs font-medium uppercase text-zinc-500">{{ item.type }}</div>
+            <div class="text-xs font-medium uppercase text-zinc-500">{{ labelType(item.type) }}</div>
             <div class="mt-1 text-sm font-semibold">{{ item.title }}</div>
             <div class="mt-1 text-xs text-zinc-500">{{ item.body }}</div>
           </div>
         </div>
 
         <div class="rounded-lg border border-zinc-200 bg-white p-4">
-          <div class="text-sm font-semibold">Mobile AI Tutor</div>
+          <div class="text-sm font-semibold">Trợ giảng AI di động</div>
           <div class="mt-3 flex flex-wrap gap-2">
             <button
               v-for="prompt in aiPrompts"
@@ -317,7 +338,7 @@ async function loadLocal() {
               {{ prompt }}
             </button>
           </div>
-          <div v-if="selectedPrompt" class="mt-3 rounded-md bg-zinc-50 p-3 text-xs text-zinc-600">Prompt đã chọn sẽ dùng cho chế độ học offline: {{ selectedPrompt }}</div>
+          <div v-if="selectedPrompt" class="mt-3 rounded-md bg-zinc-50 p-3 text-xs text-zinc-600">Gợi ý đã chọn sẽ dùng cho chế độ học ngoại tuyến: {{ selectedPrompt }}</div>
         </div>
       </section>
 
@@ -336,7 +357,7 @@ async function loadLocal() {
               {{ component.type }} · {{ component.title }}
             </button>
           </div>
-          <button class="mt-3 w-full rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-50" :disabled="!course.offline_ready" @click="downloadCourse(course)">Download offline</button>
+          <button class="mt-3 w-full rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-50" :disabled="!course.offline_ready" @click="downloadCourse(course)">Tải để học ngoại tuyến</button>
         </article>
         <div v-if="!myCourses.length" class="rounded-lg border border-zinc-200 bg-white p-4 text-sm text-zinc-500">Chưa có khóa học nào trong tenant hiện tại.</div>
       </section>
@@ -344,37 +365,37 @@ async function loadLocal() {
       <section v-else-if="activeTab === 'offline'" class="space-y-4">
         <div class="rounded-lg border border-zinc-200 bg-white p-4">
           <div class="flex items-center">
-            <div class="text-sm font-semibold">Offline Content</div>
-            <button class="ml-auto rounded-md border border-zinc-300 px-3 py-1.5 text-xs" @click="syncPending">Sync lại</button>
+            <div class="text-sm font-semibold">Nội dung ngoại tuyến</div>
+            <button class="ml-auto rounded-md border border-zinc-300 px-3 py-1.5 text-xs" @click="syncPending">Đồng bộ lại</button>
           </div>
-          <div class="mt-1 text-xs text-zinc-500">{{ syncMessage || 'Video, PDF và lesson đã download sẽ học được khi mất mạng.' }}</div>
+          <div class="mt-1 text-xs text-zinc-500">{{ syncMessage || 'Video, PDF và bài học đã tải sẽ học được khi mất mạng.' }}</div>
           <div class="mt-3 space-y-2">
             <div v-for="item in offlineItems" :key="item.id" class="rounded-md bg-zinc-50 p-3 text-sm">
               <div class="font-medium">{{ item.title }}</div>
               <div class="text-xs text-zinc-500">{{ item.assets.length }} nội dung · {{ new Date(item.savedAt).toLocaleString() }}</div>
             </div>
-            <div v-if="!offlineItems.length" class="rounded-md bg-zinc-50 p-3 text-sm text-zinc-500">Chưa có khóa học nào được lưu offline.</div>
+            <div v-if="!offlineItems.length" class="rounded-md bg-zinc-50 p-3 text-sm text-zinc-500">Chưa có khóa học nào được lưu ngoại tuyến.</div>
           </div>
         </div>
 
         <div class="rounded-lg border border-zinc-200 bg-white p-4">
-          <div class="text-sm font-semibold">Offline Quiz</div>
+          <div class="text-sm font-semibold">Bài kiểm tra ngoại tuyến</div>
           <div class="mt-2 text-sm text-zinc-700">{{ quizDraft.question }}</div>
           <input v-model="quizDraft.answer" class="mt-3 h-10 w-full rounded-md border border-zinc-300 px-3 text-sm" placeholder="Nhập câu trả lời" />
-          <button class="mt-3 w-full rounded-md bg-cyan-700 px-3 py-2 text-sm font-medium text-white" @click="saveQuizAnswer">Lưu local</button>
+          <button class="mt-3 w-full rounded-md bg-cyan-700 px-3 py-2 text-sm font-medium text-white" @click="saveQuizAnswer">Lưu trên máy</button>
         </div>
       </section>
 
       <section v-else-if="activeTab === 'attendance'" class="space-y-3">
         <div class="rounded-lg border border-zinc-200 bg-white p-4">
-          <div class="text-sm font-semibold">Mobile Attendance</div>
+          <div class="text-sm font-semibold">Điểm danh di động</div>
           <div class="mt-2 grid grid-cols-2 gap-2">
-            <button class="rounded-md bg-zinc-900 px-3 py-3 text-sm font-medium text-white disabled:opacity-50" :disabled="!attendance.qr_enabled" @click="mobileCheckIn('qr')">QR Check-in</button>
-            <button class="rounded-md border border-zinc-300 px-3 py-3 text-sm font-medium disabled:opacity-50" :disabled="!attendance.otp_enabled" @click="mobileCheckIn('otp')">OTP Check-in</button>
+            <button class="rounded-md bg-zinc-900 px-3 py-3 text-sm font-medium text-white disabled:opacity-50" :disabled="!attendance.qr_enabled" @click="mobileCheckIn('qr')">Điểm danh QR</button>
+            <button class="rounded-md border border-zinc-300 px-3 py-3 text-sm font-medium disabled:opacity-50" :disabled="!attendance.otp_enabled" @click="mobileCheckIn('otp')">Điểm danh OTP</button>
           </div>
-          <div class="mt-3 text-xs text-zinc-500">Phiên hiện tại: {{ attendance.active_session_id || 'chưa mở' }} · {{ attendance.status }}</div>
+          <div class="mt-3 text-xs text-zinc-500">Phiên hiện tại: {{ attendance.active_session_id || 'chưa mở' }} · {{ labelStatus(attendance.status) }}</div>
           <div v-if="checkInResult" class="mt-3 rounded-md bg-zinc-50 p-3 text-sm">
-            <div class="font-medium">{{ attendanceMode.toUpperCase() }} check-in</div>
+            <div class="font-medium">Điểm danh {{ attendanceMode.toUpperCase() }}</div>
             <div class="text-xs text-zinc-500">{{ checkInResult.status === 'ready' ? `Sẵn sàng gửi cho phiên #${checkInResult.sessionId}` : 'Không có phiên đang mở' }} · {{ checkInResult.at }}</div>
           </div>
         </div>
@@ -382,20 +403,20 @@ async function loadLocal() {
 
       <section v-else class="space-y-3">
         <div class="rounded-lg border border-zinc-200 bg-white p-4">
-          <div class="text-sm font-semibold">Credential Wallet</div>
+          <div class="text-sm font-semibold">Ví chứng chỉ số</div>
           <div class="mt-3 space-y-2 text-sm">
-            <button v-for="certificate in wallet.certificates" :key="certificate.id" class="block w-full rounded-md bg-zinc-50 p-3 text-left" @click="showCredential('Certificate', certificate)">Certificate #{{ certificate.id }}</button>
-            <button v-for="badge in wallet.badges" :key="badge.id" class="block w-full rounded-md bg-zinc-50 p-3 text-left" @click="showCredential('Badge', badge)">Badge #{{ badge.id }}</button>
-            <div v-if="!wallet.certificates.length && !wallet.badges.length" class="text-zinc-500">Chưa có credential trong ví.</div>
+            <button v-for="certificate in wallet.certificates" :key="certificate.id" class="block w-full rounded-md bg-zinc-50 p-3 text-left" @click="showCredential('Chứng chỉ', certificate)">Chứng chỉ #{{ certificate.id }}</button>
+            <button v-for="badge in wallet.badges" :key="badge.id" class="block w-full rounded-md bg-zinc-50 p-3 text-left" @click="showCredential('Huy hiệu', badge)">Huy hiệu #{{ badge.id }}</button>
+            <div v-if="!wallet.certificates.length && !wallet.badges.length" class="text-zinc-500">Chưa có chứng chỉ số trong ví.</div>
           </div>
           <div v-if="selectedCredential" class="mt-3 rounded-md border border-zinc-200 p-3 text-sm">
             <div class="font-medium">{{ selectedCredential.type }} #{{ selectedCredential.credential.id }}</div>
-            <div class="mt-1 text-xs text-zinc-500">Trạng thái: {{ selectedCredential.credential.status || 'issued' }}</div>
+            <div class="mt-1 text-xs text-zinc-500">Trạng thái: {{ labelStatus(selectedCredential.credential.status || 'issued') }}</div>
           </div>
         </div>
         <div class="rounded-lg border border-zinc-200 bg-white p-4">
-          <div class="text-sm font-semibold">Mobile Portfolio</div>
-          <div class="mt-2 text-xs text-zinc-500">Portfolio artifact và chứng chỉ sẽ đồng bộ khi online.</div>
+          <div class="text-sm font-semibold">Hồ sơ năng lực di động</div>
+          <div class="mt-2 text-xs text-zinc-500">Minh chứng hồ sơ và chứng chỉ sẽ đồng bộ khi trực tuyến.</div>
         </div>
       </section>
       </template>

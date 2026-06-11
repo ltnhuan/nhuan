@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-label="EraLMS demo image">
+  <rect width="640" height="360" fill="#eef6ff"/>
+  <rect x="48" y="48" width="544" height="264" rx="18" fill="#ffffff" stroke="#bfdbfe" stroke-width="3"/>
+  <circle cx="148" cy="132" r="48" fill="#22c55e"/>
+  <path d="M80 286 230 170 338 252 430 132 560 286Z" fill="#2563eb" opacity=".88"/>
+  <path d="M80 286h480" stroke="#0f172a" stroke-width="6" stroke-linecap="round"/>
+  <text x="320" y="88" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#0f172a">EraLMS Media Demo</text>
+  <text x="320" y="326" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#475569">Một file ảnh dùng chung cho câu hỏi trắc nghiệm</text>
+</svg>

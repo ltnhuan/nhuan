@@ -47,9 +47,18 @@ class CoreController extends Controller
         ]);
     }
 
-    public function dashboard(TenantContext $tenantContext, CoreDashboardService $dashboardService)
+    public function dashboard(Request $request, TenantContext $tenantContext, CoreDashboardService $dashboardService)
     {
-        return response()->json($dashboardService->summary((int) $tenantContext->id()));
+        $user = $request->user();
+
+        if (! $user && $request->header('X-Demo-User-Email')) {
+            $user = LmsUser::query()
+                ->where('tenant_id', $tenantContext->id())
+                ->where('email', $request->header('X-Demo-User-Email'))
+                ->first();
+        }
+
+        return response()->json($dashboardService->summary((int) $tenantContext->id(), $user instanceof LmsUser ? $user : null));
     }
 
     public function tenants()

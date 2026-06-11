@@ -49,6 +49,32 @@ class AiLearningPlatformFeatureTest extends TestCase
         $this->assertStringContainsString('AI Tutor', $response->json('answer'));
     }
 
+    public function test_workspace_returns_study_companion_contract(): void
+    {
+        $this->ingestDocumentId();
+
+        $response = $this->withHeaders($this->adminHeaders())->getJson('/api/v1/ai/workspace');
+
+        $response->assertOk()
+            ->assertJsonPath('assistant.name', 'Era AI Study Companion')
+            ->assertJsonStructure([
+                'assistant' => ['name', 'prompt_version', 'principles', 'system_prompt'],
+                'learner' => ['id', 'name', 'email'],
+                'context' => ['scope', 'selected_document_id', 'selected_course_id', 'selection_reason'],
+                'courses',
+                'documents' => [['id', 'title', 'source_type', 'chunks_count']],
+                'tools' => [['key', 'label', 'assistant_type', 'endpoint']],
+                'suggestions' => [['label', 'assistant_type', 'tool', 'prompt']],
+                'study_plan' => ['headline', 'today', 'this_week'],
+                'related' => ['scope', 'quizzes', 'flashcards', 'conversations'],
+                'knowledge' => ['documents_ready', 'scope_documents', 'chunks_ready', 'scope_chunks', 'questions_asked', 'quizzes_generated', 'flashcards_generated'],
+                'safety',
+            ]);
+
+        $this->assertGreaterThanOrEqual(5, count($response->json('tools')));
+        $this->assertGreaterThanOrEqual(3, count($response->json('suggestions')));
+    }
+
     public function test_generate_quiz_from_ingested_document(): void
     {
         $documentId = $this->ingestDocumentId();

@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { AI_HUB_MENU_LINKS, AI_HUB_TEXT } from '@/config/aiHubConfig'
 import {
   Activity,
   Award,
@@ -19,6 +20,8 @@ import {
   FileChartColumn,
   FolderOpen,
   GraduationCap,
+  Gauge,
+  Home,
   KeyRound,
   Landmark,
   LayoutDashboard,
@@ -35,6 +38,7 @@ import {
   Search,
   Settings,
   ShieldCheck,
+  Sparkles,
   Smartphone,
   TestTube2,
   UploadCloud,
@@ -42,12 +46,14 @@ import {
   Users,
   Video,
   WalletCards,
+  Wifi,
+  WifiOff,
   Workflow,
   X,
 } from '@lucide/vue'
 
 const currentPath = window.location.pathname
-defineProps({
+const props = defineProps({
   sessionUser: { type: Object, default: null },
 })
 defineEmits(['logout'])
@@ -56,6 +62,11 @@ const rowDetailOpen = ref(false)
 const rowDetail = ref({ title: '', id: '', fields: [] })
 const mobileMenuOpen = ref(false)
 const desktopMenuOpen = ref(localStorage.getItem('eralms.desktopMenuOpen') !== 'false')
+const commandOpen = ref(false)
+const commandSearch = ref('')
+const recentRoutes = ref(JSON.parse(localStorage.getItem('eralms.recentRoutes') || '[]'))
+const shellDensity = ref(localStorage.getItem('eralms.shellDensity') || 'comfortable')
+const isOnline = ref(navigator.onLine)
 const editDrawerOpen = ref(false)
 const editNotice = ref('')
 const editDraft = ref({
@@ -70,10 +81,17 @@ const routeIcons = [
   ['/', LayoutDashboard],
   ['/admin/lms/system-check', ShieldCheck],
   ['/admin/lms/action-check', Activity],
+  ['/admin/lms/data-integrity', DatabaseZap],
+  ['/admin/api-ops/mappings', Workflow],
+  ['/admin/api-ops/webhooks', Cable],
+  ['/admin/api-ops', DatabaseZap],
+  ['/dashboards', BarChart3],
   ['/analytics', BarChart3],
   ['/reports', FileChartColumn],
   ['/ai', Bot],
   ['/mobile', Smartphone],
+  ['/student/tasks', ClipboardCheck],
+  ['/student/journey', Route],
   ['/courses/studio', PenTool],
   ['/courses', GraduationCap],
   ['/repository', FolderOpen],
@@ -111,8 +129,20 @@ const routeIcons = [
 
 const editRouteRules = [
   ['/admin/lms/system-check', '/admin/lms/system-check', 'Sửa hệ thống'],
-  ['/admin/lms/action-check', '/admin/lms/action-check', 'Sửa action'],
-  ['/analytics', '/analytics', 'Sửa analytics'],
+  ['/admin/lms/action-check', '/admin/lms/action-check', 'Sửa hành động'],
+  ['/admin/api-ops/registry', '/admin/api-ops/registry', 'Sửa API registry'],
+  ['/admin/api-ops/requests', '/admin/api-ops/requests', 'Sửa log API'],
+  ['/admin/api-ops/events', '/admin/api-ops/events', 'Sửa event bus'],
+  ['/admin/api-ops/webhooks', '/admin/api-ops/webhooks', 'Sửa webhook'],
+  ['/admin/api-ops/mappings', '/admin/api-ops/mappings', 'Sửa ánh xạ API'],
+  ['/admin/api-ops/entity-mappings', '/admin/api-ops/entity-mappings', 'Sửa mapping entity'],
+  ['/admin/api-ops/sync-jobs', '/admin/api-ops/sync-jobs', 'Sửa sync job'],
+  ['/admin/api-ops/health', '/admin/api-ops/health', 'Sửa health API'],
+  ['/admin/api-ops/console', '/admin/api-ops/console', 'Sửa console API'],
+  ['/admin/api-ops/contracts', '/admin/api-ops/contracts', 'Sửa contract API'],
+  ['/admin/api-ops', '/admin/api-ops', 'Sửa API Ops'],
+  ['/dashboards', '/dashboards/executive', 'Sửa dashboard'],
+  ['/analytics', '/analytics', 'Sửa phân tích học tập'],
   ['/reports', '/reports', 'Sửa báo cáo'],
   ['/question-banks/editor', '/question-banks/editor', 'Sửa câu hỏi'],
   ['/question-banks/categories', '/question-banks/categories', 'Sửa danh mục'],
@@ -132,10 +162,10 @@ const editRouteRules = [
   ['/learning-path/class-progress', '/learning-path/class-progress', 'Sửa tiến độ lớp'],
   ['/learning-path', '/learning-path', 'Sửa lộ trình'],
   ['/enrollment', '/enrollment', 'Sửa ghi danh'],
-  ['/videos/analytics', '/videos/analytics', 'Sửa video analytics'],
+  ['/videos/analytics', '/videos/analytics', 'Sửa phân tích video'],
   ['/videos/lesson', '/videos/lesson', 'Sửa video bài học'],
   ['/videos', '/videos', 'Sửa video'],
-  ['/assignments/deadlines', '/assignments/deadlines', 'Sửa deadline'],
+  ['/assignments/deadlines', '/assignments/deadlines', 'Sửa mốc thời hạn bài tập'],
   ['/assignments/grading', '/assignments/grading', 'Sửa chấm bài'],
   ['/assignments/submission', '/assignments/submission', 'Sửa bài nộp'],
   ['/assignments', '/assignments', 'Sửa bài tập'],
@@ -143,64 +173,78 @@ const editRouteRules = [
   ['/gradebook/approval', '/gradebook/approval', 'Sửa duyệt điểm'],
   ['/gradebook/student', '/gradebook/student', 'Sửa điểm cá nhân'],
   ['/gradebook', '/gradebook/builder', 'Sửa sổ điểm'],
-  ['/attendance/live', '/attendance/live', 'Sửa live session'],
-  ['/attendance/checkin', '/attendance/checkin', 'Sửa check-in'],
+  ['/attendance/live', '/attendance/live', 'Sửa phiên trực tiếp'],
+  ['/attendance/checkin', '/attendance/checkin', 'Sửa điểm danh trực tuyến'],
   ['/attendance/teacher', '/attendance/teacher', 'Sửa điểm danh'],
   ['/attendance/eligibility', '/attendance/eligibility', 'Sửa điều kiện dự thi'],
   ['/attendance', '/attendance', 'Sửa điểm danh'],
   ['/surveys/builder', '/surveys/builder', 'Sửa khảo sát'],
   ['/surveys', '/surveys/builder', 'Sửa khảo sát'],
   ['/community', '/community', 'Sửa cộng đồng'],
-  ['/career/public', '/career/public', 'Sửa public portfolio'],
-  ['/career/employer', '/career/employer', 'Sửa employer view'],
-  ['/career', '/career', 'Sửa portfolio'],
+  ['/career/public', '/career/public', 'Sửa hồ sơ công khai'],
+  ['/career/employer', '/career/employer', 'Sửa góc nhà tuyển dụng'],
+  ['/career', '/career', 'Sửa hồ sơ nghề nghiệp'],
   ['/credentials/certificates', '/credentials/certificates', 'Sửa chứng chỉ'],
   ['/credentials/wallet', '/credentials/wallet', 'Sửa ví chứng chỉ'],
   ['/credentials/verify', '/credentials/verify', 'Sửa xác minh'],
   ['/credentials', '/credentials/certificates', 'Sửa chứng chỉ'],
   ['/obe/outcome-matrix', '/obe/outcome-matrix', 'Sửa ma trận OBE'],
   ['/obe/competency-framework', '/obe/competency-framework', 'Sửa năng lực'],
-  ['/obe/coverage', '/obe/coverage', 'Sửa coverage'],
-  ['/obe/achievement', '/obe/achievement', 'Sửa achievement'],
-  ['/obe/accreditation', '/obe/accreditation', 'Sửa accreditation'],
+  ['/obe/coverage', '/obe/coverage', 'Sửa phạm vi OBE'],
+  ['/obe/achievement', '/obe/achievement', 'Sửa kết quả đạt chuẩn'],
+  ['/obe/accreditation', '/obe/accreditation', 'Sửa báo cáo kiểm định'],
   ['/obe', '/obe', 'Sửa OBE'],
   ['/standards/xapi', '/standards/xapi', 'Sửa xAPI'],
   ['/standards/tools', '/standards/tools', 'Sửa công cụ'],
   ['/standards/lti', '/standards/lti', 'Sửa LTI'],
   ['/standards/scorm', '/standards/scorm', 'Sửa SCORM'],
   ['/standards', '/standards/tools', 'Sửa chuẩn học liệu'],
-  ['/sis/mapping', '/sis/mapping', 'Sửa mapping'],
-  ['/sis/sync-jobs', '/sis/sync-jobs', 'Sửa sync jobs'],
-  ['/sis/events', '/sis/events', 'Sửa integration events'],
+  ['/sis/mapping', '/sis/mapping', 'Sửa ánh xạ'],
+  ['/sis/sync-jobs', '/sis/sync-jobs', 'Sửa công việc đồng bộ'],
+  ['/sis/events', '/sis/events', 'Sửa sự kiện tích hợp'],
   ['/sis/systems', '/sis/systems', 'Sửa hệ thống SIS'],
   ['/sis', '/sis/mapping', 'Sửa SIS'],
-  ['/settings/tenants', '/settings/tenants', 'Sửa tenant'],
-  ['/settings/campuses', '/settings/campuses', 'Sửa campus'],
+  ['/settings/tenants', '/settings/tenants', 'Sửa đơn vị'],
+  ['/settings/campuses', '/settings/campuses', 'Sửa cơ sở'],
   ['/settings/academic-units', '/settings/academic-units', 'Sửa đơn vị'],
-  ['/settings/roles', '/settings/roles', 'Sửa quyền'],
-  ['/settings/white-label', '/settings/white-label', 'Sửa giao diện'],
-  ['/settings/audit-logs', '/settings/audit-logs', 'Sửa audit logs'],
+  ['/settings/roles', '/settings/roles', 'Sửa vai trò/phân quyền'],
+  ['/settings/white-label', '/settings/white-label', 'Sửa nhãn giao diện'],
+  ['/settings/audit-logs', '/settings/audit-logs', 'Sửa nhật ký kiểm tra'],
   ['/settings', '/settings', 'Sửa cấu hình'],
   ['/security', '/security', 'Sửa bảo mật'],
   ['/plugins', '/plugins', 'Sửa plugin'],
-  ['/backup', '/backup', 'Sửa backup'],
+  ['/backup', '/backup', 'Sửa sao lưu'],
   ['/uat', '/uat', 'Sửa UAT'],
   ['/ai', '/ai', 'Sửa học liệu AI'],
-  ['/mobile', '/mobile', 'Sửa mobile'],
+  ['/mobile', '/mobile', 'Sửa ứng dụng di động'],
   ['/', '/', 'Sửa dashboard'],
 ]
 
-const menuGroups = [
+const localeText = computed(() => {
+  const requested = new URLSearchParams(window.location.search).get('lang')?.toLowerCase()
+  if (requested === 'en' || requested === 'vi') return AI_HUB_TEXT[requested]
+  return AI_HUB_TEXT.vi
+})
+
+const menuGroups = computed(() => AI_HUB_MENU_LINKS.map((link) => ({
+  route: link.href,
+  label: localeText.value.sections[link.sectionKey]?.title || link.sectionKey,
+})))
+
+const menuGroupsBase = [
   {
     title: 'Điều hành',
     items: [
       { label: 'Tổng quan', route: '/' },
+      { label: 'Dashboard BGH', route: '/dashboards/executive' },
+      { label: 'Dashboard đào tạo', route: '/dashboards/academic' },
+      { label: 'Dashboard rủi ro', route: '/dashboards/risk' },
+      { label: 'Dashboard SIS', route: '/dashboards/integration' },
       { label: 'Kiểm tra hệ thống', route: '/admin/lms/system-check' },
-      { label: 'Action Check', route: '/admin/lms/action-check' },
-      { label: 'Learning Analytics', route: '/analytics' },
+      { label: 'Kiểm tra hành động', route: '/admin/lms/action-check' },
+      { label: 'Phân tích học tập', route: '/analytics' },
       { label: 'Báo cáo', route: '/reports' },
-      { label: 'AI trợ giảng', route: '/ai' },
-      { label: 'Mobile learning', route: '/mobile' },
+      { label: 'Học tập di động', route: '/mobile' },
     ],
   },
   {
@@ -219,7 +263,7 @@ const menuGroups = [
     title: 'Nội dung & đánh giá',
     items: [
       { label: 'Nền tảng video', route: '/videos' },
-      { label: 'Video analytics', route: '/videos/analytics' },
+      { label: 'Phân tích video', route: '/videos/analytics' },
       { label: 'Bài học video', route: '/videos/lesson' },
       { label: 'Ngân hàng câu hỏi', route: '/question-banks' },
       { label: 'Soạn câu hỏi', route: '/question-banks/editor' },
@@ -252,52 +296,64 @@ const menuGroups = [
     title: 'Người học',
     items: [
       { label: 'Điểm danh online', route: '/attendance' },
-      { label: 'Live session', route: '/attendance/live' },
-      { label: 'Check-in sinh viên', route: '/attendance/checkin' },
+      { label: 'Phiên trực tiếp', route: '/attendance/live' },
+      { label: 'Điểm danh trực tuyến', route: '/attendance/checkin' },
       { label: 'Bảng điểm danh GV', route: '/attendance/teacher' },
       { label: 'Điều kiện dự thi', route: '/attendance/eligibility' },
       { label: 'Cộng đồng học tập', route: '/community' },
       { label: 'Khảo sát & QA', route: '/surveys' },
       { label: 'Thiết kế khảo sát', route: '/surveys/builder' },
-      { label: 'Career Portfolio', route: '/career' },
-      { label: 'Public portfolio', route: '/career/public' },
-      { label: 'Employer View', route: '/career/employer' },
+      { label: 'Hồ sơ nghề nghiệp', route: '/career' },
+      { label: 'IDP cá nhân', route: '/career/digital-twin' },
+      { label: 'Hồ sơ công khai', route: '/career/public' },
+      { label: 'Góc nhà tuyển dụng', route: '/career/employer' },
     ],
   },
   {
     title: 'Chứng chỉ & chuẩn',
     items: [
-      { label: 'Digital Credential', route: '/credentials' },
-      { label: 'Certificate builder', route: '/credentials/certificates' },
-      { label: 'Credential wallet', route: '/credentials/wallet' },
-      { label: 'Verify portal', route: '/credentials/verify' },
-      { label: 'OBE outcomes', route: '/obe' },
-      { label: 'OBE outcome matrix', route: '/obe/outcome-matrix' },
-      { label: 'Competency framework', route: '/obe/competency-framework' },
-      { label: 'OBE coverage', route: '/obe/coverage' },
-      { label: 'OBE achievement', route: '/obe/achievement' },
-      { label: 'Accreditation reports', route: '/obe/accreditation' },
-      { label: 'SCORM Manager', route: '/standards/scorm' },
-      { label: 'xAPI Explorer', route: '/standards/xapi' },
-      { label: 'LTI Registry', route: '/standards/lti' },
-      { label: 'External Tools', route: '/standards/tools' },
+      { label: 'Chứng chỉ số', route: '/credentials' },
+      { label: 'Tạo chứng chỉ', route: '/credentials/certificates' },
+      { label: 'Ví chứng chỉ', route: '/credentials/wallet' },
+      { label: 'Cổng xác minh', route: '/credentials/verify' },
+      { label: 'Kết quả đầu ra', route: '/obe' },
+      { label: 'Ma trận kết quả đầu ra', route: '/obe/outcome-matrix' },
+      { label: 'Khung năng lực', route: '/obe/competency-framework' },
+      { label: 'Phạm vi OBE', route: '/obe/coverage' },
+      { label: 'Đạt chuẩn', route: '/obe/achievement' },
+      { label: 'Báo cáo kiểm định', route: '/obe/accreditation' },
+      { label: 'Quản lý SCORM', route: '/standards/scorm' },
+      { label: 'Khám phá xAPI', route: '/standards/xapi' },
+      { label: 'Đăng ký LTI', route: '/standards/lti' },
+      { label: 'Công cụ bên ngoài', route: '/standards/tools' },
     ],
   },
   {
     title: 'Hệ thống',
     items: [
       { label: 'Đồng bộ SIS', route: '/sis' },
-      { label: 'Mapping SIS', route: '/sis/mapping' },
-      { label: 'Sync jobs', route: '/sis/sync-jobs' },
-      { label: 'Integration events', route: '/sis/events' },
-      { label: 'System config', route: '/sis/systems' },
+      { label: 'API Operations Center', route: '/admin/api-ops' },
+      { label: 'API Registry', route: '/admin/api-ops/registry' },
+      { label: 'API Gateway Logs', route: '/admin/api-ops/requests' },
+      { label: 'Event Bus Center', route: '/admin/api-ops/events' },
+      { label: 'Webhook Center', route: '/admin/api-ops/webhooks' },
+      { label: 'Data Mapping Center', route: '/admin/api-ops/mappings' },
+      { label: 'Entity Mapping Center', route: '/admin/api-ops/entity-mappings' },
+      { label: 'Sync Job Center', route: '/admin/api-ops/sync-jobs' },
+      { label: 'API Health Monitor', route: '/admin/api-ops/health' },
+      { label: 'API Test Console', route: '/admin/api-ops/console' },
+      { label: 'Data Contract Manager', route: '/admin/api-ops/contracts' },
+      { label: 'Ánh xạ SIS', route: '/sis/mapping' },
+      { label: 'Công việc đồng bộ', route: '/sis/sync-jobs' },
+      { label: 'Sự kiện tích hợp', route: '/sis/events' },
+      { label: 'Cấu hình hệ thống', route: '/sis/systems' },
       { label: 'Cấu hình', route: '/settings' },
-      { label: 'Tenant', route: '/settings/tenants' },
-      { label: 'Campus', route: '/settings/campuses' },
+      { label: 'Đơn vị', route: '/settings/tenants' },
+      { label: 'Cơ sở', route: '/settings/campuses' },
       { label: 'Khoa/Bộ môn', route: '/settings/academic-units' },
-      { label: 'Role/Permission', route: '/settings/roles' },
-      { label: 'White label', route: '/settings/white-label' },
-      { label: 'Audit logs', route: '/settings/audit-logs' },
+      { label: 'Vai trò/Phân quyền', route: '/settings/roles' },
+      { label: 'Nhãn giao diện', route: '/settings/white-label' },
+      { label: 'Nhật ký kiểm tra', route: '/settings/audit-logs' },
       { label: 'Bảo mật', route: '/security' },
       { label: 'Plugin', route: '/plugins' },
       { label: 'Sao lưu', route: '/backup' },
@@ -306,9 +362,117 @@ const menuGroups = [
   },
 ]
 
+const learnerMenuGroups = [
+  {
+    title: 'Hôm nay',
+    items: [
+      { label: 'AI trợ học', route: '/ai' },
+      { label: 'Home', route: '/' },
+      { label: 'Task Center', route: '/student/tasks' },
+    ],
+  },
+  {
+    title: 'Học',
+    items: [
+      { label: 'My Learning', route: '/courses' },
+      { label: 'Learning Journey', route: '/student/journey' },
+      { label: 'Vào trang học', route: '/courses/learn' },
+    ],
+  },
+  {
+    title: 'Kết quả',
+    items: [
+      { label: 'Điểm của tôi', route: '/gradebook/student' },
+      { label: 'Điều kiện dự thi', route: '/attendance/eligibility' },
+      { label: 'Kết quả thi', route: '/exams/results' },
+    ],
+  },
+  {
+    title: 'Hồ sơ',
+    items: [
+      { label: 'Hồ sơ nghề nghiệp', route: '/career' },
+      { label: 'IDP cá nhân', route: '/career/digital-twin' },
+      { label: 'Ví chứng chỉ', route: '/credentials/wallet' },
+    ],
+  },
+]
+
+const isLearner = computed(() => props.sessionUser?.user_type === 'student')
+const learnerBottomNav = [
+  { label: 'Home', route: '/', icon: Home },
+  { label: 'Học', route: '/courses', icon: GraduationCap },
+  { label: 'Task', route: '/student/tasks', icon: ClipboardCheck },
+  { label: 'Điểm', route: '/gradebook/student', icon: FileChartColumn },
+  { label: 'Hồ sơ', route: '/career', icon: UserCheck },
+]
+const operatorBottomNav = [
+  { label: 'AI', route: '/ai', icon: Bot },
+  { label: 'Home', route: '/', icon: LayoutDashboard },
+  { label: 'Studio', route: '/courses/studio', icon: PenTool },
+  { label: 'Kho', route: '/repository', icon: FolderOpen },
+  { label: 'Check', route: '/admin/lms/data-integrity', icon: DatabaseZap },
+]
+const visibleMenuGroups = computed(() => {
+  const aiHubGroup = {
+    title: localeText.value.sidebar?.groupTitle || 'AI Hub',
+    items: [
+      { label: 'AI Study Companion', route: '/ai' },
+      ...menuGroups.value,
+    ],
+  }
+
+  return isLearner.value ? learnerMenuGroups : [aiHubGroup, ...menuGroupsBase]
+})
+const shellTitle = computed(() => isLearner.value ? 'EraLMS Learner' : 'EraLMS Enterprise')
+const shellSubtitle = computed(() => isLearner.value ? 'Không gian học tập cá nhân' : 'VABIS LMS Operations')
+const pageTitle = computed(() => isLearner.value ? 'Bảng điều khiển người học' : 'Bảng điều khiển vận hành LMS')
+const bottomNavItems = computed(() => isLearner.value ? learnerBottomNav : operatorBottomNav)
+const densityCompact = computed(() => shellDensity.value === 'compact')
+const commandItems = computed(() => {
+  const menuItems = visibleMenuGroups.value.flatMap((group) => group.items.map((item) => ({
+    ...item,
+    group: group.title,
+    icon: iconFor(item.route),
+    tone: 'menu',
+  })))
+  const recentItems = recentRoutes.value.map((item) => ({
+    ...item,
+    group: 'Gần đây',
+    icon: iconFor(item.route),
+    tone: 'recent',
+  }))
+  const editItem = !isLearner.value ? [{
+    label: editTarget.value.label,
+    route: editTarget.value.route,
+    group: 'Thao tác',
+    icon: PenTool,
+    tone: 'action',
+    action: navigateEdit,
+  }] : []
+
+  return [...editItem, ...recentItems, ...menuItems]
+})
+const filteredCommandItems = computed(() => {
+  const keyword = commandSearch.value.trim().toLowerCase()
+  const unique = new Map()
+  for (const item of commandItems.value) {
+    const key = `${item.group}:${item.route}:${item.label}`
+    if (!unique.has(key)) unique.set(key, item)
+  }
+  const items = [...unique.values()]
+  if (!keyword) return items.slice(0, 12)
+
+  return items
+    .filter((item) => `${item.label} ${item.route} ${item.group}`.toLowerCase().includes(keyword))
+    .slice(0, 20)
+})
+
 const activeRoute = computed(() => {
-  const routes = menuGroups
-    .flatMap((group) => group.items.map((item) => item.route))
+  const routes = visibleMenuGroups.value
+    .flatMap((group) => group.items.map((item) => {
+      const [base] = item.route.split('#')
+      return base.split('?')[0]
+    }))
     .filter((route) => route === '/' ? currentPath === '/' : currentPath === route || currentPath.startsWith(`${route}/`))
     .sort((a, b) => b.length - a.length)
 
@@ -327,7 +491,9 @@ const editTarget = computed(() => {
 })
 
 function isActive(route) {
-  return activeRoute.value === route
+  const [base] = route.split('#')
+  const target = base.split('?')[0]
+  return activeRoute.value === target
 }
 
 function iconFor(route) {
@@ -340,7 +506,66 @@ function iconFor(route) {
 
 function navigate(route) {
   mobileMenuOpen.value = false
-  window.location.href = `${route}?v=${Date.now()}`
+  commandOpen.value = false
+  pushRecentRoute(route)
+  const [base, hash] = route.split('#')
+  const withVersion = base.includes('v=') ? base : `${base}${base.includes('?') ? '&' : '?'}v=${Date.now()}`
+  window.location.href = `${withVersion}${hash ? `#${hash}` : ''}`
+}
+
+function openCommand() {
+  commandSearch.value = ''
+  commandOpen.value = true
+}
+
+function runCommand(item) {
+  if (item.action) {
+    commandOpen.value = false
+    item.action()
+    return
+  }
+
+  navigate(item.route)
+}
+
+function pushRecentRoute(route = currentPath) {
+  const item = visibleMenuGroups.value
+    .flatMap((group) => group.items.map((menuItem) => ({ ...menuItem, group: group.title })))
+    .find((menuItem) => {
+      const [base] = menuItem.route.split('#')
+      const target = base.split('?')[0]
+      return target === route || target === currentPath
+    })
+
+  if (!item) return
+
+  recentRoutes.value = [
+    { label: item.label, route: item.route },
+    ...recentRoutes.value.filter((recent) => recent.route !== item.route),
+  ].slice(0, 6)
+  localStorage.setItem('eralms.recentRoutes', JSON.stringify(recentRoutes.value))
+}
+
+function toggleDensity() {
+  shellDensity.value = densityCompact.value ? 'comfortable' : 'compact'
+  localStorage.setItem('eralms.shellDensity', shellDensity.value)
+}
+
+function handleShellKeydown(event) {
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+    event.preventDefault()
+    openCommand()
+    return
+  }
+
+  if (event.key === 'Escape') {
+    commandOpen.value = false
+    mobileMenuOpen.value = false
+  }
+}
+
+function updateOnlineState() {
+  isOnline.value = navigator.onLine
 }
 
 function toggleDesktopMenu() {
@@ -486,15 +711,22 @@ function closeRowDetail() {
 
 onMounted(() => {
   document.addEventListener('click', handleTableClick)
+  window.addEventListener('keydown', handleShellKeydown)
+  window.addEventListener('online', updateOnlineState)
+  window.addEventListener('offline', updateOnlineState)
+  pushRecentRoute(currentPath)
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleTableClick)
+  window.removeEventListener('keydown', handleShellKeydown)
+  window.removeEventListener('online', updateOnlineState)
+  window.removeEventListener('offline', updateOnlineState)
 })
 </script>
 
 <template>
-  <div class="min-h-screen overflow-x-hidden bg-slate-100 text-slate-900">
+  <div class="min-h-screen overflow-x-hidden bg-slate-100 text-slate-900" :class="{ 'eralms-density-compact': densityCompact }">
     <aside v-if="desktopMenuOpen" class="fixed inset-y-0 left-0 hidden w-76 overflow-y-auto border-r border-slate-950 bg-slate-950 text-slate-100 shadow-2xl shadow-slate-950/30 lg:block">
       <div class="sticky top-0 z-10 border-b border-white/10 bg-slate-950/95 px-4 py-4 backdrop-blur">
         <div class="flex items-center gap-3">
@@ -502,8 +734,8 @@ onBeforeUnmount(() => {
             <BookOpen class="h-5 w-5" />
           </div>
           <div class="min-w-0">
-            <div class="text-sm font-bold tracking-wide text-white">EraLMS Enterprise</div>
-            <div class="text-xs text-slate-400">VABIS LMS Operations</div>
+            <div class="text-sm font-bold tracking-wide text-white">{{ shellTitle }}</div>
+            <div class="text-xs text-slate-400">{{ shellSubtitle }}</div>
           </div>
           <button class="ml-auto grid h-9 w-9 place-items-center rounded-md border border-white/10 text-slate-300 hover:bg-white/10" title="Đóng menu chính" @click="toggleDesktopMenu">
             <X class="h-4 w-4" />
@@ -511,7 +743,7 @@ onBeforeUnmount(() => {
         </div>
       </div>
       <nav class="space-y-5 px-3 py-4 text-sm">
-        <section v-for="group in menuGroups" :key="group.title">
+        <section v-for="group in visibleMenuGroups" :key="group.title">
           <div class="mb-2 px-2 text-[11px] font-semibold uppercase text-slate-500">{{ group.title }}</div>
           <div class="space-y-1">
             <a
@@ -550,8 +782,8 @@ onBeforeUnmount(() => {
               <BookOpen class="h-5 w-5" />
             </div>
             <div>
-              <div class="text-sm font-bold tracking-wide text-white">EraLMS Enterprise</div>
-              <div class="text-xs text-slate-400">VABIS LMS Operations</div>
+              <div class="text-sm font-bold tracking-wide text-white">{{ shellTitle }}</div>
+              <div class="text-xs text-slate-400">{{ shellSubtitle }}</div>
             </div>
           </div>
           <button class="grid h-9 w-9 place-items-center rounded-md border border-white/10 text-slate-300" @click="mobileMenuOpen = false">
@@ -559,7 +791,7 @@ onBeforeUnmount(() => {
           </button>
         </div>
         <nav class="space-y-5 px-3 py-4 text-sm">
-          <section v-for="group in menuGroups" :key="group.title">
+          <section v-for="group in visibleMenuGroups" :key="group.title">
             <div class="mb-2 px-2 text-[11px] font-semibold uppercase text-slate-500">{{ group.title }}</div>
             <div class="space-y-1">
               <a
@@ -589,7 +821,7 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="min-w-0" :class="desktopMenuOpen ? 'lg:pl-76' : 'lg:pl-0'">
-      <header class="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-slate-200 bg-white/90 px-5 shadow-sm shadow-slate-200/60 backdrop-blur">
+      <header class="sticky top-0 z-20 flex items-center gap-3 border-b border-slate-200 bg-white/90 px-5 shadow-sm shadow-slate-200/60 backdrop-blur" :class="densityCompact ? 'h-14' : 'h-16'">
         <button class="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-slate-300 bg-white text-slate-700 lg:hidden" @click="mobileMenuOpen = true">
           <Menu class="h-4 w-4" />
         </button>
@@ -600,18 +832,27 @@ onBeforeUnmount(() => {
         </button>
         <div class="min-w-0">
           <div class="text-xs text-slate-500">Trang chủ / <slot name="breadcrumb">Tổng quan</slot></div>
-          <div class="truncate text-sm font-semibold text-slate-950">Bảng điều khiển vận hành LMS</div>
+          <div class="truncate text-sm font-semibold text-slate-950">{{ pageTitle }}</div>
         </div>
-        <div class="relative ml-auto hidden xl:block">
+        <button class="relative ml-auto hidden h-10 w-80 items-center rounded-md border border-slate-300 bg-slate-50 pl-9 pr-3 text-left text-sm text-slate-500 outline-none hover:border-cyan-300 hover:bg-white focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-100 xl:flex" @click="openCommand">
           <Search class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <input class="h-10 w-80 rounded-md border border-slate-300 bg-slate-50 pl-9 pr-3 text-sm outline-none focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-100" placeholder="Tìm kiếm toàn hệ thống" />
+          <span class="truncate">Tìm kiếm toàn hệ thống</span>
+        </button>
+        <select v-if="!isLearner" class="hidden h-10 rounded-md border border-slate-300 bg-white px-2 text-sm md:block"><option>VABIS LMS</option></select>
+        <select v-if="!isLearner" class="hidden h-10 rounded-md border border-slate-300 bg-white px-2 text-sm xl:block"><option>Vũng Tàu</option><option>Cơ sở trực tuyến</option></select>
+        <button class="hidden h-10 w-10 place-items-center rounded-md border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 md:grid" :title="densityCompact ? 'Mật độ rộng' : 'Mật độ gọn'" @click="toggleDensity">
+          <Gauge class="h-4 w-4" />
+        </button>
+        <div class="hidden h-10 items-center gap-2 rounded-md border px-3 text-xs font-semibold md:flex" :class="isOnline ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-700'">
+          <Wifi v-if="isOnline" class="h-4 w-4" />
+          <WifiOff v-else class="h-4 w-4" />
+          <span>{{ isOnline ? 'Online' : 'Offline' }}</span>
         </div>
-        <select class="hidden h-10 rounded-md border border-slate-300 bg-white px-2 text-sm md:block"><option>VABIS LMS</option></select>
-        <select class="hidden h-10 rounded-md border border-slate-300 bg-white px-2 text-sm xl:block"><option>Vũng Tàu</option><option>Online Campus</option></select>
         <button class="hidden h-10 w-10 place-items-center rounded-md border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 sm:grid" title="Thông báo">
           <Bell class="h-4 w-4" />
         </button>
         <button
+          v-if="!isLearner"
           class="inline-flex h-10 shrink-0 items-center gap-2 rounded-md border border-cyan-200 bg-cyan-50 px-3 text-sm font-semibold text-cyan-800 hover:bg-cyan-100"
           :title="editTarget.label"
           @click="navigateEdit"
@@ -625,7 +866,7 @@ onBeforeUnmount(() => {
             <UserCheck class="h-4 w-4" />
           </div>
           <div class="text-right text-xs leading-tight">
-          <div class="font-semibold text-slate-700">{{ sessionUser?.full_name || 'Demo Admin' }}</div>
+          <div class="font-semibold text-slate-700">{{ sessionUser?.full_name || 'Quản trị demo' }}</div>
           <div class="text-slate-500">{{ sessionUser?.email }}</div>
           </div>
         </div>
@@ -634,9 +875,61 @@ onBeforeUnmount(() => {
           <span class="hidden sm:inline">Đăng xuất</span>
         </button>
       </header>
-      <main class="mx-auto min-w-0 max-w-[1600px] overflow-x-hidden p-3 sm:p-5">
+      <main class="mx-auto min-w-0 max-w-[1600px] overflow-x-hidden p-3 sm:p-5" :class="{ 'pb-24': true, 'sm:p-4': densityCompact }">
         <slot />
       </main>
+      <nav class="fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 rounded-md border border-slate-200 bg-white/95 p-1 shadow-2xl shadow-slate-950/20 backdrop-blur lg:hidden">
+        <a
+          v-for="item in bottomNavItems"
+          :key="item.route"
+          :href="item.route"
+          class="grid min-w-0 place-items-center gap-1 rounded-md px-1 py-2 text-[11px] font-semibold text-slate-500"
+          :class="{ 'bg-slate-950 text-white': isActive(item.route) }"
+          @click.prevent="navigate(item.route)"
+        >
+          <component :is="item.icon" class="h-4 w-4" />
+          <span class="truncate">{{ item.label }}</span>
+        </a>
+      </nav>
+    </div>
+
+    <div v-if="commandOpen" class="fixed inset-0 z-[70] bg-slate-950/45 p-3 backdrop-blur-sm sm:p-6" @click.self="commandOpen = false">
+      <section class="mx-auto mt-10 flex max-h-[82vh] w-full max-w-2xl flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-2xl shadow-slate-950/30 sm:mt-16">
+        <header class="border-b border-slate-200 p-3">
+          <div class="relative">
+            <Search class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              v-model="commandSearch"
+              autofocus
+              class="h-11 w-full rounded-md border border-slate-300 bg-slate-50 pl-9 pr-10 text-sm outline-none focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-100"
+              placeholder="Tìm module hoặc thao tác"
+            />
+            <button class="absolute right-1 top-1 grid h-9 w-9 place-items-center rounded-md text-slate-500 hover:bg-slate-100" @click="commandOpen = false">
+              <X class="h-4 w-4" />
+            </button>
+          </div>
+        </header>
+        <div class="min-h-0 flex-1 overflow-auto p-2">
+          <button
+            v-for="item in filteredCommandItems"
+            :key="`${item.group}-${item.route}-${item.label}`"
+            class="grid w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 rounded-md px-3 py-2.5 text-left hover:bg-slate-50"
+            @click="runCommand(item)"
+          >
+            <span class="grid h-10 w-10 place-items-center rounded-md" :class="item.tone === 'action' ? 'bg-cyan-50 text-cyan-700' : item.tone === 'recent' ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-700'">
+              <component :is="item.icon || Sparkles" class="h-4 w-4" />
+            </span>
+            <span class="min-w-0">
+              <span class="block truncate text-sm font-bold text-slate-950">{{ item.label }}</span>
+              <span class="mt-0.5 block truncate text-xs text-slate-500">{{ item.route }}</span>
+            </span>
+            <span class="rounded-md bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-500">{{ item.group }}</span>
+          </button>
+          <div v-if="filteredCommandItems.length === 0" class="rounded-md border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
+            Không có kết quả phù hợp.
+          </div>
+        </div>
+      </section>
     </div>
 
     <div v-if="rowDetailOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm" @click.self="closeRowDetail">
@@ -687,11 +980,11 @@ onBeforeUnmount(() => {
             <label class="block">
               <span class="text-xs font-semibold uppercase text-slate-500">Trạng thái</span>
               <select v-model="editDraft.status" class="mt-1 h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100">
-                <option value="draft">Draft</option>
-                <option value="ready">Ready</option>
-                <option value="review">Review</option>
-                <option value="approved">Approved</option>
-                <option value="published">Published</option>
+              <option value="draft">Nháp</option>
+              <option value="ready">Sẵn sàng</option>
+              <option value="review">Đang duyệt</option>
+              <option value="approved">Đã duyệt</option>
+              <option value="published">Đã phát hành</option>
               </select>
             </label>
             <label class="block">

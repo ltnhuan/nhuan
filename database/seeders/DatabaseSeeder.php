@@ -13,6 +13,22 @@ class DatabaseSeeder extends Seeder
             CourseStudioSeeder::class,
         ]);
 
+        if (filter_var(env('ERALMS_SEED_REALISTIC_LEARNING_CONTENT', true), FILTER_VALIDATE_BOOLEAN)) {
+            $this->call(RealisticLearningContentSeeder::class);
+        }
+
+        if (filter_var(env('ERALMS_SEED_MEANINGFUL_COURSE_LESSONS', true), FILTER_VALIDATE_BOOLEAN)) {
+            $this->call(MeaningfulCourseLessonSeeder::class);
+        }
+
+        if (filter_var(env('ERALMS_SEED_COURSE_QUIZ_ENROLLMENTS', true), FILTER_VALIDATE_BOOLEAN)) {
+            $this->call(CourseQuizEnrollmentSeeder::class);
+        }
+
+        if (filter_var(env('ERALMS_SEED_SHARED_REPOSITORY', true), FILTER_VALIDATE_BOOLEAN)) {
+            $this->call(SharedLearningRepositorySeeder::class);
+        }
+
         if (filter_var(env('ERALMS_SEED_LEARNING_PATH', true), FILTER_VALIDATE_BOOLEAN)) {
             $this->call(LearningPathSeeder::class);
         }
@@ -23,6 +39,10 @@ class DatabaseSeeder extends Seeder
 
         if (filter_var(env('ERALMS_SEED_QUESTION_BANK', true), FILTER_VALIDATE_BOOLEAN)) {
             $this->call(QuestionBankSeeder::class);
+        }
+
+        if (filter_var(env('ERALMS_SEED_REALISTIC_QUESTION_BANK', true), FILTER_VALIDATE_BOOLEAN)) {
+            $this->call(RealisticQuestionBankSeeder::class);
         }
 
         if (filter_var(env('ERALMS_SEED_EXAM', true), FILTER_VALIDATE_BOOLEAN)) {
@@ -43,6 +63,10 @@ class DatabaseSeeder extends Seeder
 
         if (filter_var(env('ERALMS_SEED_INTEGRATION', true), FILTER_VALIDATE_BOOLEAN)) {
             $this->call(IntegrationSeeder::class);
+        }
+
+        if (filter_var(env('ERALMS_SEED_API_OPERATIONS', true), FILTER_VALIDATE_BOOLEAN)) {
+            $this->call(ApiOperationsSeeder::class);
         }
 
         if (filter_var(env('ERALMS_SEED_LEARNING_STANDARDS', true), FILTER_VALIDATE_BOOLEAN)) {
@@ -81,6 +105,10 @@ class DatabaseSeeder extends Seeder
             $this->call(LearningAnalyticsSeeder::class);
         }
 
+        if (filter_var(env('ERALMS_SEED_DASHBOARD_ANALYTICS', true), FILTER_VALIDATE_BOOLEAN)) {
+            $this->call(DashboardAnalyticsSeeder::class);
+        }
+
         if (filter_var(env('ERALMS_SEED_ACTION_REGISTRY', true), FILTER_VALIDATE_BOOLEAN)) {
             $this->call(LmsActionRegistrySeeder::class);
         }
@@ -89,6 +117,14 @@ class DatabaseSeeder extends Seeder
             $this->call(PerformanceLoadSeeder::class);
         }
 
-        $this->call(LearnerDemoSeeder::class);
+        $this->call([
+            LearnerDemoSeeder::class,
+            DemoAccountsSeeder::class,
+            DemoLearningContentSeeder::class,
+        ]);
+
+        if (filter_var(env('ERALMS_SEED_EXAM_DATA_REPAIR', true), FILTER_VALIDATE_BOOLEAN)) {
+            $this->call(ExamDataRepairSeeder::class);
+        }
     }
 }

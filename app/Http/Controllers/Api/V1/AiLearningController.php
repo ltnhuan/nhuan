@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Models\Document;
+use App\Models\LmsUser;
 use App\Services\AiDocumentPipelineService;
 use App\Services\AiLearningPlatformService;
 use App\Services\TenantContext;
@@ -38,16 +39,29 @@ class AiLearningController extends Controller
             ->paginate($request->integer('per_page', 25));
     }
 
+    public function workspace(Request $request, AiLearningPlatformService $ai, TenantContext $tenantContext)
+    {
+        return $ai->workspace(
+            $tenantContext->id(),
+            $this->userId($request, $tenantContext->id()),
+            $request->integer('course_id') ?: null,
+            $request->integer('document_id') ?: null,
+        );
+    }
+
     public function ask(Request $request, AiLearningPlatformService $ai, TenantContext $tenantContext)
     {
         $data = $request->validate([
             'course_id' => ['nullable', 'integer'],
             'document_id' => ['nullable', 'integer'],
-            'assistant_type' => ['nullable', 'in:tutor,course_assistant,pdf,video,assignment'],
+            'assistant_type' => ['nullable', 'in:tutor,course_assistant,pdf,video,assignment,planner,quiz,flashcard,coach'],
             'question' => ['required', 'string', 'max:2000'],
         ]);
 
-        return response()->json($ai->ask($data + ['tenant_id' => $tenantContext->id(), 'user_id' => $request->user()?->id]));
+        return response()->json($ai->ask($data + [
+            'tenant_id' => $tenantContext->id(),
+            'user_id' => $this->userId($request, $tenantContext->id()),
+        ]));
     }
 
     public function summary(Request $request, AiLearningPlatformService $ai, TenantContext $tenantContext)
@@ -90,7 +104,7 @@ class AiLearningController extends Controller
         return $ai->coach([
             'tenant_id' => $tenantContext->id(),
             'course_id' => $request->integer('course_id') ?: null,
-            'user_id' => $request->integer('user_id') ?: $request->user()?->id,
+            'user_id' => $request->integer('user_id') ?: $this->userId($request, $tenantContext->id()),
         ]);
     }
 
@@ -105,5 +119,21 @@ class AiLearningController extends Controller
     public function analytics(AiLearningPlatformService $ai, TenantContext $tenantContext)
     {
         return $ai->analytics($tenantContext->id());
+    }
+
+    private function userId(Request $request, int $tenantId): ?int
+    {
+        if ($request->user()) {
+            return (int) $request->user()->id;
+        }
+
+        if ($request->header('X-Demo-User-Email')) {
+            return (int) (LmsUser::query()
+                ->where('tenant_id', $tenantId)
+                ->where('email', $request->header('X-Demo-User-Email'))
+                ->value('id') ?: 1);
+        }
+
+        return null;
     }
 }
