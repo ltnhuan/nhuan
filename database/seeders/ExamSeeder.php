@@ -1,0 +1,18 @@
+<?php
+namespace Database\Seeders;
+use App\Models\Exam;use App\Models\ExamAnswer;use App\Models\ExamAttempt;use App\Models\ExamAttemptQuestion;use App\Models\ExamEnrollment;use App\Models\ExamQuestion;use App\Models\ExamResult;use App\Models\LmsUser;use App\Models\Question;use App\Models\QuestionBank;use App\Models\Tenant;use Illuminate\Database\Seeder;use Illuminate\Support\Str;
+class ExamSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $tenant=Tenant::query()->where('code','VABIS')->firstOrFail(); $banks=QuestionBank::query()->where('tenant_id',$tenant->id)->get(); $students=LmsUser::query()->where('tenant_id',$tenant->id)->where('user_type','student')->take(500)->get(); $types=['practice','quiz','midterm','final','certification','placement_test'];
+        for($i=1;$i<=20;$i++){ $bank=$banks[($i-1)%max(1,$banks->count())]; $exam=Exam::query()->updateOrCreate(['tenant_id'=>$tenant->id,'code'=>'EXAM-'.str_pad($i,3,'0',STR_PAD_LEFT)],['question_bank_id'=>$bank->id,'title'=>'Bài kiểm tra mẫu '.$i,'exam_type'=>$types[$i%count($types)],'delivery_mode'=>$i%4===0?'remote_proctored':'self_paced','status'=>'published','total_score'=>10,'pass_score'=>5,'duration_minutes'=>45,'max_attempts'=>2,'show_result_mode'=>'immediately','created_by'=>1,'settings'=>['proctoring_level'=>$i%4]]);
+            $questions=Question::query()->where('question_bank_id',$bank->id)->whereIn('status',['approved','published'])->take(10)->get(); foreach($questions as $idx=>$q) ExamQuestion::query()->updateOrCreate(['exam_id'=>$exam->id,'question_id'=>$q->id],['tenant_id'=>$tenant->id,'score'=>1,'sort_order'=>$idx+1]);
+            foreach($students->take(25) as $student) ExamEnrollment::query()->updateOrCreate(['tenant_id'=>$tenant->id,'exam_id'=>$exam->id,'user_id'=>$student->id],['status'=>'assigned','course_id'=>$exam->course_id,'assigned_by'=>1]);
+        }
+        $exams=Exam::query()->where('tenant_id',$tenant->id)->take(20)->get(); foreach($students->take(50) as $sIndex=>$student){foreach($exams->take(20) as $eIndex=>$exam){$status=['in_progress','submitted','graded','flagged'][($sIndex+$eIndex)%4];$score=$status==='graded'?rand(4,10):null;$attempt=ExamAttempt::query()->updateOrCreate(['tenant_id'=>$tenant->id,'exam_id'=>$exam->id,'user_id'=>$student->id,'attempt_no'=>1],['session_uuid'=>(string)Str::uuid(),'status'=>$status,'started_at'=>now()->subDays(rand(0,5)),'submitted_at'=>$status!=='in_progress'?now()->subHours(rand(1,12)):null,'score'=>$score,'max_score'=>$exam->total_score,'pass_status'=>$score!==null?($score>=5?'passed':'failed'):null,'suspicious_score'=>$status==='flagged'?80:0]); if($score!==null) ExamResult::query()->updateOrCreate(['tenant_id'=>$tenant->id,'attempt_id'=>$attempt->id],['exam_id'=>$exam->id,'user_id'=>$student->id,'score'=>$score,'max_score'=>$exam->total_score,'percent'=>$score*10,'pass_status'=>$score>=5?'passed':'failed','published'=>true,'published_at'=>now()]);}}
+        $essay = Question::query()->where('tenant_id',$tenant->id)->where('question_type','essay')->first();
+        $attempt = ExamAttempt::query()->where('tenant_id',$tenant->id)->first();
+        if($essay && $attempt){$aq=ExamAttemptQuestion::query()->updateOrCreate(['tenant_id'=>$tenant->id,'attempt_id'=>$attempt->id,'question_id'=>$essay->id],['display_order'=>99,'score'=>2,'question_snapshot'=>$essay->only(['id','code','question_type','title','stem']),'options_snapshot'=>null,'is_answered'=>true]); ExamAnswer::query()->updateOrCreate(['tenant_id'=>$tenant->id,'attempt_id'=>$attempt->id,'attempt_question_id'=>$aq->id],['question_id'=>$essay->id,'answer_data'=>['text'=>'Bài làm tự luận mẫu đang chờ giảng viên chấm.'],'score'=>null,'feedback'=>'Chờ chấm tay']);}
+    }
+}

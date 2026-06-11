@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lộ tr&#236;nh học tập - Đ&#224;o tạo &amp; học liệu</title>
+  <link rel="stylesheet" href="/trienkhai/assets/site.css">
+</head>
+<body>
+  <header class="topbar">
+    <nav class="nav">
+      <a class="brand" href="/trienkhai"><span class="brand-mark">E</span><span>EraLMS triển khai</span></a>
+      <div class="nav-links">
+      <a href="/trienkhai">Home</a>
+      <a class="active" href="/trienkhai/dao-tao.html">Đào tạo</a>
+      <a href="/trienkhai/danh-gia.html">Đánh giá</a>
+      <a href="/trienkhai/nguoi-hoc.html">Người học</a>
+      <a href="/trienkhai/chuan-obe.html">Chuẩn & OBE</a>
+      <a href="/trienkhai/tich-hop.html">Tích hợp</a>
+      <a href="/trienkhai/ai-analytics.html">AI & Analytics</a>
+      <a href="/trienkhai/tat-ca-chuc-nang.html">Tất cả chức năng</a>
+      <a href="/trienkhai/lo-trinh.html">Lộ trình</a>
+      </div>
+    </nav>
+  </header>
+  <main>
+    <section class="page-title">
+      <div class="section">
+        <p class="eyebrow">Đ&#224;o tạo &amp; học liệu</p>
+        <h1>Lộ tr&#236;nh học tập</h1>
+        <p>Thiết kế điều kiện mở kh&#243;a, luật ho&#224;n th&#224;nh, tiến độ c&#225; nh&#226;n, tiến độ lớp v&#224; gợi &#253; bước học tiếp theo.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Mục tiêu nghiệp vụ</h2>
+      <p class="lead">Áp dụng chức năng <strong>Lộ tr&#236;nh học tập</strong> cho luồng nghiệp vụ của phân hệ <strong>Đ&#224;o tạo &amp; học liệu</strong>.</p>
+      <div class="grid two">
+        <article class="card">
+          <h3>Đầu vào và đầu ra</h3>
+          <p><strong>Input:</strong> Dữ liệu nghiệp vụ theo phân hệ, quyền thao tác của vai trò tạo luồng.</p>
+          <p><strong>Output:</strong> Nhật ký hoạt động, kết quả nghiệp vụ và trạng thái nghiệm thu.</p>
+        </article>
+        <article class="card">
+          <h3>Màn hình liên quan</h3>
+          <p>/courses, /courses/studio, /repository, /learning-path, /videos</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Luồng quy trình</p>
+      <h2>Minh hoạ flow triển khai</h2>
+      <figure class="flow-figure">
+        <img src="/trienkhai/assets/images/flows/dao-tao-lo-trinh-hoc-tap.svg" alt="Flow Lộ tr&#236;nh học tập">
+        <figcaption>Luồng tham chiếu cho chức năng Lộ tr&#236;nh học tập</figcaption>
+      </figure>
+      <ol class="step-list">
+        <li><strong>Bắt đầu:</strong> Kích hoạt đúng vai trò.</li>
+                <li>Prerequisite theo bài học, quiz, assignment.</li>
+        <li>Learning completion và progress event.</li>
+        <li>Class progress cho giảng viên/cố vấn.</li>
+        <li>Can thiệp khi người học chậm tiến độ.</li>
+      </ol>
+    </section>
+
+    <section class="band">
+      <div class="section">
+        <p class="eyebrow">Kiểm thử</p>
+        <h2>Tiêu chí nghiệm thu gợi ý</h2>
+        <ol class="step-list">
+          <li>Luồng nghiệp vụ chạy được từ bước 1 tới bước cuối.</li>
+          <li>Lỗi nhập liệu trả về mã rõ ràng và có trace để điều tra.</li>
+          <li>Dữ liệu đầu ra đúng phạm vi quyền đã phân công.</li>
+          <li>Không có bước nào bị treo khi timeout hoặc mất dữ liệu giữa chừng.</li>
+        </ol>
+      </div>
+    </section>
+
+    <footer class="footer"><div class="section"><a href="/trienkhai/dao-tao.html">Quay về phân hệ Đ&#224;o tạo &amp; học liệu</a> · <a href="/trienkhai/tat-ca-chuc-nang.html">Xem ma trận đầy đủ</a></div></footer>
+  </main>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760" role="img" aria-label="Giao diện triển khai EraLMS">
+  <rect width="1400" height="760" fill="#0d5361"/>
+  <rect x="88" y="82" width="1224" height="596" rx="24" fill="#f7fbff" opacity=".96"/>
+  <rect x="126" y="124" width="248" height="512" rx="14" fill="#132237"/>
+  <rect x="410" y="124" width="858" height="118" rx="14" fill="#e8f4f6"/>
+  <rect x="410" y="276" width="260" height="160" rx="14" fill="#ffffff"/>
+  <rect x="700" y="276" width="260" height="160" rx="14" fill="#ffffff"/>
+  <rect x="990" y="276" width="278" height="160" rx="14" fill="#ffffff"/>
+  <rect x="410" y="468" width="858" height="168" rx="14" fill="#ffffff"/>
+  <circle cx="190" cy="174" r="28" fill="#00a0b2"/>
+  <rect x="230" y="154" width="104" height="12" rx="6" fill="#d8eef1"/>
+  <rect x="158" y="236" width="174" height="12" rx="6" fill="#6c7b91"/>
+  <rect x="158" y="282" width="150" height="12" rx="6" fill="#6c7b91"/>
+  <rect x="158" y="328" width="184" height="12" rx="6" fill="#6c7b91"/>
+  <rect x="158" y="374" width="132" height="12" rx="6" fill="#6c7b91"/>
+  <rect x="450" y="164" width="340" height="18" rx="9" fill="#075766"/>
+  <rect x="450" y="198" width="620" height="12" rx="6" fill="#76919d"/>
+  <rect x="450" y="314" width="150" height="16" rx="8" fill="#007f8f"/>
+  <rect x="450" y="352" width="178" height="10" rx="5" fill="#8fa0b1"/>
+  <rect x="740" y="314" width="150" height="16" rx="8" fill="#d34a24"/>
+  <rect x="740" y="352" width="178" height="10" rx="5" fill="#8fa0b1"/>
+  <rect x="1032" y="314" width="162" height="16" rx="8" fill="#16845b"/>
+  <rect x="1032" y="352" width="184" height="10" rx="5" fill="#8fa0b1"/>
+  <rect x="450" y="514" width="720" height="16" rx="8" fill="#075766"/>
+  <rect x="450" y="558" width="330" height="12" rx="6" fill="#8fa0b1"/>
+  <rect x="812" y="558" width="330" height="12" rx="6" fill="#8fa0b1"/>
+</svg>

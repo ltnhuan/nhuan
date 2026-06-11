@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Khảo th&#237; v&#224; đ&#225;nh gi&#225; - EraLMS</title>
+  <link rel="stylesheet" href="/trienkhai/assets/site.css">
+</head>
+<body>
+  <header class="topbar">
+    <nav class="nav">
+      <a class="brand" href="/trienkhai"><span class="brand-mark">E</span><span>EraLMS triển khai</span></a>
+      <div class="nav-links">
+      <a href="/trienkhai">Home</a>
+      <a href="/trienkhai/dao-tao.html">Đào tạo</a>
+      <a class="active" href="/trienkhai/danh-gia.html">Đánh giá</a>
+      <a href="/trienkhai/nguoi-hoc.html">Người học</a>
+      <a href="/trienkhai/chuan-obe.html">Chuẩn & OBE</a>
+      <a href="/trienkhai/tich-hop.html">Tích hợp</a>
+      <a href="/trienkhai/ai-analytics.html">AI & Analytics</a>
+      <a href="/trienkhai/tat-ca-chuc-nang.html">Tất cả chức năng</a>
+      <a href="/trienkhai/lo-trinh.html">Lộ trình</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-title">
+      <div class="section">
+        <p class="eyebrow">Phân hệ Khảo thí &amp; đánh giá</p>
+        <h1>Chi tiết triển khai theo chức năng</h1>
+        <p>Nhóm này mô tả toàn bộ chuỗi ra đề, điều phối thi, làm bài, chấm, tổng hợp và công bố kết quả theo vai trò.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Luồng tổng thể</p>
+      <h2>End-to-end một kỳ thi/đánh giá</h2>
+      <ol class="step-list">
+        <li>Khởi tạo ngân hàng câu hỏi chuẩn hóa theo CLO/outcome.</li>
+        <li>Tạo blueprint theo độ khó, trọng số và luật anti-overlap.</li>
+        <li>Phát đề theo lớp, học viên theo dõi và nộp bài.</li>
+        <li>Chấm tự động + chấm manual (nếu có tự luận), phê duyệt.</li>
+        <li>Đưa vào gradebook rồi xuất kết quả cho SIS.</li>
+      </ol>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Chi tiết từng chức năng</p>
+      <h2>Định nghĩa flow nghiệm thu</h2>
+      <div class="detail-grid two">
+        <article id="bank" class="feature">
+          <h3>1. Ngân hàng câu hỏi</h3>
+          <p>Tạo, phân loại, gán mức độ và version câu hỏi cho toàn bộ bài thi.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list">
+                <li>Tạo danh mục, loại câu, độ khó.</li>
+                <li>Import câu hỏi từ mẫu chuẩn.</li>
+                <li>Ánh xạ outcome và kiểm tra duplication.</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Bảo đảm ngân hàng tái sử dụng, giảm phụ thuộc nguồn dữ liệu manual.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/dao-tao.html#studio">Course Studio</a></li><li><a href="/trienkhai/chuan-obe.html#outcome">OBE outcome</a></li><li><a href="/trienkhai/lo-trinh.html">Lộ trình UAT</a></li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="blueprint" class="feature">
+          <h3>2. Blueprint đề thi</h3>
+          <p>Cấu hình blueprint chuẩn hóa theo section, đầu ra và chỉ tiêu đề thi.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list">
+                <li>Định nghĩa section và tỷ trọng điểm.</li>
+                <li>Chọn số lượng câu theo loại.</li>
+                <li>Chạy sinh đề mẫu để xác nhận.</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Tăng tính công bằng, kiểm soát cấu trúc và tính lặp giữa các đề.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/danh-gia.html#assign">Assign thi</a></li><li><a href="/trienkhai/tich-hop.html#f-api">API v1</a></li><li><a href="/trienkhai/chuan-obe.html#matrix">Outcome matrix</a></li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="assign" class="feature">
+          <h3>3. Assign / triển khai ca thi</h3>
+          <p>Phân phối bài thi theo lớp, thời gian, chế độ thử lại và giám sát.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list">
+                <li>Gán đề cho cohort hoặc lớp.</li>
+                <li>Cấu hình thời gian mở/đóng, timer, rule bảo mật.</li>
+                <li>Kiểm tra thử bằng tài khoản học viên mẫu.</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Đảm bảo đúng đối tượng, đúng thời điểm và tránh phát hành nhầm bài thi.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/nguoi-hoc.html#att">Attendance</a></li><li><a href="/trienkhai/tich-hop.html#f-tenant">Tenant</a></li><li><a href="/trienkhai/lo-trinh.html">Checklist UAT</a></li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="grading" class="feature">
+          <h3>4. Chấm điểm tự động + tự luận</h3>
+          <p>Thực hiện auto-grade cho trắc nghiệm và manual/ rubric cho tự luận.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list">
+                <li>Định nghĩa đáp án đúng + luật chấm tự động.</li>
+                <li>Thiết lập rubric cho tự luận.</li>
+                <li>Gọi lại lịch sử chấm và phê duyệt điểm.</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Đảm bảo tốc độ chấm nhanh nhưng vẫn kiểm soát chất lượng giám khảo.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/danh-gia.html#gradebook">Sổ điểm</a></li><li><a href="/trienkhai/tich-hop.html#f-audit">Audit log</a></li><li><a href="/trienkhai/tich-hop.html#f-webhook">Webhook</a></li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="assignment" class="feature">
+          <h3>5. Bài tập</h3>
+          <p>Giao, thu bài, nộp file, chấm, phản hồi và xác nhận tiến độ.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list">
+                <li>Tạo assignment và rubric.</li>
+                <li>Bật deadline và trạng thái nộp muộn.</li>
+                <li>Review, cho điểm và gửi feedback.</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Ghi nhận năng lực vận dụng và hồ sơ kiểm chứng học viên theo kỹ năng.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/dao-tao.html#repo">Kho học liệu</a></li><li><a href="/trienkhai/danh-gia.html#bank">Question bank</a></li><li><a href="/trienkhai/chuan-obe.html#competency">Competency</a></li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article id="gradebook" class="feature">
+          <h3>6. Sổ điểm</h3>
+          <p>Tổng hợp điểm thành phần, áp dụng công thức và công bố theo vai trò.</p>
+          <div class="detail-meta">
+            <div>
+              <h3>Bước làm</h3>
+              <ul class="step-list">
+                <li>Định nghĩa grade item và tỷ trọng.</li>
+                <li>Nhập điểm tự động/import batch.</li>
+                <li>Chạy duyệt, audit và đẩy đến SIS.</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Ý nghĩa</h3>
+              <p>Tập trung quy tắc quy đổi và giảm sai lệch khi xuất báo cáo.</p>
+            </div>
+            <div>
+              <h3>Liên hệ module khác</h3>
+              <ul class="module-link"><li><a href="/trienkhai/tich-hop.html#f-sis">SIS sync</a></li><li><a href="/trienkhai/nguoi-hoc.html#portfolio">Portfolio</a></li><li><a href="/trienkhai/chuan-obe.html#accred">Báo cáo kiểm định</a></li></ul>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="band">
+      <div class="section">
+        <p class="eyebrow">Lưu ý nghiệm thu</p>
+        <h2>Checklist nghiệp vụ tối thiểu</h2>
+        <p>Chỉ chuyển giai đoạn khi luồng “import câu hỏi → sinh đề → nộp bài → chấm điểm → xuất gradebook” chạy liền không phụ thuộc thủ công ngoài kế hoạch.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer"><div class="section"><a href="/trienkhai">Quay về trang giới thiệu</a></div></footer>
+</body>
+</html>

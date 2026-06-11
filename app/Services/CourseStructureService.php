@@ -1,0 +1,224 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Course;
+use App\Models\CourseComponent;
+use App\Models\CourseSection;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+
+class CourseStructureService
+{
+    public function createSection(Course $course, array $data): CourseSection
+    {
+        $type = $data['type'] ?? 'section';
+        $parentId = $data['parent_id'] ?? null;
+        $this->validateSectionParent($course, $type, $parentId);
+
+        return CourseSection::query()->create($data + [
+            'tenant_id' => $course->tenant_id,
+            'course_id' => $course->id,
+            'sort_order' => $data['sort_order'] ?? $this->nextSectionSortOrder($course->id, $parentId),
+            'status' => $data['status'] ?? 'draft',
+            'settings' => $data['settings'] ?? [],
+        ]);
+    }
+
+    public function updateSection(CourseSection $section, array $data): CourseSection
+    {
+        if (array_key_exists('parent_id', $data) || array_key_exists('type', $data)) {
+            $this->validateSectionParent($section->course, $data['type'] ?? $section->type, $data['parent_id'] ?? $section->parent_id, $section->id);
+        }
+
+        $section->fill($data)->save();
+
+        return $section->fresh(['children', 'components']);
+    }
+
+    public function createComponent(array $data): CourseComponent
+    {
+        $section = CourseSection::query()->with('course')->findOrFail($data['section_id']);
+
+        if (! $section->isUnit()) {
+            throw new \InvalidArgumentException('Component chỉ được gắn vào unit.');
+        }
+
+        return CourseComponent::query()->create($data + [
+            'tenant_id' => $section->tenant_id,
+            'course_id' => $section->course_id,
+            'sort_order' => $data['sort_order'] ?? $this->nextComponentSortOrder($section->id),
+            'required' => $data['required'] ?? true,
+            'status' => $data['status'] ?? 'draft',
+            'config' => $data['config'] ?? [],
+        ]);
+    }
+
+    public function updateComponent(CourseComponent $component, array $data): CourseComponent
+    {
+        $component->fill($data)->save();
+
+        return $component->fresh(['contentItem', 'activityType']);
+    }
+
+    public function reorderSections(array $items): void
+    {
+        DB::transaction(function () use ($items) {
+            foreach ($items as $item) {
+                CourseSection::query()->whereKey($item['id'])->update([
+                    'parent_id' => $item['parent_id'] ?? null,
+                    'sort_order' => $item['sort_order'],
+                ]);
+            }
+        });
+    }
+
+    public function reorderComponents(array $items): void
+    {
+        DB::transaction(function () use ($items) {
+            foreach ($items as $item) {
+                $payload = ['sort_order' => $item['sort_order']];
+                if (array_key_exists('section_id', $item)) {
+                    $payload['section_id'] = $item['section_id'];
+                }
+                CourseComponent::query()->whereKey($item['id'])->update($payload);
+            }
+        });
+    }
+
+    public function outline(Course $course): array
+    {
+        $sections = $course->sections()->with([
+            'components.contentItem',
+            'components.exam.questions.question.options',
+            'components.assignment.rubric.criteria.levels',
+            'components.videoAsset',
+        ])->get();
+
+        return $this->buildTree($sections->whereNull('parent_id'), $sections);
+    }
+
+    private function buildTree(Collection $nodes, Collection $all): array
+    {
+        return $nodes->sortBy('sort_order')->values()->map(function (CourseSection $section) use ($all) {
+            return [
+                'id' => $section->id,
+                'type' => $section->type,
+                'title' => $section->title,
+                'status' => $section->status,
+                'sort_order' => $section->sort_order,
+                'release_at' => $section->release_at,
+                'due_at' => $section->due_at,
+                'settings' => $section->settings ?? [],
+                'components' => $section->components->map(function (CourseComponent $component) {
+                    $content = $component->contentItem;
+                    $exam = $component->exam;
+                    $assignment = $component->assignment;
+                    $videoAsset = $component->videoAsset;
+                    $config = $component->config ?? [];
+
+                    if ($exam) {
+                        $config = array_replace($config, [
+                            'exam_id' => $exam->id,
+                            'exam_title' => $exam->title,
+                            'exam_code' => $exam->code,
+                            'exam_description' => $exam->description,
+                            'exam_type' => $exam->exam_type,
+                            'questions_count' => $exam->questions->count(),
+                            'question_count' => $exam->questions->count(),
+                            'duration_minutes' => $exam->duration_minutes,
+                            'pass_score' => (float) $exam->pass_score,
+                            'total_score' => (float) $exam->total_score,
+                            'max_attempts' => $exam->max_attempts,
+                            'shuffle_questions' => $exam->shuffle_questions,
+                            'shuffle_options' => $exam->shuffle_options,
+                            'show_result_mode' => $exam->show_result_mode,
+                        ]);
+                    }
+
+                    if ($assignment) {
+                        $config = array_replace($config, [
+                            'assignment_id' => $assignment->id,
+                            'assignment_title' => $assignment->title,
+                            'assignment_description' => $assignment->description,
+                            'rubric_id' => $assignment->rubric_id,
+                            'pass_score' => (float) $assignment->pass_score,
+                            'max_score' => (float) $assignment->max_score,
+                        ]);
+                    }
+
+                    if ($videoAsset) {
+                        $config = array_replace($config, [
+                            'video_asset_id' => $videoAsset->id,
+                            'duration_seconds' => $videoAsset->duration_seconds,
+                        ]);
+                    }
+
+                    return [
+                        'id' => $component->id,
+                        'component_type' => $component->component_type,
+                        'title' => $component->title,
+                        'required' => $component->required,
+                        'status' => $component->status,
+                        'sort_order' => $component->sort_order,
+                        'content' => $content ? [
+                            ...$content->only(['id', 'title', 'item_type', 'status', 'mime_type']),
+                            'download_url' => app(RepositoryService::class)->signedDownloadUrl($content),
+                        ] : null,
+                        'exam' => $exam ? [
+                            ...$exam->only(['id', 'code', 'title', 'description', 'exam_type', 'status', 'duration_minutes', 'pass_score', 'total_score', 'max_attempts']),
+                            'questions_count' => $exam->questions->count(),
+                        ] : null,
+                        'assignment' => $assignment ? [
+                            ...$assignment->only(['id', 'title', 'description', 'status', 'due_at', 'max_score', 'pass_score', 'rubric_id']),
+                        ] : null,
+                        'video_asset' => $videoAsset ? [
+                            ...$videoAsset->only(['id', 'title', 'duration_seconds', 'processing_status', 'hls_master_path', 'thumbnail_url']),
+                        ] : null,
+                        'config' => $config,
+                    ];
+                })->values()->all(),
+                'children' => $this->buildTree($all->where('parent_id', $section->id), $all),
+            ];
+        })->all();
+    }
+
+    private function validateSectionParent(Course $course, string $type, ?int $parentId, ?int $ignoreId = null): void
+    {
+        if ($type === 'section' && $parentId !== null) {
+            throw new \InvalidArgumentException('Section gốc không được có parent.');
+        }
+
+        if ($type !== 'section' && $parentId === null) {
+            throw new \InvalidArgumentException('Subsection/unit cần parent.');
+        }
+
+        if ($parentId === null) {
+            return;
+        }
+
+        $parent = CourseSection::query()->where('course_id', $course->id)->findOrFail($parentId);
+
+        if ($ignoreId !== null && $parent->id === $ignoreId) {
+            throw new \InvalidArgumentException('Section không được làm parent của chính nó.');
+        }
+
+        if ($type === 'subsection' && $parent->type !== 'section') {
+            throw new \InvalidArgumentException('Subsection phải nằm dưới section.');
+        }
+
+        if ($type === 'unit' && ! in_array($parent->type, ['section', 'subsection'], true)) {
+            throw new \InvalidArgumentException('Unit phải nằm dưới section hoặc subsection.');
+        }
+    }
+
+    private function nextSectionSortOrder(int $courseId, ?int $parentId): int
+    {
+        return (int) CourseSection::query()->where('course_id', $courseId)->where('parent_id', $parentId)->max('sort_order') + 1;
+    }
+
+    private function nextComponentSortOrder(int $sectionId): int
+    {
+        return (int) CourseComponent::query()->where('section_id', $sectionId)->max('sort_order') + 1;
+    }
+}
